@@ -18,6 +18,7 @@ erDiagram
     users ||--o{ stock_movements : performs
     users ||--o{ receipts : uploads
     users ||--o{ push_subscriptions : owns
+    users ||--o{ refresh_tokens : holds
     receipts ||--o{ receipt_items : contains
     receipt_items |o--o| stock_items : creates
     foods ||--o{ receipt_items : matches
@@ -26,7 +27,7 @@ erDiagram
     recipes |o--o{ reservations : planned_for
 ```
 
-## Tables
+## Tables (14)
 
 - **users**: id, email (unique), password_hash, display_name, receipt_consent_given_at (nullable), created_at
 - **households**: id, name, invite_code (unique), created_at
@@ -41,6 +42,7 @@ erDiagram
 - **recipes**: id, household_id, name, instructions, servings, is_predefined, created_at. Predefined recipes are copied into a household when it is created.
 - **recipe_ingredients**: id, recipe_id, food_id, quantity
 - **push_subscriptions**: id, user_id, endpoint (unique), public_key, authentication_secret
+- **refresh_tokens**: id, user_id, token_hash (unique), expires_at, revoked_at (nullable), created_at
 
 ## Rules
 
@@ -53,3 +55,4 @@ erDiagram
 
   A's own reservations without a recipe, or made for R, stay available to A.
 - Recipe price estimate: the latest price per base unit from `receipt_items` of the same food.
+- Authentication uses a short-lived access token (30 minutes, JWT) and a refresh token (60 days). Every refresh replaces the refresh token with a new one, so the session stays alive while the app is used. Refresh tokens are stored only as hashes and can be revoked.
