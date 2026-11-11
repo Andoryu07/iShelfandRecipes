@@ -20,13 +20,8 @@ class LoginRequest(BaseModel):
     password: str = Field(max_length=128)
 
 
-class RefreshRequest(BaseModel):
-    refreshToken: str
-
-
 class TokenResponse(BaseModel):
     accessToken: str
-    refreshToken: str
     tokenType: str = "bearer"
     accessTokenExpiresInSeconds: int
 

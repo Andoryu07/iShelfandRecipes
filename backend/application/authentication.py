@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
+from fastapi import Response
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
@@ -9,7 +10,31 @@ from application.schemas.authentication import TokenResponse
 from application.security import createAccessToken, generateRefreshToken, hashRefreshToken
 
 
-def issueTokens(session: Session, user: User) -> TokenResponse:
+refreshTokenCookieName = "refreshToken"
+
+
+def setRefreshTokenCookie(response: Response, refreshToken: str) -> None:
+    configuration = getConfiguration()
+    response.set_cookie(
+        refreshTokenCookieName,
+        refreshToken,
+        max_age=configuration.refreshTokenLifetimeDays * 24 * 60 * 60,
+        httponly=True,
+        secure=configuration.refreshTokenCookieSecure,
+        samesite="strict",
+    )
+
+
+def deleteRefreshTokenCookie(response: Response) -> None:
+    response.delete_cookie(
+        refreshTokenCookieName,
+        httponly=True,
+        secure=getConfiguration().refreshTokenCookieSecure,
+        samesite="strict",
+    )
+
+
+def issueTokens(session: Session, user: User, response: Response) -> TokenResponse:
     configuration = getConfiguration()
     refreshToken = generateRefreshToken()
     session.add(
@@ -20,9 +45,9 @@ def issueTokens(session: Session, user: User) -> TokenResponse:
         )
     )
     session.commit()
+    setRefreshTokenCookie(response, refreshToken)
     return TokenResponse(
         accessToken=createAccessToken(user.id),
-        refreshToken=refreshToken,
         accessTokenExpiresInSeconds=configuration.accessTokenLifetimeMinutes * 60,
     )
 

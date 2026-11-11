@@ -33,16 +33,16 @@ Status: **done** endpoints exist, the others are planned.
 
 | Endpoint | Purpose | Status |
 | --- | --- | --- |
-| `POST /auth/register` | Create an account, returns access and refresh tokens | done |
+| `POST /auth/register` | Create an account, returns an access token and sets the refresh token cookie | done |
 | `POST /auth/login` | Log in with email and password | done |
-| `POST /auth/refresh` | Exchange a refresh token for a new token pair | done |
-| `POST /auth/logout` | Revoke a refresh token | done |
+| `POST /auth/refresh` | Exchange the refresh token cookie for a new access token and a new cookie | done |
+| `POST /auth/logout` | Revoke the refresh token and clear the cookie | done |
 | `GET /auth/me` | Current user | done |
 | `PATCH /auth/me` | Change the display name | planned |
 | `POST /auth/me/receipt-consent` | Record consent with sending receipts to the model | planned |
 | `DELETE /auth/me` | Delete the account and all personal data | planned |
 
-Access tokens are valid for 30 minutes. Refresh tokens are valid for 60 days and are replaced on every refresh.
+Access tokens are valid for 30 minutes and the client keeps them only in memory. Refresh tokens are valid for 60 days, are replaced on every refresh and travel only in the `refreshToken` cookie (`HttpOnly`, `Secure`, `SameSite=Strict`), so scripts in the page cannot read them. Browsers accept `Secure` cookies over plain HTTP only on `localhost`; set `REFRESH_TOKEN_COOKIE_SECURE=false` in `.env` only if you must test over plain HTTP from another device.
 
 ### Households
 

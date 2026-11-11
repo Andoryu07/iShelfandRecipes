@@ -50,7 +50,7 @@ def emptyTables(migratedDatabase: None) -> None:
 
 @pytest.fixture
 def client() -> TestClient:
-    return TestClient(application)
+    return TestClient(application, base_url="https://testserver")
 
 
 @pytest.fixture

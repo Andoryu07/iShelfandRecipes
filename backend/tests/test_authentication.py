@@ -47,13 +47,19 @@ def test_registerRejectsShortPasswordAndInvalidEmail(client: TestClient) -> None
     assert registerUser(client, email="not-an-email").status_code == 422
 
 
-def test_loginWithCorrectCredentialsReturnsTokens(client: TestClient) -> None:
+def test_loginSetsRefreshTokenOnlyInAProtectedCookie(client: TestClient) -> None:
     registerUser(client)
+    client.cookies.clear()
 
     response = client.post("/auth/login", json={"email": defaultEmail, "password": defaultPassword})
 
     assert response.status_code == 200
-    assert response.json()["refreshToken"]
+    assert "refreshToken" not in response.json()
+    cookieHeader = response.headers["set-cookie"]
+    assert cookieHeader.startswith("refreshToken=")
+    for attribute in ("HttpOnly", "Secure", "SameSite=strict"):
+        assert attribute in cookieHeader
+    assert client.cookies.get("refreshToken")
 
 
 def test_loginFailuresUseTheSameMessage(client: TestClient) -> None:
@@ -82,44 +88,58 @@ def test_meRejectsExpiredAccessToken(client: TestClient) -> None:
     assert client.get("/auth/me", headers=authorizationHeader(expiredToken)).status_code == 401
 
 
-def test_refreshReturnsNewTokensAndInvalidatesTheOldRefreshToken(client: TestClient) -> None:
-    firstTokens = registerUser(client).json()
+def useRefreshToken(client: TestClient, refreshToken: str):
+    client.cookies.set("refreshToken", refreshToken, domain="testserver.local")
+    return client.post("/auth/refresh")
 
-    refreshed = client.post("/auth/refresh", json={"refreshToken": firstTokens["refreshToken"]})
+
+def test_refreshReturnsNewTokensAndInvalidatesTheOldRefreshToken(client: TestClient) -> None:
+    registerUser(client)
+    firstRefreshToken = client.cookies.get("refreshToken")
+
+    refreshed = client.post("/auth/refresh")
 
     assert refreshed.status_code == 200
-    newTokens = refreshed.json()
-    assert newTokens["refreshToken"] != firstTokens["refreshToken"]
-    assert client.get("/auth/me", headers=authorizationHeader(newTokens["accessToken"])).status_code == 200
-    reuse = client.post("/auth/refresh", json={"refreshToken": firstTokens["refreshToken"]})
-    assert reuse.status_code == 401
+    newRefreshToken = client.cookies.get("refreshToken")
+    assert newRefreshToken != firstRefreshToken
+    assert client.get("/auth/me", headers=authorizationHeader(refreshed.json()["accessToken"])).status_code == 200
+    assert useRefreshToken(client, firstRefreshToken).status_code == 401
 
 
 def test_reusingARotatedRefreshTokenRevokesTheWholeSession(client: TestClient) -> None:
-    firstTokens = registerUser(client).json()
-    newTokens = client.post("/auth/refresh", json={"refreshToken": firstTokens["refreshToken"]}).json()
+    registerUser(client)
+    firstRefreshToken = client.cookies.get("refreshToken")
+    client.post("/auth/refresh")
+    newRefreshToken = client.cookies.get("refreshToken")
 
-    client.post("/auth/refresh", json={"refreshToken": firstTokens["refreshToken"]})
+    useRefreshToken(client, firstRefreshToken)
 
-    assert client.post("/auth/refresh", json={"refreshToken": newTokens["refreshToken"]}).status_code == 401
+    assert useRefreshToken(client, newRefreshToken).status_code == 401
 
 
-def test_refreshRejectsUnknownAndExpiredTokens(client: TestClient, databaseSession: Session) -> None:
-    tokens = registerUser(client).json()
-    assert client.post("/auth/refresh", json={"refreshToken": "unknown"}).status_code == 401
+def test_refreshRejectsMissingUnknownAndExpiredTokens(client: TestClient, databaseSession: Session) -> None:
+    registerUser(client)
+    refreshToken = client.cookies.get("refreshToken")
+    client.cookies.clear()
+    assert client.post("/auth/refresh").status_code == 401
+    assert useRefreshToken(client, "unknown").status_code == 401
 
     databaseSession.execute(
         update(RefreshToken).values(expiresAt=datetime.now(timezone.utc) - timedelta(days=1))
     )
     databaseSession.commit()
 
-    assert client.post("/auth/refresh", json={"refreshToken": tokens["refreshToken"]}).status_code == 401
+    assert useRefreshToken(client, refreshToken).status_code == 401
 
 
-def test_logoutRevokesTheRefreshToken(client: TestClient) -> None:
-    tokens = registerUser(client).json()
+def test_logoutRevokesTheRefreshTokenAndClearsTheCookie(client: TestClient) -> None:
+    registerUser(client)
+    refreshToken = client.cookies.get("refreshToken")
 
-    assert client.post("/auth/logout", json={"refreshToken": tokens["refreshToken"]}).status_code == 204
+    response = client.post("/auth/logout")
 
-    assert client.post("/auth/refresh", json={"refreshToken": tokens["refreshToken"]}).status_code == 401
-    assert client.post("/auth/logout", json={"refreshToken": "unknown"}).status_code == 204
+    assert response.status_code == 204
+    assert client.cookies.get("refreshToken") is None
+    assert useRefreshToken(client, refreshToken).status_code == 401
+    client.cookies.clear()
+    assert client.post("/auth/logout").status_code == 204
