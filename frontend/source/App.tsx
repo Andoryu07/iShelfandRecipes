@@ -11,6 +11,7 @@ import { HouseholdPage } from "./pages/HouseholdPage";
 import { HouseholdSetupPage } from "./pages/HouseholdSetupPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
+import { StockPage } from "./pages/StockPage";
 import { texts } from "./translations/cs";
 
 const router = createBrowserRouter([
@@ -35,7 +36,7 @@ const router = createBrowserRouter([
             element: <ApplicationLayout />,
             children: [
               { path: "/", element: <Navigate to="/stock" replace /> },
-              { path: "/stock", element: <PlaceholderPage title={texts.navigation.stock} /> },
+              { path: "/stock", element: <StockPage /> },
               { path: "/receipts", element: <PlaceholderPage title={texts.navigation.receipts} /> },
               { path: "/recipes", element: <PlaceholderPage title={texts.navigation.recipes} /> },
               { path: "/household", element: <HouseholdPage /> },

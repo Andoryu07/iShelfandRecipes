@@ -2,24 +2,16 @@ import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import { Alert, Button, IconButton, List, ListItem, ListItemText, Typography } from "@mui/material";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import {
-  createStorageLocation,
-  deleteStorageLocation,
-  listStorageLocations,
-  renameStorageLocation,
-} from "../api/householdsApi";
+import { createStorageLocation, deleteStorageLocation, renameStorageLocation } from "../api/householdsApi";
 import { ApiError } from "../api/apiClient";
 import type { StorageLocation } from "../api/types";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
 import { TextInputDialog } from "../components/TextInputDialog";
 import { describeError } from "../errorMessages";
 import { displayStorageLocationName, texts } from "../translations/cs";
-
-function storageLocationsQueryKey(householdId: number) {
-  return ["households", householdId, "storageLocations"];
-}
+import { storageLocationsQueryKey, useStorageLocations } from "./useStorageLocations";
 
 function describeDeletionError(error: unknown): string {
   if (error instanceof ApiError && error.status === 409) {
@@ -37,7 +29,7 @@ export function StorageLocationsSection({ householdId }: { householdId: number }
   const [storageLocationToRename, setStorageLocationToRename] = useState<StorageLocation | null>(null);
   const [storageLocationToDelete, setStorageLocationToDelete] = useState<StorageLocation | null>(null);
 
-  const storageLocationsQuery = useQuery({ queryKey, queryFn: () => listStorageLocations(householdId) });
+  const storageLocationsQuery = useStorageLocations(householdId);
   const onSuccess = () => queryClient.invalidateQueries({ queryKey });
   const createMutation = useMutation({
     mutationFn: (name: string) => createStorageLocation(householdId, name, "custom"),

@@ -34,3 +34,52 @@ export interface StorageLocation {
   name: string;
   kind: StorageLocationKind;
 }
+
+export type MeasurementUnit = "gram" | "milliliter" | "piece";
+
+export const foodCategories = [
+  "dairy",
+  "meatAndSausages",
+  "fish",
+  "fruit",
+  "vegetables",
+  "bakery",
+  "dryGoods",
+  "canned",
+  "frozen",
+  "beverages",
+  "spices",
+  "sweets",
+  "other",
+] as const;
+
+export type FoodCategory = (typeof foodCategories)[number];
+
+export type StockMovementReason = "eaten" | "spoiled" | "destroyed" | "cooked" | "correction";
+
+export interface Food {
+  id: number;
+  name: string;
+  category: FoodCategory;
+  baseUnit: MeasurementUnit;
+}
+
+export interface StockItem {
+  id: number;
+  food: Food;
+  storageLocationId: number;
+  quantity: number;
+  reservedQuantity: number;
+  availableQuantity: number;
+  expirationDate: string | null;
+  createdAt: string;
+}
+
+export interface StockMovement {
+  id: number;
+  quantityChange: number;
+  reason: StockMovementReason;
+  userId: number | null;
+  userDisplayName: string | null;
+  createdAt: string;
+}

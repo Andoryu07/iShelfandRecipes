@@ -1,4 +1,11 @@
-import type { HouseholdRole, StorageLocation, StorageLocationKind } from "../api/types";
+import type {
+  FoodCategory,
+  HouseholdRole,
+  MeasurementUnit,
+  StockMovementReason,
+  StorageLocation,
+  StorageLocationKind,
+} from "../api/types";
 
 export const texts = {
   applicationName: "iShelf a recepty",
@@ -81,6 +88,71 @@ export const texts = {
     pantry: "Spíž",
     custom: "Vlastní",
   } satisfies Record<StorageLocationKind, string>,
+  stock: {
+    searchPlaceholder: "Hledat v zásobách",
+    allStorageLocations: "Vše",
+    empty: "Zatím tu nic není. Přidej první potravinu tlačítkem +.",
+    nothingFound: "Nic takového v zásobách není.",
+    addStockItem: "Přidat do zásob",
+    food: "Potravina",
+    startTyping: "Začni psát název potraviny",
+    newFoodHint: "Nová potravina, vyber jednotku a kategorii",
+    createFoodOption: (name: string) => `Přidat „${name}“`,
+    baseUnit: "Měří se v",
+    category: "Kategorie",
+    quantity: "Množství",
+    unit: "Jednotka",
+    storageLocation: "Místo",
+    expirationDate: "Spotřebovat do",
+    noExpirationDate: "bez data",
+    expiredOn: (date: string) => `prošlo ${date}`,
+    expiresToday: "spotřebovat dnes",
+    expiresOn: (date: string) => `do ${date}`,
+    reserved: (quantity: string) => `rezervováno ${quantity}`,
+    invalidQuantity: "Zadej kladné číslo.",
+    foodAlreadyExists: "Potravina s tímto názvem už existuje.",
+    eatenAll: "Snězeno vše",
+    spoiledAll: "Vyhodit (zkažené)",
+    writeOffPart: "Odepsat část",
+    writeOff: "Odepsat",
+    reason: "Důvod",
+    moreThanRemains: "Nelze odepsat víc, než zbývá.",
+    editTitle: "Upravit",
+    correctQuantity: "Opravit množství",
+    correctedQuantity: "Skutečné množství",
+    correctionHint: "Omylem přidanou položku oprav na 0.",
+    historyTitle: "Historie",
+    noHistory: "Zatím bez úbytků.",
+    addedOn: (date: string) => `Přidáno ${date}`,
+    unknownUser: "bývalý člen",
+  },
+  units: {
+    gram: "gramy (g, kg)",
+    milliliter: "mililitry (ml, l)",
+    piece: "kusy (ks)",
+  } satisfies Record<MeasurementUnit, string>,
+  foodCategories: {
+    dairy: "Mléčné výrobky",
+    meatAndSausages: "Maso a uzeniny",
+    fish: "Ryby",
+    fruit: "Ovoce",
+    vegetables: "Zelenina",
+    bakery: "Pečivo",
+    dryGoods: "Trvanlivé",
+    canned: "Konzervy",
+    frozen: "Mražené",
+    beverages: "Nápoje",
+    spices: "Koření",
+    sweets: "Sladkosti",
+    other: "Ostatní",
+  } satisfies Record<FoodCategory, string>,
+  movementReasons: {
+    eaten: "Snězeno",
+    spoiled: "Zkažené",
+    destroyed: "Zničeno",
+    cooked: "Uvařeno",
+    correction: "Oprava",
+  } satisfies Record<StockMovementReason, string>,
   notFound: "Tato stránka neexistuje.",
 };
 
@@ -96,4 +168,17 @@ export function displayStorageLocationName(storageLocation: StorageLocation): st
     return texts.storageLocationKinds[storageLocation.kind];
   }
   return storageLocation.name;
+}
+
+const dateFormat = new Intl.DateTimeFormat("cs-CZ", { day: "numeric", month: "numeric", year: "numeric" });
+
+export function formatDate(dateText: string): string {
+  const [year, month, day] = dateText.slice(0, 10).split("-").map(Number);
+  return dateFormat.format(new Date(year, month - 1, day));
+}
+
+const timestampFormat = new Intl.DateTimeFormat("cs-CZ", { dateStyle: "short", timeStyle: "short" });
+
+export function formatTimestamp(timestamp: string): string {
+  return timestampFormat.format(new Date(timestamp));
 }
