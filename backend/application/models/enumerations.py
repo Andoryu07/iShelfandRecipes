@@ -31,3 +31,19 @@ class ReservationStatus(enum.Enum):
     active = "active"
     fulfilled = "fulfilled"
     cancelled = "cancelled"
+
+
+class FoodCategory(enum.Enum):
+    dairy = "dairy"
+    meatAndSausages = "meatAndSausages"
+    fish = "fish"
+    fruit = "fruit"
+    vegetables = "vegetables"
+    bakery = "bakery"
+    dryGoods = "dryGoods"
+    canned = "canned"
+    frozen = "frozen"
+    beverages = "beverages"
+    spices = "spices"
+    sweets = "sweets"
+    other = "other"

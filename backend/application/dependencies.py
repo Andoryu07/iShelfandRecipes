@@ -1,10 +1,11 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from application.database import getDatabaseSession
 from application.households import findMembership
-from application.models import HouseholdMember, User
+from application.models import Food, HouseholdMember, StockItem, StorageLocation, User
 from application.models.enumerations import HouseholdRole
 from application.security import decodeAccessToken
 
@@ -45,3 +46,44 @@ def getHouseholdOwnership(membership: HouseholdMember = Depends(getHouseholdMemb
 
 def householdNotFoundError() -> HTTPException:
     return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Household not found")
+
+
+def notFoundError(recordName: str) -> HTTPException:
+    return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"{recordName} not found")
+
+
+def getAccessibleStorageLocation(
+    storageLocationId: int,
+    user: User = Depends(getCurrentUser),
+    session: Session = Depends(getDatabaseSession),
+) -> StorageLocation:
+    storageLocation = session.get(StorageLocation, storageLocationId)
+    if storageLocation is None or findMembership(session, user.id, storageLocation.householdId) is None:
+        raise notFoundError("Storage location")
+    return storageLocation
+
+
+def getAccessibleFood(
+    foodId: int,
+    user: User = Depends(getCurrentUser),
+    session: Session = Depends(getDatabaseSession),
+) -> Food:
+    food = session.get(Food, foodId)
+    if food is None or findMembership(session, user.id, food.householdId) is None:
+        raise notFoundError("Food")
+    return food
+
+
+def getAccessibleStockItem(
+    stockItemId: int,
+    user: User = Depends(getCurrentUser),
+    session: Session = Depends(getDatabaseSession),
+) -> StockItem:
+    row = session.execute(
+        select(StockItem, StorageLocation.householdId)
+        .join(StorageLocation, StorageLocation.id == StockItem.storageLocationId)
+        .where(StockItem.id == stockItemId)
+    ).first()
+    if row is None or findMembership(session, user.id, row.householdId) is None:
+        raise notFoundError("Stock item")
+    return row.StockItem

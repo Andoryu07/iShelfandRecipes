@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from decimal import Decimal
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Numeric, Text, UniqueConstraint, func
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, Numeric, Text, func, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from application.models.base import Base, databaseEnum, measurementUnitType
@@ -28,7 +28,7 @@ class StorageLocation(Base):
 
 class Food(Base):
     __tablename__ = "foods"
-    __table_args__ = (UniqueConstraint("household_id", "name"),)
+    __table_args__ = (Index("uq_foods_household_id_lower_name", "household_id", text("lower(name)"), unique=True),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     householdId: Mapped[int] = mapped_column(

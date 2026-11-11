@@ -3,9 +3,8 @@ from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from application.database import getDatabaseSession
-from application.dependencies import getCurrentUser, getHouseholdMembership
-from application.households import findMembership
-from application.models import HouseholdMember, StockItem, StorageLocation, User
+from application.dependencies import getAccessibleStorageLocation, getHouseholdMembership
+from application.models import HouseholdMember, StockItem, StorageLocation
 from application.schemas.storage_locations import (
     CreateStorageLocationRequest,
     StorageLocationResponse,
@@ -22,17 +21,6 @@ def buildStorageLocationResponse(storageLocation: StorageLocation) -> StorageLoc
         name=storageLocation.name,
         kind=storageLocation.kind,
     )
-
-
-def getAccessibleStorageLocation(
-    storageLocationId: int,
-    user: User = Depends(getCurrentUser),
-    session: Session = Depends(getDatabaseSession),
-) -> StorageLocation:
-    storageLocation = session.get(StorageLocation, storageLocationId)
-    if storageLocation is None or findMembership(session, user.id, storageLocation.householdId) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Storage location not found")
-    return storageLocation
 
 
 def moveUsedUpStockItems(session: Session, storageLocation: StorageLocation) -> None:
