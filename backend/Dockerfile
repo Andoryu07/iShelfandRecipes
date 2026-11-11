@@ -9,8 +9,9 @@ RUN if [ "$INSTALL_DEVELOPMENT" = "true" ]; \
     then pip install --no-cache-dir -r requirements-development.txt; \
     else pip install --no-cache-dir -r requirements.txt; fi
 
-COPY alembic.ini ./
+COPY alembic.ini pytest.ini ./
 COPY migrations ./migrations
 COPY application ./application
+COPY tests ./tests
 
 CMD ["sh", "-c", "alembic upgrade head && uvicorn application.main:application --host 0.0.0.0 --port 8000"]
