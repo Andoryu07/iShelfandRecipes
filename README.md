@@ -63,10 +63,12 @@ A user who is not a member of the household gets `404`. Invite codes have 8 char
 
 | Endpoint | Purpose | Status |
 | --- | --- | --- |
-| `GET /households/{householdId}/storage-locations` | List storage locations | planned |
-| `POST /households/{householdId}/storage-locations` | Add a storage location | planned |
-| `PATCH /storage-locations/{storageLocationId}` | Rename or change the kind | planned |
-| `DELETE /storage-locations/{storageLocationId}` | Delete an empty storage location | planned |
+| `GET /households/{householdId}/storage-locations` | List storage locations | done |
+| `POST /households/{householdId}/storage-locations` | Add a storage location | done |
+| `PATCH /storage-locations/{storageLocationId}` | Rename or change the kind | done |
+| `DELETE /storage-locations/{storageLocationId}` | Delete an empty storage location | done |
+
+Every member of the household can manage storage locations. A storage location that still holds food (remaining quantity above zero) cannot be deleted.
 
 ### Foods
 
