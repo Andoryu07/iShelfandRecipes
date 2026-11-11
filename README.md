@@ -11,7 +11,7 @@ docker compose up --build
 
 Set `JWT_SECRET` in `.env` to a long random value first (for example the output of `openssl rand -hex 32`).
 
-The API is then available at http://localhost:8000, interactive documentation is at http://localhost:8000/docs and `GET /health` returns `{"status": "ok"}`. Database migrations run automatically when the backend starts.
+The app is then available at http://localhost:5173 (the development server reloads on every change and forwards `/api` to the backend). The API is available at http://localhost:8000, interactive documentation is at http://localhost:8000/docs and `GET /health` returns `{"status": "ok"}`. Database migrations run automatically when the backend starts.
 
 ## Run tests
 
@@ -19,7 +19,21 @@ The API is then available at http://localhost:8000, interactive documentation is
 docker compose run --rm tests
 ```
 
+Frontend checks (from `frontend/`, after `npm install`):
+
+```
+npm test
+npm run lint
+npm run build
+```
+
 The tests use a separate database named `<POSTGRES_DB>_test`, so development data is never touched.
+
+## Frontend
+
+A progressive web app in `frontend/`: React, TypeScript, Vite, Material UI, TanStack Query and React Router. The user interface is in Czech; all texts live in `frontend/source/translations/cs.ts`. The service worker (`frontend/source/serviceWorker.ts`) precaches the app and will handle push notifications later. The same build can later be wrapped with Capacitor for Google Play and the App Store.
+
+Installing the app on a phone needs HTTPS; plain HTTP works only on `localhost`.
 
 ## REST API
 

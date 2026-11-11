@@ -26,6 +26,18 @@ services:
       database:
         condition: service_healthy
 
+  frontend:
+    build: ./frontend
+    environment:
+      BACKEND_URL: http://backend:8000
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/frontend
+      - /frontend/node_modules
+    depends_on:
+      - backend
+
   tests:
     build:
       context: ./backend
