@@ -3,7 +3,9 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
 from application.database import getDatabaseSession
-from application.models import User
+from application.households import findMembership
+from application.models import HouseholdMember, User
+from application.models.enumerations import HouseholdRole
 from application.security import decodeAccessToken
 
 bearerScheme = HTTPBearer(auto_error=False)
@@ -22,3 +24,24 @@ def getCurrentUser(
             headers={"WWW-Authenticate": "Bearer"},
         )
     return user
+
+
+def getHouseholdMembership(
+    householdId: int,
+    user: User = Depends(getCurrentUser),
+    session: Session = Depends(getDatabaseSession),
+) -> HouseholdMember:
+    membership = findMembership(session, user.id, householdId)
+    if membership is None:
+        raise householdNotFoundError()
+    return membership
+
+
+def getHouseholdOwnership(membership: HouseholdMember = Depends(getHouseholdMembership)) -> HouseholdMember:
+    if membership.role != HouseholdRole.owner:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only the household owner can do this")
+    return membership
+
+
+def householdNotFoundError() -> HTTPException:
+    return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Household not found")

@@ -7,19 +7,7 @@ from sqlalchemy.orm import Session
 
 from application.configuration import getConfiguration
 from application.models import RefreshToken, User
-
-defaultEmail = "anna@example.com"
-defaultPassword = "correct horse battery"
-
-
-def registerUser(client: TestClient, email: str = defaultEmail, password: str = defaultPassword):
-    return client.post(
-        "/auth/register", json={"email": email, "password": password, "displayName": "Anna"}
-    )
-
-
-def authorizationHeader(accessToken: str) -> dict[str, str]:
-    return {"Authorization": f"Bearer {accessToken}"}
+from tests.helpers import authorizationHeader, defaultEmail, defaultPassword, registerUser
 
 
 def test_healthEndpointReportsOk(client: TestClient) -> None:

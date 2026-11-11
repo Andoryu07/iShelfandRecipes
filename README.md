@@ -48,14 +48,16 @@ Access tokens are valid for 30 minutes. Refresh tokens are valid for 60 days and
 
 | Endpoint | Purpose | Status |
 | --- | --- | --- |
-| `POST /households` | Create a household; the creator becomes the owner, default storage locations (fridge, freezer, pantry) are created and predefined recipes are copied | planned |
-| `GET /households` | Households of the current user | planned |
-| `GET /households/{householdId}` | Household detail | planned |
-| `PATCH /households/{householdId}` | Rename the household (owner) | planned |
-| `POST /households/join` | Join a household with an invite code | planned |
-| `POST /households/{householdId}/invite-code` | Generate a new invite code (owner) | planned |
-| `GET /households/{householdId}/members` | List members | planned |
-| `DELETE /households/{householdId}/members/{userId}` | Remove a member (owner) or leave the household (self) | planned |
+| `POST /households` | Create a household; the creator becomes the owner, default storage locations (fridge, freezer, pantry) are created and predefined recipes are copied | done |
+| `GET /households` | Households of the current user | done |
+| `GET /households/{householdId}` | Household detail | done |
+| `PATCH /households/{householdId}` | Rename the household (owner) | done |
+| `POST /households/join` | Join a household with an invite code | done |
+| `POST /households/{householdId}/invite-code` | Generate a new invite code (owner) | done |
+| `GET /households/{householdId}/members` | List members | done |
+| `DELETE /households/{householdId}/members/{userId}` | Remove a member (owner) or leave the household (self) | done |
+
+A user who is not a member of the household gets `404`. Invite codes have 8 characters without easily confused ones (`K7PX-M4QR`); case, spaces and hyphens are ignored when joining. Every member sees the code, only the owner can replace it, which invalidates the old one. When a member leaves or is removed, their active reservations are cancelled. When the owner leaves, the longest-standing member becomes the owner; when the last member leaves, the household and all its data are deleted. Default storage locations have English names, the client translates them by their kind.
 
 ### Storage locations
 
