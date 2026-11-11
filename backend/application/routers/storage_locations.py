@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Response, status
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from application.database import getDatabaseSession
@@ -33,6 +33,30 @@ def getAccessibleStorageLocation(
     if storageLocation is None or findMembership(session, user.id, storageLocation.householdId) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Storage location not found")
     return storageLocation
+
+
+def moveUsedUpStockItems(session: Session, storageLocation: StorageLocation) -> None:
+    hasStockItems = session.scalar(
+        select(StockItem.id).where(StockItem.storageLocationId == storageLocation.id).limit(1)
+    )
+    if hasStockItems is None:
+        return
+    replacementStorageLocationId = session.scalar(
+        select(StorageLocation.id)
+        .where(StorageLocation.householdId == storageLocation.householdId, StorageLocation.id != storageLocation.id)
+        .order_by(StorageLocation.id)
+        .limit(1)
+    )
+    if replacementStorageLocationId is None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="The last storage location cannot be deleted while it keeps stock history",
+        )
+    session.execute(
+        update(StockItem)
+        .where(StockItem.storageLocationId == storageLocation.id)
+        .values(storageLocationId=replacementStorageLocationId)
+    )
 
 
 @router.get("/households/{householdId}/storage-locations", response_model=list[StorageLocationResponse])
@@ -90,6 +114,7 @@ def deleteStorageLocation(
     )
     if remainingStockItemId is not None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Storage location still contains food")
+    moveUsedUpStockItems(session, storageLocation)
     session.delete(storageLocation)
     session.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)

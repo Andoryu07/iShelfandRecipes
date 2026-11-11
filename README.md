@@ -68,7 +68,7 @@ A user who is not a member of the household gets `404`. Invite codes have 8 char
 | `PATCH /storage-locations/{storageLocationId}` | Rename or change the kind | done |
 | `DELETE /storage-locations/{storageLocationId}` | Delete an empty storage location | done |
 
-Every member of the household can manage storage locations. A storage location that still holds food (remaining quantity above zero) cannot be deleted.
+Every member of the household can manage storage locations. A storage location that still holds food (remaining quantity above zero) cannot be deleted. Used-up stock items of a deleted location are moved to another storage location of the household, so their history is kept; the last storage location with such history cannot be deleted.
 
 ### Foods
 

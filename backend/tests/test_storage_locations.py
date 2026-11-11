@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from fastapi.testclient import TestClient
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from application.models import Food, StockItem
@@ -99,10 +100,33 @@ def test_storageLocationWithFoodCannotBeDeleted(client: TestClient, databaseSess
     assert len(listStorageLocations(client, annaHeaders, household["id"])) == 3
 
 
-def test_storageLocationWithOnlyUsedUpFoodCanBeDeleted(client: TestClient, databaseSession: Session) -> None:
+def test_deletingStorageLocationMovesUsedUpFoodToAnotherLocation(
+    client: TestClient, databaseSession: Session
+) -> None:
     annaHeaders = registerAndAuthorize(client, "anna@example.com", "Anna")
     household = createHousehold(client, annaHeaders)
-    fridgeId = listStorageLocations(client, annaHeaders, household["id"])[0]["id"]
-    addStockItem(databaseSession, household["id"], fridgeId, quantity=0)
+    fridgeId, freezerId, pantryId = [
+        location["id"] for location in listStorageLocations(client, annaHeaders, household["id"])
+    ]
+    addStockItem(databaseSession, household["id"], freezerId, quantity=0)
 
+    assert client.delete(f"/storage-locations/{freezerId}", headers=annaHeaders).status_code == 204
+
+    databaseSession.expire_all()
+    assert databaseSession.scalar(select(StockItem.storageLocationId)) == fridgeId
+
+
+def test_lastStorageLocationWithStockHistoryCannotBeDeleted(client: TestClient, databaseSession: Session) -> None:
+    annaHeaders = registerAndAuthorize(client, "anna@example.com", "Anna")
+    household = createHousehold(client, annaHeaders)
+    fridgeId, freezerId, pantryId = [
+        location["id"] for location in listStorageLocations(client, annaHeaders, household["id"])
+    ]
+    addStockItem(databaseSession, household["id"], pantryId, quantity=0)
     assert client.delete(f"/storage-locations/{fridgeId}", headers=annaHeaders).status_code == 204
+    assert client.delete(f"/storage-locations/{freezerId}", headers=annaHeaders).status_code == 204
+
+    response = client.delete(f"/storage-locations/{pantryId}", headers=annaHeaders)
+
+    assert response.status_code == 409
+    assert databaseSession.scalar(select(func.count()).select_from(StockItem)) == 1
