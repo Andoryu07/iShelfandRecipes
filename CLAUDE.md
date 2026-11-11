@@ -50,6 +50,6 @@ The full data model is in `docs/databaseDesign.md`. Project documents (design, f
 
 ## Status
 
-Done: repository, docker compose, database models and migration, authentication with refresh tokens, tests.
+Done: repository, docker compose, database models and migration, authentication with refresh tokens, tests, list of REST endpoints in the README.
 
-Next (see the schedule in `docs/`): list of REST endpoints in the README, wireframes, then households with invite codes, storage locations, the PWA skeleton and manual stock items.
+Next (see the schedule in `docs/`): wireframes, then households with invite codes, storage locations, the PWA skeleton and manual stock items.
