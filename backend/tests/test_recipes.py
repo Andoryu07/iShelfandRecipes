@@ -292,3 +292,82 @@ def test_priceFallsBackToTheSameKindOnlyForGenericIngredients(client: TestClient
     assert ingredientFor(availability, "Mléko polotučné")["estimatedPrice"] == 15
     assert ingredientFor(availability, "Mouka hladká")["estimatedPrice"] is None
     assert availability["estimatedPrice"] == 15
+
+
+def stockQuantities(kitchen: Kitchen) -> dict[int, float]:
+    items = kitchen.client.get(f"/households/{kitchen.householdId}/stock-items", headers=kitchen.anna).json()
+    return {item["id"]: item["quantity"] for item in items}
+
+
+def test_cookingUsesOwnRecipeReservationsFirstThenEarliestFreeStock(client: TestClient) -> None:
+    kitchen = Kitchen(client)
+    milk = kitchen.food("Mléko", "Mléko")
+    salt = kitchen.food("Sůl", "Sůl", baseUnit="gram")
+    soon = kitchen.stock(milk, 300, "2026-12-01")
+    later = kitchen.stock(milk, 1000, "2026-12-30")
+    reservedLater = kitchen.stock(milk, 1000, "2027-01-30")
+    recipeId = kitchen.recipe(
+        [{"foodId": milk, "quantity": 800}, {"foodId": salt, "quantity": 5, "isOptional": True}]
+    ).json()["id"]
+    reservation = client.post(
+        f"/households/{kitchen.householdId}/reservations",
+        json={"stockItemId": reservedLater, "quantity": 600, "recipeId": recipeId},
+        headers=kitchen.anna,
+    ).json()
+
+    response = client.post(f"/recipes/{recipeId}/cook", json={}, headers=kitchen.anna)
+
+    assert response.status_code == 200
+    cooked = {item["food"]["name"]: item for item in response.json()["ingredients"]}
+    assert (cooked["Mléko"]["deductedQuantity"], cooked["Mléko"]["missingQuantity"]) == (800, 0)
+    assert (cooked["Sůl"]["deductedQuantity"], cooked["Sůl"]["missingQuantity"]) == (0, 0)
+    assert stockQuantities(kitchen) == {soon: 100, later: 1000, reservedLater: 400}
+    reservations = client.get(f"/households/{kitchen.householdId}/reservations", headers=kitchen.anna).json()
+    assert [(entry["id"], entry["status"]) for entry in reservations] == [(reservation["id"], "fulfilled")]
+    movements = client.get(f"/stock-items/{reservedLater}/movements", headers=kitchen.anna).json()
+    assert [(movement["reason"], movement["quantityChange"]) for movement in movements] == [("cooked", -600)]
+
+
+def test_cookingNeverTakesFoodReservedByOthersOrForOtherRecipes(client: TestClient) -> None:
+    kitchen = Kitchen(client)
+    petr = registerAndAuthorize(client, "petr@example.com", "Petr")
+    joinHousehold(client, petr, kitchen.inviteCode)
+    milk = kitchen.food("Mléko", "Mléko")
+    stockItemId = kitchen.stock(milk, 1000)
+    pancakes = kitchen.recipe([{"foodId": milk, "quantity": 800}]).json()["id"]
+    omelette = kitchen.recipe([{"foodId": milk, "quantity": 100}], name="Omeleta").json()["id"]
+    for headers, quantity, recipeId in [(petr, 300, None), (kitchen.anna, 200, omelette), (kitchen.anna, 100, None)]:
+        client.post(
+            f"/households/{kitchen.householdId}/reservations",
+            json={"stockItemId": stockItemId, "quantity": quantity, "recipeId": recipeId},
+            headers=headers,
+        )
+
+    cooked = client.post(f"/recipes/{pancakes}/cook", json={}, headers=kitchen.anna).json()["ingredients"][0]
+
+    assert (cooked["deductedQuantity"], cooked["missingQuantity"]) == (500, 300)
+    assert stockQuantities(kitchen) == {stockItemId: 500}
+    active = client.get(
+        f"/households/{kitchen.householdId}/reservations", params={"status": "active"}, headers=kitchen.anna
+    ).json()
+    assert sorted((entry["userDisplayName"], entry["quantity"], entry["recipeId"]) for entry in active) == [
+        ("Anna", 200, omelette),
+        ("Petr", 300, None),
+    ]
+
+
+def test_cookingScalesServingsAndDeductsOptionalIngredientsWhenPresent(client: TestClient) -> None:
+    kitchen = Kitchen(client)
+    milk = kitchen.food("Mléko", "Mléko")
+    salt = kitchen.food("Sůl", "Sůl", baseUnit="gram")
+    milkItem = kitchen.stock(milk, 1000)
+    saltItem = kitchen.stock(salt, 3)
+    recipeId = kitchen.recipe(
+        [{"foodId": milk, "quantity": 400}, {"foodId": salt, "quantity": 4, "isOptional": True}]
+    ).json()["id"]
+
+    response = client.post(f"/recipes/{recipeId}/cook", json={"servings": 2}, headers=kitchen.anna).json()
+
+    assert response["servings"] == 2
+    assert stockQuantities(kitchen) == {milkItem: 800, saltItem: 1}
+    assert client.post(f"/recipes/{recipeId}/cook", json={}, headers=registerAndAuthorize(client, "x@example.com", "X")).status_code == 404

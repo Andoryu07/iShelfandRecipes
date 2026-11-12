@@ -25,6 +25,10 @@ export function getRecipeAvailability(recipeId: number, servings: number): Promi
   return apiRequest<RecipeAvailability>(`/recipes/${recipeId}/availability?servings=${servings}`);
 }
 
+export function cookRecipe(recipeId: number, servings: number): Promise<unknown> {
+  return apiRequest<unknown>(`/recipes/${recipeId}/cook`, { method: "POST", body: { servings } });
+}
+
 export function reserveRecipeIngredients(recipeId: number, servings: number): Promise<RecipeAvailability> {
   return apiRequest<RecipeAvailability>(`/recipes/${recipeId}/reserve`, {
     method: "POST",

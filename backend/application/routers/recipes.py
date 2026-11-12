@@ -8,9 +8,12 @@ from application.database import getDatabaseSession
 from application.dependencies import getCurrentUser, getHouseholdMembership, notFoundError
 from application.foods import FoodNotFoundError, FoodResolver, buildFoodResponse
 from application.households import findMembership
-from application.models import Food, HouseholdMember, Recipe, RecipeIngredient, Reservation, StockItem, StorageLocation, User
+from application.models import Food, HouseholdMember, Recipe, RecipeIngredient, Reservation, User
 from application.recipes.availability import AvailabilityCalculator, scaledQuantity
+from application.recipes.cooking import Cook, lockHouseholdStock
 from application.schemas.recipes import (
+    CookRecipeRequest,
+    CookRecipeResponse,
     CreateRecipeRequest,
     RecipeAvailabilityResponse,
     RecipeIngredientRequest,
@@ -213,13 +216,7 @@ def reserveRecipeIngredients(
     user: User = Depends(getCurrentUser),
     session: Session = Depends(getDatabaseSession),
 ) -> RecipeAvailabilityResponse:
-    session.execute(
-        select(StockItem.id)
-        .join(StorageLocation, StorageLocation.id == StockItem.storageLocationId)
-        .where(StorageLocation.householdId == recipe.householdId, StockItem.quantity > 0)
-        .order_by(StockItem.id)
-        .with_for_update(of=StockItem)
-    )
+    lockHouseholdStock(session, recipe.householdId)
     servings = request.servings or recipe.servings
     ingredients = loadIngredients(session, [recipe.id])[recipe.id]
     calculator = AvailabilityCalculator(session, recipe.householdId, user.id)
@@ -255,3 +252,18 @@ def reserveRecipeIngredients(
     session.commit()
     ingredients = loadIngredients(session, [recipe.id])[recipe.id]
     return AvailabilityCalculator(session, recipe.householdId, user.id).calculate(recipe, ingredients, servings)
+
+
+@router.post("/recipes/{recipeId}/cook", response_model=CookRecipeResponse)
+def cookRecipe(
+    request: CookRecipeRequest,
+    recipe: Recipe = Depends(getAccessibleRecipe),
+    user: User = Depends(getCurrentUser),
+    session: Session = Depends(getDatabaseSession),
+) -> CookRecipeResponse:
+    lockHouseholdStock(session, recipe.householdId)
+    servings = request.servings or recipe.servings
+    ingredients = loadIngredients(session, [recipe.id])[recipe.id]
+    results = Cook(session, recipe, user.id).cook(ingredients, servings)
+    session.commit()
+    return CookRecipeResponse(servings=servings, ingredients=results)

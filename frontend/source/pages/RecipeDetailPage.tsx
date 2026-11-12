@@ -7,6 +7,10 @@ import {
   Button,
   Card,
   CardContent,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   IconButton,
   List,
   ListItem,
@@ -18,7 +22,13 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { deleteRecipe, getRecipe, getRecipeAvailability, reserveRecipeIngredients } from "../api/recipesApi";
+import {
+  cookRecipe,
+  deleteRecipe,
+  getRecipe,
+  getRecipeAvailability,
+  reserveRecipeIngredients,
+} from "../api/recipesApi";
 import type { IngredientAvailability } from "../api/types";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
 import { LoadingScreen } from "../components/LoadingScreen";
@@ -54,6 +64,8 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] = useState(false);
   const [isReservedMessageOpen, setIsReservedMessageOpen] = useState(false);
+  const [isCookConfirmationOpen, setIsCookConfirmationOpen] = useState(false);
+  const [isCookedMessageOpen, setIsCookedMessageOpen] = useState(false);
   const recipeQuery = useQuery({ queryKey: ["recipes", recipeId], queryFn: () => getRecipe(recipeId) });
   const recipe = recipeQuery.data;
   const currentServings = servings ?? recipe?.servings ?? 1;
@@ -71,6 +83,18 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
         queryClient.invalidateQueries({ queryKey: stockItemsQueryKey(householdId) }),
       ]);
       setIsReservedMessageOpen(true);
+    },
+  });
+  const cookMutation = useMutation({
+    mutationFn: () => cookRecipe(recipeId, currentServings),
+    onSuccess: async () => {
+      setIsCookConfirmationOpen(false);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["recipes", recipeId] }),
+        queryClient.invalidateQueries({ queryKey: ["households", householdId, "recipes"] }),
+        queryClient.invalidateQueries({ queryKey: stockItemsQueryKey(householdId) }),
+      ]);
+      setIsCookedMessageOpen(true);
     },
   });
   const deleteMutation = useMutation({
@@ -185,6 +209,9 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
         >
           {texts.recipes.reserveIngredients}
         </Button>
+        <Button variant="outlined" onClick={() => setIsCookConfirmationOpen(true)}>
+          {texts.recipes.cooked}
+        </Button>
         <Button onClick={() => setIsEditing(true)}>{texts.recipes.edit}</Button>
       </Stack>
       {reserveMutation.error && <Alert severity="error">{describeError(reserveMutation.error)}</Alert>}
@@ -255,6 +282,46 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
         confirmLabel={texts.recipes.delete}
         onConfirm={() => deleteMutation.mutate()}
         onClose={() => setIsDeleteConfirmationOpen(false)}
+      />
+      <Dialog open={isCookConfirmationOpen} onClose={() => setIsCookConfirmationOpen(false)} fullWidth>
+        <DialogTitle>{texts.recipes.cookTitle}</DialogTitle>
+        <DialogContent>
+          <Typography>{texts.recipes.cookIntroduction(currentServings)}</Typography>
+          <List dense>
+            {required.map((ingredient) => (
+              <ListItem key={ingredient.ingredientId} disableGutters>
+                <ListItemText
+                  primary={texts.recipes.cookLine(
+                    ingredient.food.name,
+                    quantityOf(
+                      ingredient,
+                      Math.min(ingredient.requiredQuantity, ingredient.availableQuantity),
+                    ),
+                  )}
+                  secondary={
+                    ingredient.missingQuantity > 0
+                      ? texts.recipes.cookMissing(quantityOf(ingredient, ingredient.missingQuantity))
+                      : null
+                  }
+                  slotProps={{ secondary: { color: "warning.dark" } }}
+                />
+              </ListItem>
+            ))}
+          </List>
+          {cookMutation.error && <Alert severity="error">{describeError(cookMutation.error)}</Alert>}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsCookConfirmationOpen(false)}>{texts.common.cancel}</Button>
+          <Button variant="contained" onClick={() => cookMutation.mutate()} disabled={cookMutation.isPending}>
+            {texts.recipes.cookConfirm}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Snackbar
+        open={isCookedMessageOpen}
+        autoHideDuration={3000}
+        onClose={() => setIsCookedMessageOpen(false)}
+        message={texts.recipes.cookDone}
       />
       <Snackbar
         open={isReservedMessageOpen}

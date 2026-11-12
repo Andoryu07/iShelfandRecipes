@@ -209,6 +209,16 @@ export const texts = {
       `odhad z ${priced} z ${total} surovin podle dřívějších účtenek`,
     priceUnknown: "Odhad ceny zatím není, nejdřív naskenuj účtenky s těmito surovinami.",
     reserveIngredients: "Rezervovat suroviny",
+    cooked: "Uvařeno",
+    cookTitle: "Odečíst suroviny ze zásob?",
+    cookIntroduction: (servings: number) =>
+      `Za ${servings} ${servings === 1 ? "porci" : servings < 5 ? "porce" : "porcí"} se ze zásob odečte:`,
+    servingCount: (servings: number) =>
+      `${servings} ${servings === 1 ? "porce" : servings < 5 ? "porce" : "porcí"}`,
+    cookLine: (name: string, quantity: string) => `${name}: ${quantity}`,
+    cookMissing: (quantity: string) => `chybí ${quantity}, odečte se jen to, co je doma`,
+    cookConfirm: "Odečíst",
+    cookDone: "Suroviny odečteny ze zásob",
     reserved: "Suroviny zarezervovány",
     edit: "Upravit",
     delete: "Smazat recept",

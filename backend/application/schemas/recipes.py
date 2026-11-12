@@ -90,3 +90,20 @@ class RecipeAvailabilityResponse(BaseModel):
 
 class ReserveRecipeRequest(BaseModel):
     servings: Servings | None = None
+
+
+class CookRecipeRequest(BaseModel):
+    servings: Servings | None = None
+
+
+class CookedIngredientResponse(BaseModel):
+    ingredientId: int
+    food: FoodResponse
+    isOptional: bool
+    deductedQuantity: QuantityValue
+    missingQuantity: QuantityValue
+
+
+class CookRecipeResponse(BaseModel):
+    servings: int
+    ingredients: list[CookedIngredientResponse]

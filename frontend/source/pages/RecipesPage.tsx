@@ -70,7 +70,7 @@ function RecipeList({ householdId }: { householdId: number }) {
               primary={recipe.name}
               secondary={[
                 recipe.preparationMinutes ? texts.recipes.minutes(recipe.preparationMinutes) : null,
-                `${recipe.servings} ${texts.recipes.servings.toLowerCase()}`,
+                texts.recipes.servingCount(recipe.servings),
               ]
                 .filter(Boolean)
                 .join(" · ")}
