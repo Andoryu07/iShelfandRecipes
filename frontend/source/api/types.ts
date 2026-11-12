@@ -172,3 +172,66 @@ export interface Reservation {
   status: "active" | "fulfilled" | "cancelled";
   createdAt: string;
 }
+
+export interface RecipeSummary {
+  id: number;
+  name: string;
+  servings: number;
+  preparationMinutes: number | null;
+  isPredefined: boolean;
+  missingCount: number;
+  createdAt: string;
+}
+
+export interface RecipeIngredient {
+  id: number;
+  food: Food;
+  quantity: number;
+  acceptsAnyOfKind: boolean;
+  isOptional: boolean;
+}
+
+export interface Recipe extends RecipeSummary {
+  instructions: string;
+  ingredients: RecipeIngredient[];
+}
+
+export interface IngredientAvailability {
+  ingredientId: number;
+  food: Food;
+  acceptsAnyOfKind: boolean;
+  isOptional: boolean;
+  requiredQuantity: number;
+  availableQuantity: number;
+  missingQuantity: number;
+  reservedForRecipe: number;
+  reservedByOthers: number;
+}
+
+export interface RecipeAvailability {
+  recipeId: number;
+  servings: number;
+  missingCount: number;
+  ingredients: IngredientAvailability[];
+}
+
+export interface RecipeIngredientRequest {
+  foodId: number | null;
+  newFood: {
+    name: string;
+    genericName: string | null;
+    category: FoodCategory;
+    baseUnit: MeasurementUnit;
+  } | null;
+  quantity: number;
+  acceptsAnyOfKind: boolean;
+  isOptional: boolean;
+}
+
+export interface RecipeRequest {
+  name: string;
+  servings: number;
+  preparationMinutes: number | null;
+  instructions: string;
+  ingredients: RecipeIngredientRequest[];
+}

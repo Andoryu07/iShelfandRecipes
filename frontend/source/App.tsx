@@ -10,11 +10,11 @@ import { AuthenticationForm } from "./pages/AuthenticationForm";
 import { HouseholdPage } from "./pages/HouseholdPage";
 import { HouseholdSetupPage } from "./pages/HouseholdSetupPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
-import { PlaceholderPage } from "./pages/PlaceholderPage";
+import { RecipeDetailPage } from "./pages/RecipeDetailPage";
+import { RecipesPage } from "./pages/RecipesPage";
 import { PrivacyPolicyPage } from "./pages/PrivacyPolicyPage";
 import { ReceiptsPage } from "./pages/ReceiptsPage";
 import { StockPage } from "./pages/StockPage";
-import { texts } from "./translations/cs";
 
 const router = createBrowserRouter([
   {
@@ -40,7 +40,8 @@ const router = createBrowserRouter([
               { path: "/", element: <Navigate to="/stock" replace /> },
               { path: "/stock", element: <StockPage /> },
               { path: "/receipts", element: <ReceiptsPage /> },
-              { path: "/recipes", element: <PlaceholderPage title={texts.navigation.recipes} /> },
+              { path: "/recipes", element: <RecipesPage /> },
+              { path: "/recipes/:recipeId", element: <RecipeDetailPage /> },
               { path: "/household", element: <HouseholdPage /> },
             ],
           },
