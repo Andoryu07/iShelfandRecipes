@@ -22,6 +22,11 @@ services:
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.8-flash}
       GEMINI_THINKING_LEVEL: ${GEMINI_THINKING_LEVEL:-low}
+      WATCHFILES_FORCE_POLLING: "true"
+    command: ["sh", "-c", "alembic upgrade head && uvicorn application.main:application --host 0.0.0.0 --port 8000 --reload"]
+    volumes:
+      - ./backend/application:/backend/application
+      - ./backend/migrations:/backend/migrations
     ports:
       - "8000:8000"
     depends_on:
@@ -49,6 +54,10 @@ services:
     environment:
       TEST_DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}_test
     command: ["pytest"]
+    volumes:
+      - ./backend/application:/backend/application
+      - ./backend/migrations:/backend/migrations
+      - ./backend/tests:/backend/tests
     depends_on:
       database:
         condition: service_healthy

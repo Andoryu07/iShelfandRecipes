@@ -8,8 +8,8 @@ from application.models.enumerations import FoodCategory, MeasurementUnit
 
 class ExtractedReceiptItem(BaseModel):
     originalText: str = Field(
-        description="The item exactly as printed on the receipt. If the item continues on the next line "
-        "(for example '2 x 24,90'), join both lines with a space."
+        description="Only the product name exactly as printed, for example 'OLIVOVÝ ŠTANGL'. Without price, "
+        "VAT letter, quantity lines like '2 x 11.90', discount lines or repeated names in brackets."
     )
     name: str = Field(
         description="A short Czech name of the product without the brand, as specific as the receipt allows, "

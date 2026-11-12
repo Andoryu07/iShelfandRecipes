@@ -8,7 +8,8 @@ from application.receipts.reading import ExtractedReceipt, ReceiptReadingError, 
 instructions = """You digitize Czech grocery receipts.
 Read every purchased line of the receipt in the image and fill in the schema.
 Rules:
-- Copy originalText character by character, do not fix typos or abbreviations.
+- Copy the product name into originalText character by character, do not fix typos or abbreviations.
+  Quantity, price and discount lines are not part of it, they go into their own fields.
 - Prices are in CZK. price is what was finally charged for the whole line, after the discount of that line.
 - A discount printed under an item belongs to that item: lower its price and fill in discount.
 - Some stores print the quantity line (for example "2 x 11.90") above the item instead of below it. Join it

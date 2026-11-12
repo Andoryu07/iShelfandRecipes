@@ -38,7 +38,10 @@ def main() -> None:
         for expanded in expandItem(item):
             quantity = f"{expanded['quantity']} {expanded['unit'].value}" if expanded["quantity"] is not None else "?"
             foodMark = "" if expanded["isFood"] else " (not food)"
-            print(f"  {expanded['name']} ({expanded['genericName']}): {quantity}, {expanded['price']} CZK{foodMark}")
+            print(
+                f"  {expanded['originalText']} -> {expanded['name']} ({expanded['genericName']}): "
+                f"{quantity}, {expanded['price']} CZK{foodMark}"
+            )
 
 
 if __name__ == "__main__":
