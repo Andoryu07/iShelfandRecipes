@@ -9,6 +9,7 @@ export interface AuthenticationState {
   logIn: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, displayName: string) => Promise<void>;
   logOut: () => Promise<void>;
+  replaceUser: (user: User) => void;
 }
 
 export const AuthenticationContext = createContext<AuthenticationState | null>(null);

@@ -62,7 +62,7 @@ export function AuthenticationProvider({ children }: { children: ReactNode }) {
   }, [signOutLocally]);
 
   const value = useMemo(
-    () => ({ status, user, logIn, register, logOut }),
+    () => ({ status, user, logIn, register, logOut, replaceUser: setUser }),
     [status, user, logIn, register, logOut],
   );
 

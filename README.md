@@ -33,6 +33,8 @@ The tests use a separate database named `<POSTGRES_DB>_test`, so development dat
 
 A progressive web app in `frontend/`: React, TypeScript, Vite, Material UI, TanStack Query and React Router. The user interface is in Czech; all texts live in `frontend/source/translations/cs.ts`. The service worker (`frontend/source/serviceWorker.ts`) precaches the app and will handle push notifications later. The same build can later be wrapped with Capacitor for Google Play and the App Store.
 
+The receipts screen takes a photo with the phone camera, shrinks it to at most 1600 px on the longer side before upload, asks for consent before the first scan and lets the user review and correct every item before saving.
+
 Installing the app on a phone needs HTTPS; plain HTTP works only on `localhost`.
 
 ## REST API

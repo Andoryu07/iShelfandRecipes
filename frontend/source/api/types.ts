@@ -85,3 +85,76 @@ export interface StockMovement {
   userDisplayName: string | null;
   createdAt: string;
 }
+
+export interface ScannedReceiptItem {
+  originalText: string;
+  name: string;
+  genericName: string | null;
+  category: FoodCategory;
+  isFood: boolean;
+  quantity: number | null;
+  unit: MeasurementUnit | null;
+  price: number;
+  discount: number;
+  suggestedFood: Food | null;
+}
+
+export interface ScannedReceipt {
+  storeName: string | null;
+  purchasedOn: string | null;
+  totalAmount: number | null;
+  itemsSum: number;
+  itemsSumMatchesTotal: boolean;
+  processingMilliseconds: number;
+  items: ScannedReceiptItem[];
+}
+
+export interface SaveReceiptItem {
+  originalText: string;
+  name: string;
+  category: FoodCategory;
+  quantity: number | null;
+  unit: MeasurementUnit | null;
+  price: number;
+  discount: number;
+  correctedByUser: boolean;
+  foodId: number | null;
+  newFood: {
+    name: string;
+    genericName: string | null;
+    category: FoodCategory;
+    baseUnit: MeasurementUnit;
+  } | null;
+  addToStock: boolean;
+  storageLocationId: number | null;
+  expirationDate: string | null;
+}
+
+export interface ReceiptSummary {
+  id: number;
+  storeName: string | null;
+  purchasedOn: string;
+  totalAmount: number;
+  itemsSumMatchesTotal: boolean;
+  itemCount: number;
+  uploadedByDisplayName: string | null;
+  createdAt: string;
+}
+
+export interface ReceiptItem {
+  id: number;
+  originalText: string;
+  name: string;
+  category: FoodCategory;
+  quantity: number | null;
+  unit: MeasurementUnit | null;
+  price: number;
+  discount: number;
+  correctedByUser: boolean;
+  foodId: number | null;
+  stockItemId: number | null;
+}
+
+export interface Receipt extends ReceiptSummary {
+  items: ReceiptItem[];
+}

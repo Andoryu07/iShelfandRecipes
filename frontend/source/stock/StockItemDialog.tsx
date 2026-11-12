@@ -152,7 +152,7 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
             >
               {texts.stock.spoiledAll}
             </Button>
-            <Stack direction="row" spacing={1}>
+            <Stack direction="row" spacing={1} useFlexGap>
               <Button sx={{ flex: 1 }} onClick={() => setMode("writeOff")}>
                 {texts.stock.writeOffPart}
               </Button>

@@ -1,6 +1,5 @@
 import {
   Alert,
-  Autocomplete,
   Button,
   Dialog,
   DialogActions,
@@ -8,25 +7,24 @@ import {
   DialogTitle,
   MenuItem,
   TextField,
-  Typography,
 } from "@mui/material";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useDeferredValue, useState, type FormEvent } from "react";
-import { createFood, createStockItem, searchFoods } from "../api/stockApi";
-import {
-  foodCategories,
-  type Food,
-  type FoodCategory,
-  type MeasurementUnit,
-  type StorageLocation,
-} from "../api/types";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, type FormEvent } from "react";
+import { createFood, createStockItem } from "../api/stockApi";
+import type { StorageLocation } from "../api/types";
 import { describeError } from "../errorMessages";
 import { displayStorageLocationName, texts } from "../translations/cs";
+import {
+  baseUnitOf,
+  FoodPicker,
+  isNewFood,
+  NewFoodFields,
+  newFoodRequest,
+  type FoodChoice,
+} from "./FoodPicker";
 import { displayUnits, parseBaseQuantity } from "./quantities";
 import { QuantityInput } from "./QuantityInput";
 import { stockItemsQueryKey } from "./stockQueries";
-
-type FoodOption = Food | { newFoodName: string };
 
 interface AddStockItemDialogProps {
   householdId: number;
@@ -35,8 +33,6 @@ interface AddStockItemDialogProps {
   onClose: () => void;
 }
 
-const measurementUnits: MeasurementUnit[] = ["gram", "milliliter", "piece"];
-
 export function AddStockItemDialog({
   householdId,
   storageLocations,
@@ -44,11 +40,7 @@ export function AddStockItemDialog({
   onClose,
 }: AddStockItemDialogProps) {
   const queryClient = useQueryClient();
-  const [foodInput, setFoodInput] = useState("");
-  const [selectedFood, setSelectedFood] = useState<FoodOption | null>(null);
-  const [newFoodCategory, setNewFoodCategory] = useState<FoodCategory>("other");
-  const [newFoodGenericName, setNewFoodGenericName] = useState("");
-  const [newFoodBaseUnit, setNewFoodBaseUnit] = useState<MeasurementUnit>("gram");
+  const [food, setFood] = useState<FoodChoice | null>(null);
   const [quantityText, setQuantityText] = useState("");
   const [unitSymbol, setUnitSymbol] = useState("g");
   const [storageLocationId, setStorageLocationId] = useState(
@@ -56,35 +48,14 @@ export function AddStockItemDialog({
   );
   const [expirationDate, setExpirationDate] = useState("");
   const [quantityError, setQuantityError] = useState<string | null>(null);
-
-  const searchText = useDeferredValue(foodInput.trim());
-  const foodsQuery = useQuery({
-    queryKey: ["households", householdId, "foods", searchText],
-    queryFn: () => searchFoods(householdId, searchText),
-    enabled: searchText.length > 0,
-  });
-  const foundFoods = foodsQuery.data ?? [];
-  const exactMatch = foundFoods.find((food) => food.name.toLowerCase() === searchText.toLowerCase());
-  const options: FoodOption[] =
-    searchText && !exactMatch ? [...foundFoods, { newFoodName: searchText }] : foundFoods;
-  const isNewFood = selectedFood !== null && "newFoodName" in selectedFood;
-  const baseUnit =
-    selectedFood === null ? null : isNewFood ? newFoodBaseUnit : (selectedFood as Food).baseUnit;
+  const baseUnit = baseUnitOf(food);
 
   const saveMutation = useMutation({
     mutationFn: async (baseQuantity: number) => {
-      const food =
-        selectedFood && "newFoodName" in selectedFood
-          ? await createFood(householdId, {
-              name: selectedFood.newFoodName,
-              genericName: newFoodGenericName.trim() || null,
-              category: newFoodCategory,
-              baseUnit: newFoodBaseUnit,
-            })
-          : (selectedFood as Food);
-      setSelectedFood(food);
+      const savedFood = isNewFood(food) ? await createFood(householdId, newFoodRequest(food)) : food!;
+      setFood(savedFood);
       return createStockItem(householdId, {
-        foodId: food.id,
+        foodId: savedFood.id,
         storageLocationId,
         quantity: baseQuantity,
         expirationDate: expirationDate || null,
@@ -99,15 +70,12 @@ export function AddStockItemDialog({
     },
   });
 
-  function selectFood(option: FoodOption | null) {
-    setSelectedFood(option);
-    const unit = option && !("newFoodName" in option) ? option.baseUnit : newFoodBaseUnit;
-    setUnitSymbol(displayUnits[unit][0].symbol);
-  }
-
-  function selectNewFoodBaseUnit(unit: MeasurementUnit) {
-    setNewFoodBaseUnit(unit);
-    setUnitSymbol(displayUnits[unit][0].symbol);
+  function changeFood(choice: FoodChoice | null) {
+    setFood(choice);
+    const unit = baseUnitOf(choice);
+    if (unit) {
+      setUnitSymbol(displayUnits[unit][0].symbol);
+    }
   }
 
   function handleSubmit(event: FormEvent) {
@@ -129,69 +97,8 @@ export function AddStockItemDialog({
       <form onSubmit={handleSubmit}>
         <DialogTitle>{texts.stock.addStockItem}</DialogTitle>
         <DialogContent>
-          <Autocomplete
-            options={options}
-            value={selectedFood}
-            inputValue={foodInput}
-            onInputChange={(_, value) => setFoodInput(value)}
-            onChange={(_, option) => selectFood(option)}
-            filterOptions={(currentOptions) => currentOptions}
-            getOptionLabel={(option) => ("newFoodName" in option ? option.newFoodName : option.name)}
-            getOptionKey={(option) => ("newFoodName" in option ? "new" : option.id)}
-            isOptionEqualToValue={(option, value) =>
-              "newFoodName" in option || "newFoodName" in value ? option === value : option.id === value.id
-            }
-            renderOption={(properties, option) => {
-              const { key, ...otherProperties } = properties;
-              return (
-                <li key={key} {...otherProperties}>
-                  {"newFoodName" in option ? texts.stock.createFoodOption(option.newFoodName) : option.name}
-                </li>
-              );
-            }}
-            noOptionsText={searchText ? texts.common.loading : texts.stock.startTyping}
-            renderInput={(parameters) => (
-              <TextField {...parameters} label={texts.stock.food} autoFocus required />
-            )}
-          />
-          {isNewFood && (
-            <>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                {texts.stock.newFoodHint}
-              </Typography>
-              <TextField
-                select
-                label={texts.stock.baseUnit}
-                value={newFoodBaseUnit}
-                onChange={(event) => selectNewFoodBaseUnit(event.target.value as MeasurementUnit)}
-              >
-                {measurementUnits.map((unit) => (
-                  <MenuItem key={unit} value={unit}>
-                    {texts.units[unit]}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <TextField
-                label={texts.stock.genericName}
-                value={newFoodGenericName}
-                onChange={(event) => setNewFoodGenericName(event.target.value)}
-                helperText={texts.stock.genericNameHint}
-                slotProps={{ htmlInput: { maxLength: 100 } }}
-              />
-              <TextField
-                select
-                label={texts.stock.category}
-                value={newFoodCategory}
-                onChange={(event) => setNewFoodCategory(event.target.value as FoodCategory)}
-              >
-                {foodCategories.map((category) => (
-                  <MenuItem key={category} value={category}>
-                    {texts.foodCategories[category]}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </>
-          )}
+          <FoodPicker householdId={householdId} value={food} onChange={changeFood} autoFocus required />
+          {isNewFood(food) && <NewFoodFields value={food} onChange={changeFood} />}
           {baseUnit && (
             <QuantityInput
               label={texts.stock.quantity}
@@ -230,7 +137,7 @@ export function AddStockItemDialog({
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose}>{texts.common.cancel}</Button>
-          <Button type="submit" variant="contained" disabled={!selectedFood || saveMutation.isPending}>
+          <Button type="submit" variant="contained" disabled={!food || saveMutation.isPending}>
             {texts.common.add}
           </Button>
         </DialogActions>

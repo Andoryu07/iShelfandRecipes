@@ -20,6 +20,10 @@ export function logOut(): Promise<void> {
   return apiRequest<void>("/auth/logout", { method: "POST" });
 }
 
+export function giveReceiptConsent(): Promise<User> {
+  return apiRequest<User>("/auth/me/receipt-consent", { method: "POST" });
+}
+
 export function getCurrentUser(): Promise<User> {
   return apiRequest<User>("/auth/me");
 }

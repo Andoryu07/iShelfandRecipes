@@ -26,7 +26,7 @@ export function QuantityInput({
 }: QuantityInputProps) {
   const units = displayUnits[baseUnit];
   return (
-    <Stack direction="row" spacing={1}>
+    <Stack direction="row" spacing={1} useFlexGap>
       <TextField
         label={label}
         value={value}

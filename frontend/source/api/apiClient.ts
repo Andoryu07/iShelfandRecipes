@@ -32,7 +32,8 @@ export function onAuthenticationLost(listener: (() => void) | null): void {
 
 async function sendRequest(path: string, options: RequestOptions): Promise<Response> {
   const headers: Record<string, string> = {};
-  if (options.body !== undefined) {
+  const isFormData = options.body instanceof FormData;
+  if (options.body !== undefined && !isFormData) {
     headers["Content-Type"] = "application/json";
   }
   if (accessToken) {
@@ -41,7 +42,12 @@ async function sendRequest(path: string, options: RequestOptions): Promise<Respo
   return fetch(`${apiBasePath}${path}`, {
     method: options.method ?? "GET",
     headers,
-    body: options.body === undefined ? undefined : JSON.stringify(options.body),
+    body:
+      options.body === undefined
+        ? undefined
+        : isFormData
+          ? (options.body as FormData)
+          : JSON.stringify(options.body),
     credentials: "same-origin",
   });
 }
