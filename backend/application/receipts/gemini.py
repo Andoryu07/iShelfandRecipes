@@ -11,6 +11,8 @@ Rules:
 - Copy originalText character by character, do not fix typos or abbreviations.
 - Prices are in CZK. price is what was finally charged for the whole line, after the discount of that line.
 - A discount printed under an item belongs to that item: lower its price and fill in discount.
+- Some stores print the quantity line (for example "2 x 11.90") above the item instead of below it. Join it
+  with the item whose price equals the quantity times the unit price.
 - Every other negative amount is a discount for the whole purchase, even without a name (for example a lone
   "-20,00" or a loyalty discount). Add it as a separate line with that negative price and isFood false.
   The items together with these discounts must add up to the total.

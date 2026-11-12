@@ -128,7 +128,7 @@ Saving sends the reviewed items; each item either names an existing food (`foodI
 
 Scanning requires the receipt consent of the current user. The photo is sent as multipart field `image` (JPEG, PNG, WebP or HEIC, at most 10 MB) and is kept only in memory. The model returns the number of identical packages on a line and the server splits them into separate items with a share of the price, so every package can get its own expiration date (at most 20 per line). The server checks the sum of the items against the total with a tolerance of 1 CZK and suggests matching foods from the household catalog.
 
-Receipts are read by Gemini, configured in `.env` (`GEMINI_API_KEY`, `GEMINI_MODEL`, `GEMINI_THINKING_LEVEL`). Automated tests never call it. To try a real receipt by hand:
+Receipts are read by Gemini, configured in `.env` (`GEMINI_API_KEY`, `GEMINI_MODEL`, `GEMINI_THINKING_LEVEL`). Automated tests never call it. To try a real receipt by hand (run `docker compose build backend` first after every `git pull`, the image contains the code):
 
 ```
 docker compose run --rm -v ./receipt.jpg:/receipt.jpg backend python -m application.receipts.try_receipt /receipt.jpg
