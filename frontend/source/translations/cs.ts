@@ -199,6 +199,85 @@ export const texts = {
     cooked: "Uvařeno",
     correction: "Oprava",
   } satisfies Record<StockMovementReason, string>,
+  account: {
+    title: "Účet",
+    privacyPolicy: "Zásady ochrany soukromí",
+    withdrawConsent: "Odvolat souhlas se skenováním účtenek",
+    withdrawConsentConfirmation:
+      "Další účtenky už nepůjde skenovat, dokud souhlas znovu neudělíš. Už uložené položky zůstanou. Pokračovat?",
+    consentWithdrawn: "Souhlas odvolán",
+    deleteAccount: "Smazat účet",
+    deleteAccountTitle: "Smazat účet natrvalo",
+    deleteAccountText:
+      "Smaže se tvůj účet, rezervace a přihlášení na všech zařízeních. Zásoby a účtenky zůstanou domácnosti bez tvého jména. Pokud jsi poslední člen, smaže se i celá domácnost. Tuto akci nejde vrátit.",
+    confirmationWord: "SMAZAT",
+    typeConfirmation: "Pro potvrzení napiš SMAZAT",
+    password: "Heslo",
+    incorrectPassword: "Nesprávné heslo.",
+  },
+  registrationConsent: "Registrací souhlasíš se",
+  registrationConsentLink: "zásadami ochrany soukromí",
+  privacyPolicy: {
+    title: "Zásady ochrany soukromí",
+    effectiveFrom: "Účinné od 12. 11. 2026",
+    back: "Zpět",
+    sections: [
+      {
+        heading: "Kdo data zpracovává",
+        paragraphs: [
+          "Správcem osobních údajů aplikace iShelf a recepty je Ondřej Líška, e-mail liskaondra2@gmail.com. Na tento e-mail se můžeš obrátit s jakýmkoli dotazem nebo žádostí týkající se tvých údajů.",
+        ],
+      },
+      {
+        heading: "Jaké údaje ukládáme a proč",
+        paragraphs: [
+          "Účet: e-mail, jméno, které zadáš, a heslo uložené pouze jako bezpečný otisk (hash), ze kterého nejde zpětně zjistit.",
+          "Domácnost: název domácnosti, její členy, místa uložení, potraviny, zásoby, jejich úbytky a rezervace.",
+          "Účtenky: obchod, datum, celková částka a přečtené položky s cenami.",
+          "Tyto údaje potřebujeme k tomu, aby aplikace fungovala (plnění smlouvy). Nepoužíváme je k reklamě a neprodáváme je.",
+        ],
+      },
+      {
+        heading: "Skenování účtenek",
+        paragraphs: [
+          "Když vyfotíš nebo nahraješ účtenku, odešleme fotku nebo PDF ke zpracování službě Google Gemini, která z ní přečte položky. Používáme placenou úroveň této služby, u které Google podle svých podmínek odeslaná data nepoužívá k trénování svých modelů.",
+          "Fotku ani PDF nikde neukládáme, zpracují se jen v paměti a hned se zahodí. Uloží se pouze položky, které na obrazovce kontroly potvrdíš.",
+          "Skenování je možné jen s tvým souhlasem, který udělíš před první účtenkou. Souhlas můžeš kdykoli odvolat na stránce Domácnost. Už uložené položky tím zůstanou zachované.",
+        ],
+      },
+      {
+        heading: "Kdo údaje vidí",
+        paragraphs: [
+          "Členové tvé domácnosti vidí sdílené zásoby, účtenky, rezervace a jména ostatních členů. E-maily ostatních členů nevidí nikdo z domácnosti.",
+          "Údaje jsou uložené na serverech v Evropské unii. Kromě služby Google Gemini pro čtení účtenek je nepředáváme nikomu dalšímu.",
+        ],
+      },
+      {
+        heading: "Jak dlouho údaje uchováváme",
+        paragraphs: [
+          "Údaje uchováváme, dokud máš účet. Přihlášení na zařízení vyprší nejpozději po 60 dnech, kdy aplikaci nepoužíváš.",
+          "Po smazání účtu se smaže tvůj účet, rezervace a přihlášení. Zásoby, úbytky a účtenky zůstanou domácnosti, ale už bez vazby na tebe. Pokud jsi poslední člen domácnosti, smaže se celá domácnost se všemi daty.",
+        ],
+      },
+      {
+        heading: "Tvoje práva",
+        paragraphs: [
+          "Máš právo na přístup ke svým údajům, jejich opravu a výmaz, na omezení zpracování, na přenositelnost a na odvolání souhlasu. Účet můžeš kdykoli smazat sám na stránce Domácnost, ostatní žádosti pošli na uvedený e-mail.",
+          "Pokud si myslíš, že s údaji nakládáme v rozporu se zákonem, můžeš podat stížnost u Úřadu pro ochranu osobních údajů (www.uoou.gov.cz).",
+        ],
+      },
+      {
+        heading: "Cookies",
+        paragraphs: [
+          "Používáme jedinou cookie, která je nutná pro přihlášení. Nepoužíváme reklamní ani analytické cookies.",
+        ],
+      },
+      {
+        heading: "Věk",
+        paragraphs: ["Aplikace je určena uživatelům starším 15 let."],
+      },
+    ],
+  },
   notFound: "Tato stránka neexistuje.",
 };
 

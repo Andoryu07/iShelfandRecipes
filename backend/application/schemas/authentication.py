@@ -22,6 +22,10 @@ class LoginRequest(BaseModel):
     password: str = Field(max_length=128)
 
 
+class DeleteAccountRequest(BaseModel):
+    password: str = Field(max_length=128)
+
+
 class TokenResponse(BaseModel):
     accessToken: str
     tokenType: str = "bearer"

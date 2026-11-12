@@ -87,6 +87,14 @@ export function AuthenticationForm({ mode }: { mode: "logIn" | "register" }) {
           {isRegistration ? texts.authentication.register : texts.authentication.logIn}
         </Button>
       </form>
+      {isRegistration && (
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 2, textAlign: "center" }}>
+          {texts.registrationConsent}{" "}
+          <Link component={RouterLink} to="/privacy">
+            {texts.registrationConsentLink}
+          </Link>
+        </Typography>
+      )}
       <Link
         component={RouterLink}
         to={isRegistration ? "/login" : "/register"}

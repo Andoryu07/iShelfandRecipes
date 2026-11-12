@@ -6,6 +6,7 @@ import { listMembers, removeMember } from "../api/householdsApi";
 import type { Household, User } from "../api/types";
 import { useAuthentication } from "../authentication/AuthenticationContext";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
+import { AccountSection } from "../households/AccountSection";
 import { InviteCodeCard } from "../households/InviteCodeCard";
 import { MembersSection, membersQueryKey } from "../households/MembersSection";
 import { StorageLocationsSection } from "../households/StorageLocationsSection";
@@ -44,6 +45,7 @@ function HouseholdDetails({ household, user }: { household: Household; user: Use
       <InviteCodeCard household={household} />
       <MembersSection household={household} currentUserId={user.id} />
       <StorageLocationsSection householdId={household.id} />
+      <AccountSection />
       <Stack className="section" spacing={1} sx={{ alignItems: "flex-start" }}>
         <Button
           color="error"

@@ -12,12 +12,14 @@ import {
   List,
   ListItemButton,
   ListItemText,
+  Link,
   Snackbar,
   Stack,
   Typography,
 } from "@mui/material";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRef, useState, type ChangeEvent } from "react";
+import { Link as RouterLink } from "react-router";
 import { giveReceiptConsent } from "../api/authenticationApi";
 import { listReceipts, scanReceipt } from "../api/receiptsApi";
 import type { ScannedReceipt } from "../api/types";
@@ -183,6 +185,9 @@ function Receipts({ householdId }: { householdId: number }) {
         <DialogTitle>{texts.receipts.consentTitle}</DialogTitle>
         <DialogContent>
           <DialogContentText>{texts.receipts.consentText}</DialogContentText>
+          <Link component={RouterLink} to="/privacy" sx={{ display: "inline-block", mt: 1 }}>
+            {texts.account.privacyPolicy}
+          </Link>
           {consentMutation.error && <Alert severity="error">{describeError(consentMutation.error)}</Alert>}
         </DialogContent>
         <DialogActions>

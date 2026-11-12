@@ -14,8 +14,10 @@ from application.authentication import (
 )
 from application.database import getDatabaseSession
 from application.dependencies import getCurrentUser
-from application.models import User
+from application.households import removeMember
+from application.models import HouseholdMember, User
 from application.schemas.authentication import (
+    DeleteAccountRequest,
     LoginRequest,
     RegisterRequest,
     TokenResponse,
@@ -107,6 +109,33 @@ def buildUserResponse(user: User) -> UserResponse:
 
 @router.get("/me", response_model=UserResponse)
 def getMe(user: User = Depends(getCurrentUser)) -> UserResponse:
+    return buildUserResponse(user)
+
+
+@router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
+def deleteAccount(
+    request: DeleteAccountRequest,
+    user: User = Depends(getCurrentUser),
+    session: Session = Depends(getDatabaseSession),
+) -> Response:
+    if not verifyPassword(request.password, user.passwordHash):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Incorrect password")
+    membership = session.scalar(select(HouseholdMember).where(HouseholdMember.userId == user.id))
+    if membership is not None:
+        removeMember(session, membership)
+    session.delete(user)
+    session.commit()
+    response = Response(status_code=status.HTTP_204_NO_CONTENT)
+    deleteRefreshTokenCookie(response)
+    return response
+
+
+@router.delete("/me/receipt-consent", response_model=UserResponse)
+def withdrawReceiptConsent(
+    user: User = Depends(getCurrentUser), session: Session = Depends(getDatabaseSession)
+) -> UserResponse:
+    user.receiptConsentGivenAt = None
+    session.commit()
     return buildUserResponse(user)
 
 

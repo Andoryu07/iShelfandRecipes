@@ -11,6 +11,7 @@ import { HouseholdPage } from "./pages/HouseholdPage";
 import { HouseholdSetupPage } from "./pages/HouseholdSetupPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
+import { PrivacyPolicyPage } from "./pages/PrivacyPolicyPage";
 import { ReceiptsPage } from "./pages/ReceiptsPage";
 import { StockPage } from "./pages/StockPage";
 import { texts } from "./translations/cs";
@@ -47,6 +48,7 @@ const router = createBrowserRouter([
       },
     ],
   },
+  { path: "/privacy", element: <PrivacyPolicyPage /> },
   { path: "*", element: <NotFoundPage /> },
 ]);
 

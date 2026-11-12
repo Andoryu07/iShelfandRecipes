@@ -35,6 +35,8 @@ A progressive web app in `frontend/`: React, TypeScript, Vite, Material UI, TanS
 
 The receipts screen takes a photo with the phone camera, shrinks it to at most 1600 px on the longer side before upload, asks for consent before the first scan and lets the user review and correct every item before saving.
 
+The privacy policy is a public page at `/privacy` (text in `frontend/source/translations/cs.ts`), linked from registration, the receipt consent and the household screen, where the user can also withdraw the consent and delete the account.
+
 Installing the app on a phone needs HTTPS; plain HTTP works only on `localhost`.
 
 ## REST API
@@ -56,7 +58,10 @@ Status: **done** endpoints exist, the others are planned.
 | `GET /auth/me` | Current user | done |
 | `PATCH /auth/me` | Change the display name | planned |
 | `POST /auth/me/receipt-consent` | Record consent with sending receipts to the model | done |
-| `DELETE /auth/me` | Delete the account and all personal data | planned |
+| `DELETE /auth/me/receipt-consent` | Withdraw the consent; saved items stay | done |
+| `DELETE /auth/me` | Delete the account after confirming the password (`{"password": "..."}`) | done |
+
+Deleting an account removes the user, their reservations and sessions; stock, movements and receipts stay with the household without the link to the user, and a household whose last member leaves is deleted.
 
 Access tokens are valid for 30 minutes and the client keeps them only in memory. Refresh tokens are valid for 60 days, are replaced on every refresh and travel only in the `refreshToken` cookie (`HttpOnly`, `Secure`, `SameSite=Strict`), so scripts in the page cannot read them. Browsers accept `Secure` cookies over plain HTTP only on `localhost`; set `REFRESH_TOKEN_COOKIE_SECURE=false` in `.env` only if you must test over plain HTTP from another device.
 

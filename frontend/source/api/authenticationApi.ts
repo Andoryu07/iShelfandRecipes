@@ -27,3 +27,11 @@ export function giveReceiptConsent(): Promise<User> {
 export function getCurrentUser(): Promise<User> {
   return apiRequest<User>("/auth/me");
 }
+
+export function withdrawReceiptConsent(): Promise<User> {
+  return apiRequest<User>("/auth/me/receipt-consent", { method: "DELETE" });
+}
+
+export function deleteAccount(password: string): Promise<void> {
+  return apiRequest<void>("/auth/me", { method: "DELETE", body: { password } });
+}
