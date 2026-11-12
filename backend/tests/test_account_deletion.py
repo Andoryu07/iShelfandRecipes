@@ -1,10 +1,21 @@
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
 from fastapi.testclient import TestClient
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from application.models import Household, Receipt, RefreshToken, Reservation, StockItem, StockMovement, User
+from application.accounts import purgeAccountsPendingDeletion
+from application.models import (
+    Household,
+    PushSubscription,
+    Receipt,
+    RefreshToken,
+    Reservation,
+    StockItem,
+    StockMovement,
+    User,
+)
 from tests.helpers import createHousehold, defaultPassword, joinHousehold, registerAndAuthorize
 from tests.test_foods import createFood
 
@@ -26,15 +37,58 @@ def test_wrongPasswordKeepsTheAccount(client: TestClient, databaseSession: Sessi
     assert count(databaseSession, User) == 1
 
 
-def test_deletingTheLastMemberDeletesTheHouseholdAndSignsOut(client: TestClient, databaseSession: Session) -> None:
+def purgeLater(session: Session, days: int = 15) -> int:
+    return purgeAccountsPendingDeletion(session, datetime.now(timezone.utc) + timedelta(days=days))
+
+
+def test_deletionIsScheduledAndSignsOutEverywhere(client: TestClient, databaseSession: Session) -> None:
     headers = registerAndAuthorize(client, "anna@example.com", "Anna")
-    createHousehold(client, headers)
+    householdId = createHousehold(client, headers)["id"]
+    client.post(
+        "/push-subscriptions",
+        json={"endpoint": "https://push.example/1", "keys": {"p256dh": "key", "auth": "secret"}},
+        headers=headers,
+    )
 
     response = deleteAccount(client, headers)
 
     assert response.status_code == 204
     assert client.cookies.get("refreshToken") is None
-    assert client.get("/auth/me", headers=headers).status_code == 401
+    assert client.post("/auth/refresh").status_code == 401
+    assert count(databaseSession, PushSubscription) == 0
+    assert count(databaseSession, User) == 1
+    me = client.get("/auth/me", headers=headers).json()
+    assert me["deletionScheduledAt"] is not None
+    scheduled = datetime.fromisoformat(me["deletionScheduledAt"])
+    assert timedelta(days=13, hours=23) < scheduled - datetime.now(timezone.utc) <= timedelta(days=14)
+    assert client.get(f"/households/{householdId}", headers=headers).status_code == 403
+    assert purgeLater(databaseSession, days=13) == 0
+    assert count(databaseSession, User) == 1
+
+
+def test_signingInDuringThePeriodAllowsRestoring(client: TestClient) -> None:
+    headers = registerAndAuthorize(client, "anna@example.com", "Anna")
+    householdId = createHousehold(client, headers)["id"]
+    deleteAccount(client, headers)
+
+    login = client.post("/auth/login", json={"email": "anna@example.com", "password": defaultPassword})
+    assert login.status_code == 200
+    newHeaders = {"Authorization": f"Bearer {login.json()['accessToken']}"}
+    assert client.get(f"/households/{householdId}", headers=newHeaders).status_code == 403
+
+    restored = client.post("/auth/me/restore", headers=newHeaders)
+
+    assert restored.json()["deletionScheduledAt"] is None
+    assert client.get(f"/households/{householdId}", headers=newHeaders).status_code == 200
+
+
+def test_purgingTheLastMemberDeletesTheHousehold(client: TestClient, databaseSession: Session) -> None:
+    headers = registerAndAuthorize(client, "anna@example.com", "Anna")
+    createHousehold(client, headers)
+    deleteAccount(client, headers)
+
+    assert purgeLater(databaseSession) == 1
+
     for model in (User, Household, RefreshToken):
         assert count(databaseSession, model) == 0
     assert client.post("/auth/login", json={"email": "anna@example.com", "password": defaultPassword}).status_code == 401
@@ -64,6 +118,7 @@ def test_sharedDataStaysWithTheHouseholdWithoutTheUser(client: TestClient, datab
     databaseSession.commit()
 
     assert deleteAccount(client, annaHeaders).status_code == 204
+    assert purgeLater(databaseSession) == 1
 
     members = client.get(f"/households/{householdId}/members", headers=petrHeaders).json()
     assert [(member["displayName"], member["role"]) for member in members] == [("Petr", "owner")]

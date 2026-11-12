@@ -12,7 +12,7 @@ from application.security import decodeAccessToken
 bearerScheme = HTTPBearer(auto_error=False)
 
 
-def getCurrentUser(
+def getCurrentUserEvenIfPendingDeletion(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearerScheme),
     session: Session = Depends(getDatabaseSession),
 ) -> User:
@@ -24,6 +24,12 @@ def getCurrentUser(
             detail="Not authenticated",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    return user
+
+
+def getCurrentUser(user: User = Depends(getCurrentUserEvenIfPendingDeletion)) -> User:
+    if user.deletionRequestedAt is not None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="The account is scheduled for deletion")
     return user
 
 

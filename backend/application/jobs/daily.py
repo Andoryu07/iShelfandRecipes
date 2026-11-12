@@ -1,5 +1,7 @@
 import logging
+from datetime import datetime, timezone
 
+from application.accounts import purgeAccountsPendingDeletion
 from application.configuration import getConfiguration
 from application.database import getSessionFactory
 from application.notifications.expiration import sendExpirationNotifications
@@ -11,6 +13,8 @@ logger = logging.getLogger(__name__)
 
 def runDailyJobs(sender: PushSender | None = None, force: bool = False) -> None:
     with getSessionFactory()() as session:
+        purged = purgeAccountsPendingDeletion(session, datetime.now(timezone.utc))
+        logger.info("Deleted %d accounts after the deletion period", purged)
         if getConfiguration().vapidPrivateKey:
             notified = sendExpirationNotifications(
                 session, sender or WebPushSender(), todayInHouseholdTimeZone(), force=force

@@ -32,6 +32,10 @@ export function withdrawReceiptConsent(): Promise<User> {
   return apiRequest<User>("/auth/me/receipt-consent", { method: "DELETE" });
 }
 
+export function restoreAccount(): Promise<User> {
+  return apiRequest<User>("/auth/me/restore", { method: "POST" });
+}
+
 export function deleteAccount(password: string): Promise<void> {
   return apiRequest<void>("/auth/me", { method: "DELETE", body: { password } });
 }

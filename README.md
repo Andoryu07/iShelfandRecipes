@@ -59,9 +59,10 @@ Status: **done** endpoints exist, the others are planned.
 | `PATCH /auth/me` | Change the display name | planned |
 | `POST /auth/me/receipt-consent` | Record consent with sending receipts to the model | done |
 | `DELETE /auth/me/receipt-consent` | Withdraw the consent; saved items stay | done |
-| `DELETE /auth/me` | Delete the account after confirming the password (`{"password": "..."}`) | done |
+| `DELETE /auth/me` | Schedule the account for deletion after confirming the password (`{"password": "..."}`) | done |
+| `POST /auth/me/restore` | Cancel a scheduled deletion | done |
 
-Deleting an account removes the user, their reservations and sessions; stock, movements and receipts stay with the household without the link to the user, and a household whose last member leaves is deleted.
+Deleting an account signs the user out everywhere and schedules the deletion; signing in within 14 days offers to restore the account (other endpoints answer `403` until then), and the daily job then deletes it. Deletion removes the user, their reservations and sessions; stock, movements and receipts stay with the household without the link to the user, and a household whose last member leaves is deleted.
 
 Access tokens are valid for 30 minutes and the client keeps them only in memory. Refresh tokens are valid for 60 days, are replaced on every refresh and travel only in the `refreshToken` cookie (`HttpOnly`, `Secure`, `SameSite=Strict`), so scripts in the page cannot read them. Browsers accept `Secure` cookies over plain HTTP only on `localhost`; set `REFRESH_TOKEN_COOKIE_SECURE=false` in `.env` only if you must test over plain HTTP from another device.
 
@@ -166,7 +167,7 @@ A new household gets five predefined recipes written for this project (`backend/
 | `POST /push-subscriptions` | Register a device for push notifications | done |
 | `DELETE /push-subscriptions` | Unregister a device | done |
 
-The `worker` service runs the daily jobs every day at 8:00 Prague time (and right after start if that time has passed): every household gets one summary push notification about food that expires today or in the next two days, sent to all members who switched notifications on in the household screen. A household is notified at most once a day and subscriptions the browser has cancelled are removed. The server sends only data; the service worker writes the Czech text.
+The `worker` service runs the daily jobs every day at 8:00 Prague time (and right after start if that time has passed): accounts past their 14-day deletion period are deleted and every household gets one summary push notification about food that expires today or in the next two days, sent to all members who switched notifications on in the household screen. A household is notified at most once a day and subscriptions the browser has cancelled are removed. The server sends only data; the service worker writes the Czech text.
 
 Push notifications need VAPID keys in `.env`:
 

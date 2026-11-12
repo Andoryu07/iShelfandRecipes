@@ -29,7 +29,7 @@ erDiagram
 
 ## Tables (14)
 
-- **users**: id, email (unique), password_hash, display_name, receipt_consent_given_at (nullable), created_at
+- **users**: id, email (unique), password_hash, display_name, receipt_consent_given_at (nullable), deletion_requested_at (nullable; the account is deleted 14 days later), created_at
 - **households**: id, name, invite_code (unique), expiration_notified_on (date of the last expiration notification), created_at
 - **household_members**: id, user_id, household_id, role (owner, member), joined_at. A user belongs to one household for now; several households are a premium feature.
 - **storage_locations**: id, household_id, name, kind (fridge, freezer, pantry, custom)

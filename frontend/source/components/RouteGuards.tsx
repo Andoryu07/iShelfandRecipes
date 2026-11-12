@@ -1,5 +1,6 @@
 import { Alert } from "@mui/material";
 import { Navigate, Outlet } from "react-router";
+import { AccountRestoreScreen } from "../authentication/AccountRestoreScreen";
 import { useAuthentication } from "../authentication/AuthenticationContext";
 import { describeError } from "../errorMessages";
 import { useCurrentHousehold } from "../households/useCurrentHousehold";
@@ -14,11 +15,17 @@ export function RequireSignedOut() {
 }
 
 export function RequireSignedIn() {
-  const { status } = useAuthentication();
+  const { status, user } = useAuthentication();
   if (status === "loading") {
     return <LoadingScreen />;
   }
-  return status === "signedOut" ? <Navigate to="/login" replace /> : <Outlet />;
+  if (status === "signedOut") {
+    return <Navigate to="/login" replace />;
+  }
+  if (user?.deletionScheduledAt) {
+    return <AccountRestoreScreen deletionScheduledAt={user.deletionScheduledAt} />;
+  }
+  return <Outlet />;
 }
 
 export function RequireHousehold() {

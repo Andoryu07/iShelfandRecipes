@@ -291,7 +291,10 @@ export const texts = {
     deleteAccount: "Smazat účet",
     deleteAccountTitle: "Smazat účet natrvalo",
     deleteAccountText:
-      "Smaže se tvůj účet, rezervace a přihlášení na všech zařízeních. Zásoby a účtenky zůstanou domácnosti bez tvého jména. Pokud jsi poslední člen, smaže se i celá domácnost. Tuto akci nejde vrátit.",
+      "Účet se smaže za 14 dní a hned se odhlásíš na všech zařízeních. Do té doby ho můžeš obnovit tím, že se znovu přihlásíš. Po smazání zmizí tvůj účet a rezervace, zásoby a účtenky zůstanou domácnosti bez tvého jména. Pokud jsi poslední člen, smaže se i celá domácnost.",
+    restoreTitle: "Účet je naplánovaný ke smazání",
+    restoreText: (date: string) => `Účet se trvale smaže ${date}. Chceš ho obnovit a dál aplikaci používat?`,
+    restore: "Obnovit účet",
     confirmationWord: "SMAZAT",
     typeConfirmation: "Pro potvrzení napiš SMAZAT",
     password: "Heslo",
@@ -301,7 +304,7 @@ export const texts = {
   registrationConsentLink: "zásadami ochrany soukromí",
   privacyPolicy: {
     title: "Zásady ochrany soukromí",
-    effectiveFrom: "Účinné od 12. 11. 2026",
+    effectiveFrom: "Účinné od 13. 11. 2026",
     back: "Zpět",
     sections: [
       {
@@ -338,7 +341,7 @@ export const texts = {
         heading: "Jak dlouho údaje uchováváme",
         paragraphs: [
           "Údaje uchováváme, dokud máš účet. Přihlášení na zařízení vyprší nejpozději po 60 dnech, kdy aplikaci nepoužíváš.",
-          "Po smazání účtu se smaže tvůj účet, rezervace a přihlášení. Zásoby, úbytky a účtenky zůstanou domácnosti, ale už bez vazby na tebe. Pokud jsi poslední člen domácnosti, smaže se celá domácnost se všemi daty.",
+          "Když účet smažeš, hned se odhlásíš na všech zařízeních a účet se trvale smaže po 14 dnech. Během této doby ho můžeš obnovit tím, že se znovu přihlásíš. Po smazání zmizí tvůj účet, rezervace a přihlášení. Zásoby, úbytky a účtenky zůstanou domácnosti, ale už bez vazby na tebe. Pokud jsi poslední člen domácnosti, smaže se celá domácnost se všemi daty.",
         ],
       },
       {

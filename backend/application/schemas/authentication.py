@@ -37,3 +37,4 @@ class UserResponse(BaseModel):
     email: str
     displayName: str
     receiptConsentGivenAt: datetime | None
+    deletionScheduledAt: datetime | None

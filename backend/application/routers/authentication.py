@@ -13,9 +13,9 @@ from application.authentication import (
     revokeAllRefreshTokens,
 )
 from application.database import getDatabaseSession
-from application.dependencies import getCurrentUser
-from application.households import removeMember
-from application.models import HouseholdMember, User
+from application.accounts import requestAccountDeletion, scheduledDeletionTime
+from application.dependencies import getCurrentUser, getCurrentUserEvenIfPendingDeletion
+from application.models import User
 from application.schemas.authentication import (
     DeleteAccountRequest,
     LoginRequest,
@@ -104,11 +104,21 @@ def buildUserResponse(user: User) -> UserResponse:
         email=user.email,
         displayName=user.displayName,
         receiptConsentGivenAt=user.receiptConsentGivenAt,
+        deletionScheduledAt=scheduledDeletionTime(user),
     )
 
 
 @router.get("/me", response_model=UserResponse)
-def getMe(user: User = Depends(getCurrentUser)) -> UserResponse:
+def getMe(user: User = Depends(getCurrentUserEvenIfPendingDeletion)) -> UserResponse:
+    return buildUserResponse(user)
+
+
+@router.post("/me/restore", response_model=UserResponse)
+def restoreAccount(
+    user: User = Depends(getCurrentUserEvenIfPendingDeletion), session: Session = Depends(getDatabaseSession)
+) -> UserResponse:
+    user.deletionRequestedAt = None
+    session.commit()
     return buildUserResponse(user)
 
 
@@ -120,10 +130,7 @@ def deleteAccount(
 ) -> Response:
     if not verifyPassword(request.password, user.passwordHash):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Incorrect password")
-    membership = session.scalar(select(HouseholdMember).where(HouseholdMember.userId == user.id))
-    if membership is not None:
-        removeMember(session, membership)
-    session.delete(user)
+    requestAccountDeletion(session, user)
     session.commit()
     response = Response(status_code=status.HTTP_204_NO_CONTENT)
     deleteRefreshTokenCookie(response)
