@@ -53,7 +53,7 @@ Status: **done** endpoints exist, the others are planned.
 | `POST /auth/logout` | Revoke the refresh token and clear the cookie | done |
 | `GET /auth/me` | Current user | done |
 | `PATCH /auth/me` | Change the display name | planned |
-| `POST /auth/me/receipt-consent` | Record consent with sending receipts to the model | planned |
+| `POST /auth/me/receipt-consent` | Record consent with sending receipts to the model | done |
 | `DELETE /auth/me` | Delete the account and all personal data | planned |
 
 Access tokens are valid for 30 minutes and the client keeps them only in memory. Refresh tokens are valid for 60 days, are replaced on every refresh and travel only in the `refreshToken` cookie (`HttpOnly`, `Secure`, `SameSite=Strict`), so scripts in the page cannot read them. Browsers accept `Secure` cookies over plain HTTP only on `localhost`; set `REFRESH_TOKEN_COOKIE_SECURE=false` in `.env` only if you must test over plain HTTP from another device.
@@ -119,12 +119,18 @@ The list contains only items with something left, sorted by expiration date (ite
 
 | Endpoint | Purpose | Status |
 | --- | --- | --- |
-| `POST /households/{householdId}/receipts/scan` | Upload a photo, returns extracted items and whether their sum matches the total; nothing is stored and the photo is discarded | planned |
+| `POST /households/{householdId}/receipts/scan` | Upload a photo, returns extracted items and whether their sum matches the total; nothing is stored and the photo is discarded | done |
 | `POST /households/{householdId}/receipts` | Save the confirmed items (with the original text and whether the user corrected them) and create stock items | planned |
 | `GET /households/{householdId}/receipts` | List receipts | planned |
 | `GET /receipts/{receiptId}` | Receipt detail with items | planned |
 
-Scanning requires the receipt consent of the current user.
+Scanning requires the receipt consent of the current user. The photo is sent as multipart field `image` (JPEG, PNG, WebP or HEIC, at most 10 MB) and is kept only in memory. The model returns the number of identical packages on a line and the server splits them into separate items with a share of the price, so every package can get its own expiration date (at most 20 per line). The server checks the sum of the items against the total with a tolerance of 1 CZK and suggests matching foods from the household catalog.
+
+Receipts are read by Gemini, configured in `.env` (`GEMINI_API_KEY`, `GEMINI_MODEL`, `GEMINI_THINKING_LEVEL`). Automated tests never call it. To try a real receipt by hand:
+
+```
+docker compose run --rm -v ./receipt.jpg:/receipt.jpg backend python -m application.receipts.try_receipt /receipt.jpg
+```
 
 ### Recipes
 

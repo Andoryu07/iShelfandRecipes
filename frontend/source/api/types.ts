@@ -11,6 +11,7 @@ export interface User {
   id: number;
   email: string;
   displayName: string;
+  receiptConsentGivenAt: string | null;
 }
 
 export interface Household {

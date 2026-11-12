@@ -96,6 +96,25 @@ def logout(
     return response
 
 
+def buildUserResponse(user: User) -> UserResponse:
+    return UserResponse(
+        id=user.id,
+        email=user.email,
+        displayName=user.displayName,
+        receiptConsentGivenAt=user.receiptConsentGivenAt,
+    )
+
+
 @router.get("/me", response_model=UserResponse)
 def getMe(user: User = Depends(getCurrentUser)) -> UserResponse:
-    return UserResponse(id=user.id, email=user.email, displayName=user.displayName)
+    return buildUserResponse(user)
+
+
+@router.post("/me/receipt-consent", response_model=UserResponse)
+def giveReceiptConsent(
+    user: User = Depends(getCurrentUser), session: Session = Depends(getDatabaseSession)
+) -> UserResponse:
+    if user.receiptConsentGivenAt is None:
+        user.receiptConsentGivenAt = datetime.now(timezone.utc)
+        session.commit()
+    return buildUserResponse(user)

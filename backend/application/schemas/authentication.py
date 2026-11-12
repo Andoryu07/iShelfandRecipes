@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
@@ -30,3 +32,4 @@ class UserResponse(BaseModel):
     id: int
     email: str
     displayName: str
+    receiptConsentGivenAt: datetime | None
