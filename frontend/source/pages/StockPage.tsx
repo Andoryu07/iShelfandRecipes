@@ -136,6 +136,14 @@ function StockList({ householdId }: { householdId: number }) {
                     >
                       {describeExpiration(stockItem, status)}
                     </Box>
+                    {stockItem.reservedQuantity > 0 && (
+                      <>
+                        {" · "}
+                        {texts.stock.reserved(
+                          formatQuantity(stockItem.reservedQuantity, stockItem.food.baseUnit),
+                        )}
+                      </>
+                    )}
                   </>
                 }
               />

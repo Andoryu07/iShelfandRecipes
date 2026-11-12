@@ -16,7 +16,16 @@ import {
 } from "@mui/material";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { correctStockQuantity, listStockMovements, updateStockItem, writeOffStock } from "../api/stockApi";
+import { ApiError } from "../api/apiClient";
+import {
+  cancelReservation,
+  correctStockQuantity,
+  createReservation,
+  listStockMovements,
+  updateStockItem,
+  writeOffStock,
+} from "../api/stockApi";
+import { useAuthentication } from "../authentication/AuthenticationContext";
 import type { StockItem, StorageLocation } from "../api/types";
 import { describeError } from "../errorMessages";
 import { displayStorageLocationName, formatDate, formatTimestamp, texts } from "../translations/cs";
@@ -45,7 +54,9 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
   const queryClient = useQueryClient();
   const { food } = stockItem;
   const defaultUnitSymbol = bestDisplayUnit(stockItem.quantity, food.baseUnit).symbol;
-  const [mode, setMode] = useState<"overview" | "writeOff" | "edit">("overview");
+  const { user } = useAuthentication();
+  const [mode, setMode] = useState<"overview" | "writeOff" | "edit" | "reserve">("overview");
+  const [reservationNote, setReservationNote] = useState("");
   const [quantityText, setQuantityText] = useState("");
   const [unitSymbol, setUnitSymbol] = useState(defaultUnitSymbol);
   const [writeOffReason, setWriteOffReason] = useState<WriteOffReason>("eaten");
@@ -81,6 +92,38 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
     run(() => writeOffStock(stockItem.id, writeOffReason, baseQuantity));
   }
 
+  const reservedByOthers = stockItem.reservations
+    .filter((reservation) => reservation.userId !== user?.id)
+    .reduce((sum, reservation) => sum + reservation.quantity, 0);
+  const edibleQuantity = Math.max(stockItem.quantity - reservedByOthers, 0);
+
+  function submitReservation() {
+    const baseQuantity = parseBaseQuantity(quantityText, food.baseUnit, unitSymbol);
+    if (baseQuantity === null) {
+      setInputError(texts.stock.invalidQuantity);
+      return;
+    }
+    run(() =>
+      createReservation(householdId, {
+        stockItemId: stockItem.id,
+        quantity: baseQuantity,
+        note: reservationNote.trim() || null,
+      }),
+    );
+  }
+
+  function describeActionError(error: unknown): string {
+    if (error instanceof ApiError && error.status === 409) {
+      if (mode === "reserve") {
+        return texts.stock.notEnoughFree;
+      }
+      return typeof error.detail === "string" && error.detail.includes("reserved")
+        ? texts.stock.reservedByOthers
+        : texts.stock.moreThanRemains;
+    }
+    return describeError(error);
+  }
+
   function submitEdit() {
     const changes: { storageLocationId?: number; expirationDate?: string | null } = {};
     if (storageLocationId !== stockItem.storageLocationId) {
@@ -110,8 +153,7 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
 
   const storageLocation = storageLocations.find((location) => location.id === stockItem.storageLocationId);
   const errorMessage =
-    inputError ??
-    (actionMutation.error ? describeError(actionMutation.error, { 409: texts.stock.moreThanRemains }) : null);
+    inputError ?? (actionMutation.error ? describeActionError(actionMutation.error) : null);
 
   return (
     <Dialog open onClose={onClose} fullWidth>
@@ -131,19 +173,56 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
         </Typography>
         {stockItem.reservedQuantity > 0 && (
           <Typography color="text.secondary">
-            {texts.stock.reserved(formatQuantity(stockItem.reservedQuantity, food.baseUnit))}
+            {texts.stock.reserved(formatQuantity(stockItem.reservedQuantity, food.baseUnit))} ·{" "}
+            {texts.stock.freeQuantity(formatQuantity(stockItem.availableQuantity, food.baseUnit))}
           </Typography>
+        )}
+        {stockItem.reservations.length > 0 && (
+          <List dense>
+            {stockItem.reservations.map((reservation) => (
+              <ListItem
+                key={reservation.id}
+                disableGutters
+                secondaryAction={
+                  reservation.userId === user?.id && (
+                    <Button
+                      size="small"
+                      disabled={actionMutation.isPending}
+                      onClick={() => run(() => cancelReservation(reservation.id))}
+                    >
+                      {texts.stock.cancelReservation}
+                    </Button>
+                  )
+                }
+              >
+                <ListItemText
+                  primary={texts.stock.reservationBy(
+                    reservation.userDisplayName,
+                    formatQuantity(reservation.quantity, food.baseUnit),
+                  )}
+                  secondary={reservation.note}
+                />
+              </ListItem>
+            ))}
+          </List>
         )}
 
         {mode === "overview" && (
           <Stack spacing={1} sx={{ mt: 2 }}>
             <Button
               variant="contained"
-              disabled={actionMutation.isPending}
-              onClick={() => run(() => writeOffStock(stockItem.id, "eaten", stockItem.quantity))}
+              disabled={actionMutation.isPending || edibleQuantity <= 0}
+              onClick={() => run(() => writeOffStock(stockItem.id, "eaten", edibleQuantity))}
             >
-              {texts.stock.eatenAll}
+              {edibleQuantity < stockItem.quantity && edibleQuantity > 0
+                ? `${texts.stock.eatenAll} (${formatQuantity(edibleQuantity, food.baseUnit)})`
+                : texts.stock.eatenAll}
             </Button>
+            {edibleQuantity <= 0 && (
+              <Typography variant="body2" color="text.secondary">
+                {texts.stock.allReserved}
+              </Typography>
+            )}
             <Button
               variant="outlined"
               color="warning"
@@ -160,6 +239,9 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
                 {texts.stock.editTitle}
               </Button>
             </Stack>
+            <Button onClick={() => setMode("reserve")} disabled={stockItem.availableQuantity <= 0}>
+              {texts.stock.reserve}
+            </Button>
           </Stack>
         )}
 
@@ -186,6 +268,26 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
                 </MenuItem>
               ))}
             </TextField>
+          </>
+        )}
+
+        {mode === "reserve" && (
+          <>
+            <QuantityInput
+              label={texts.stock.quantity}
+              baseUnit={food.baseUnit}
+              value={quantityText}
+              unitSymbol={unitSymbol}
+              onValueChange={setQuantityText}
+              onUnitSymbolChange={setUnitSymbol}
+              autoFocus
+            />
+            <TextField
+              label={texts.stock.reservationNote}
+              value={reservationNote}
+              onChange={(event) => setReservationNote(event.target.value)}
+              slotProps={{ htmlInput: { maxLength: 200 } }}
+            />
           </>
         )}
 
@@ -261,6 +363,11 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
         {mode === "edit" && (
           <Button variant="contained" onClick={submitEdit} disabled={actionMutation.isPending}>
             {texts.common.save}
+          </Button>
+        )}
+        {mode === "reserve" && (
+          <Button variant="contained" onClick={submitReservation} disabled={actionMutation.isPending}>
+            {texts.stock.reserve}
           </Button>
         )}
       </DialogActions>

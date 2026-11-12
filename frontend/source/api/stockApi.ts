@@ -1,5 +1,5 @@
 import { apiRequest } from "./apiClient";
-import type { Food, FoodCategory, MeasurementUnit, StockItem, StockMovement } from "./types";
+import type { Food, FoodCategory, MeasurementUnit, Reservation, StockItem, StockMovement } from "./types";
 
 export function searchFoods(householdId: number, search: string): Promise<Food[]> {
   return apiRequest<Food[]>(`/households/${householdId}/foods?${new URLSearchParams({ search })}`);
@@ -62,4 +62,18 @@ export function correctStockQuantity(stockItemId: number, newQuantity: number): 
     method: "POST",
     body: { reason: "correction", newQuantity },
   });
+}
+
+export function createReservation(
+  householdId: number,
+  reservation: { stockItemId: number; quantity: number; note: string | null },
+): Promise<Reservation> {
+  return apiRequest<Reservation>(`/households/${householdId}/reservations`, {
+    method: "POST",
+    body: reservation,
+  });
+}
+
+export function cancelReservation(reservationId: number): Promise<Reservation> {
+  return apiRequest<Reservation>(`/reservations/${reservationId}/cancel`, { method: "POST" });
 }

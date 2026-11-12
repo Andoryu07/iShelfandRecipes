@@ -75,6 +75,7 @@ export interface StockItem {
   availableQuantity: number;
   expirationDate: string | null;
   createdAt: string;
+  reservations: Reservation[];
 }
 
 export interface StockMovement {
@@ -157,4 +158,17 @@ export interface ReceiptItem {
 
 export interface Receipt extends ReceiptSummary {
   items: ReceiptItem[];
+}
+
+export interface Reservation {
+  id: number;
+  stockItemId: number;
+  foodName: string;
+  userId: number;
+  userDisplayName: string;
+  recipeId: number | null;
+  quantity: number;
+  note: string | null;
+  status: "active" | "fulfilled" | "cancelled";
+  createdAt: string;
 }
