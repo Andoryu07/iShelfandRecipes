@@ -120,9 +120,11 @@ The list contains only items with something left, sorted by expiration date (ite
 | Endpoint | Purpose | Status |
 | --- | --- | --- |
 | `POST /households/{householdId}/receipts/scan` | Upload a photo, returns extracted items and whether their sum matches the total; nothing is stored and the photo is discarded | done |
-| `POST /households/{householdId}/receipts` | Save the confirmed items (with the original text and whether the user corrected them) and create stock items | planned |
-| `GET /households/{householdId}/receipts` | List receipts | planned |
-| `GET /receipts/{receiptId}` | Receipt detail with items | planned |
+| `POST /households/{householdId}/receipts` | Save the confirmed items (with the original text and whether the user corrected them) and create stock items | done |
+| `GET /households/{householdId}/receipts` | List receipts | done |
+| `GET /receipts/{receiptId}` | Receipt detail with items | done |
+
+Saving sends the reviewed items; each item either names an existing food (`foodId`), a new one (`newFood`, reused when a food with the same name already exists) or none, and with `addToStock` also `quantity` in the food's base unit, `storageLocationId` and optionally `expirationDate`. The whole receipt is saved in one transaction, so an invalid item saves nothing.
 
 Scanning requires the receipt consent of the current user. The photo is sent as multipart field `image` (JPEG, PNG, WebP or HEIC, at most 10 MB) and is kept only in memory. The model returns the number of identical packages on a line and the server splits them into separate items with a share of the price, so every package can get its own expiration date (at most 20 per line). The server checks the sum of the items against the total with a tolerance of 1 CZK and suggests matching foods from the household catalog.
 

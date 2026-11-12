@@ -4,12 +4,14 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
 from application.database import getDatabaseSession
-from application.dependencies import getCurrentUser, getHouseholdMembership
-from application.models import HouseholdMember, User
+from application.dependencies import getCurrentUser, getHouseholdMembership, notFoundError
+from application.households import findMembership
+from application.models import HouseholdMember, Receipt, User
 from application.receipts.dependencies import getReceiptReader
 from application.receipts.reading import ReceiptReader, ReceiptReadingError
+from application.receipts.saving import buildReceiptSummary, loadReceiptResponse, receiptSummariesQuery, saveReceipt
 from application.receipts.scanning import buildScanResponse
-from application.schemas.receipts import ScanReceiptResponse
+from application.schemas.receipts import ReceiptResponse, ReceiptSummaryResponse, SaveReceiptRequest, ScanReceiptResponse
 
 router = APIRouter(tags=["receipts"])
 logger = logging.getLogger(__name__)
@@ -46,3 +48,42 @@ def scanReceipt(
         result.outputTokens,
     )
     return buildScanResponse(session, membership.householdId, result)
+
+
+@router.post("/households/{householdId}/receipts", response_model=ReceiptResponse, status_code=status.HTTP_201_CREATED)
+def createReceipt(
+    request: SaveReceiptRequest,
+    membership: HouseholdMember = Depends(getHouseholdMembership),
+    user: User = Depends(getCurrentUser),
+    session: Session = Depends(getDatabaseSession),
+) -> ReceiptResponse:
+    try:
+        receiptId = saveReceipt(session, membership.householdId, user, request)
+    except HTTPException:
+        session.rollback()
+        raise
+    session.commit()
+    return loadReceiptResponse(session, membership.householdId, receiptId)
+
+
+@router.get("/households/{householdId}/receipts", response_model=list[ReceiptSummaryResponse])
+def listReceipts(
+    membership: HouseholdMember = Depends(getHouseholdMembership),
+    session: Session = Depends(getDatabaseSession),
+) -> list[ReceiptSummaryResponse]:
+    rows = session.execute(
+        receiptSummariesQuery(membership.householdId).order_by(Receipt.purchasedOn.desc(), Receipt.id.desc())
+    ).all()
+    return [buildReceiptSummary(row.Receipt, row.displayName, row.itemCount) for row in rows]
+
+
+@router.get("/receipts/{receiptId}", response_model=ReceiptResponse)
+def getReceipt(
+    receiptId: int,
+    user: User = Depends(getCurrentUser),
+    session: Session = Depends(getDatabaseSession),
+) -> ReceiptResponse:
+    receipt = session.get(Receipt, receiptId)
+    if receipt is None or findMembership(session, user.id, receipt.householdId) is None:
+        raise notFoundError("Receipt")
+    return loadReceiptResponse(session, receipt.householdId, receiptId)
