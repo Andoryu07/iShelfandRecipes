@@ -14,6 +14,9 @@ class Configuration:
     geminiModel: str = "gemini-3.8-flash"
     geminiThinkingLevel: str = "low"
     geminiTimeoutSeconds: int = 60
+    vapidPublicKey: str | None = None
+    vapidPrivateKey: str | None = None
+    vapidSubject: str = "mailto:admin@example.com"
 
 
 @lru_cache
@@ -25,4 +28,7 @@ def getConfiguration() -> Configuration:
         geminiApiKey=os.environ.get("GEMINI_API_KEY") or None,
         geminiModel=os.environ.get("GEMINI_MODEL") or "gemini-3.8-flash",
         geminiThinkingLevel=os.environ.get("GEMINI_THINKING_LEVEL") or "low",
+        vapidPublicKey=os.environ.get("VAPID_PUBLIC_KEY") or None,
+        vapidPrivateKey=os.environ.get("VAPID_PRIVATE_KEY") or None,
+        vapidSubject=os.environ.get("VAPID_SUBJECT") or "mailto:admin@example.com",
     )

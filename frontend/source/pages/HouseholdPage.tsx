@@ -9,6 +9,7 @@ import { ConfirmationDialog } from "../components/ConfirmationDialog";
 import { AccountSection } from "../households/AccountSection";
 import { InviteCodeCard } from "../households/InviteCodeCard";
 import { MembersSection, membersQueryKey } from "../households/MembersSection";
+import { NotificationsSection } from "../households/NotificationsSection";
 import { StorageLocationsSection } from "../households/StorageLocationsSection";
 import { householdsQueryKey, useCurrentHousehold } from "../households/useCurrentHousehold";
 import { texts } from "../translations/cs";
@@ -45,6 +46,7 @@ function HouseholdDetails({ household, user }: { household: Household; user: Use
       <InviteCodeCard household={household} />
       <MembersSection household={household} currentUserId={user.id} />
       <StorageLocationsSection householdId={household.id} />
+      <NotificationsSection />
       <AccountSection />
       <Stack className="section" spacing={1} sx={{ alignItems: "flex-start" }}>
         <Button

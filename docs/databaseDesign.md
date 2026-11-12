@@ -30,7 +30,7 @@ erDiagram
 ## Tables (14)
 
 - **users**: id, email (unique), password_hash, display_name, receipt_consent_given_at (nullable), created_at
-- **households**: id, name, invite_code (unique), created_at
+- **households**: id, name, invite_code (unique), expiration_notified_on (date of the last expiration notification), created_at
 - **household_members**: id, user_id, household_id, role (owner, member), joined_at. A user belongs to one household for now; several households are a premium feature.
 - **storage_locations**: id, household_id, name, kind (fridge, freezer, pantry, custom)
 - **foods**: id, household_id, name (unique per household ignoring letter case, as specific as known, for example "Mouka hladká"), generic_name (nullable general kind, for example "Mouka"; recipes will accept any food of the same kind unless they require a specific food), category (fixed list kept in the application), base_unit (gram, milliliter, piece). Each household has its own catalog of foods.

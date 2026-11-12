@@ -263,6 +263,24 @@ export const texts = {
     cooked: "Uvařeno",
     correction: "Oprava",
   } satisfies Record<StockMovementReason, string>,
+  notifications: {
+    title: "Upozornění",
+    expirationSwitch: "Upozornění na blížící se trvanlivost",
+    description: "Každý den v 8:00 přijde souhrn potravin, kterým do 2 dnů končí trvanlivost.",
+    unsupported: "Tento prohlížeč upozornění nepodporuje. Na iPhonu je potřeba přidat aplikaci na plochu.",
+    denied: "Upozornění jsou v prohlížeči zakázaná. Povol je v nastavení prohlížeče pro tuto stránku.",
+    notConfigured: "Upozornění zatím nejsou na serveru nastavená.",
+    subscribeFailed:
+      "Tento prohlížeč teď nemůže upozornění zapnout. Zkus jiný prohlížeč nebo to zkus později.",
+    expirationTitle: (count: number) =>
+      count === 1
+        ? "1 potravina brzy projde"
+        : count < 5
+          ? `${count} potraviny brzy projdou`
+          : `${count} potravin brzy projde`,
+    daysLeft: (days: number) => (days === 0 ? "dnes" : days === 1 ? "zítra" : "pozítří"),
+    andMore: (count: number) => `a ${count} další`,
+  },
   account: {
     title: "Účet",
     privacyPolicy: "Zásady ochrany soukromí",

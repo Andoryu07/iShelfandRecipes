@@ -162,9 +162,23 @@ A new household gets five predefined recipes written for this project (`backend/
 
 | Endpoint | Purpose | Status |
 | --- | --- | --- |
-| `GET /push/public-key` | Public key for web push subscriptions | planned |
-| `POST /push-subscriptions` | Register a device for push notifications | planned |
-| `DELETE /push-subscriptions` | Unregister a device | planned |
+| `GET /push/public-key` | Public key for web push subscriptions | done |
+| `POST /push-subscriptions` | Register a device for push notifications | done |
+| `DELETE /push-subscriptions` | Unregister a device | done |
+
+The `worker` service runs the daily jobs every day at 8:00 Prague time (and right after start if that time has passed): every household gets one summary push notification about food that expires today or in the next two days, sent to all members who switched notifications on in the household screen. A household is notified at most once a day and subscriptions the browser has cancelled are removed. The server sends only data; the service worker writes the Czech text.
+
+Push notifications need VAPID keys in `.env`:
+
+```
+docker compose run --rm backend python -m application.notifications.generate_vapid_keys
+```
+
+To send today's notifications right away (ignoring the once-a-day rule):
+
+```
+docker compose run --rm backend python -m application.jobs.run_daily_jobs --force
+```
 
 ### Statistics
 

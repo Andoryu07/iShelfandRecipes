@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from sqlalchemy import DateTime, ForeignKey, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column
@@ -28,6 +28,7 @@ class Household(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
     inviteCode: Mapped[str] = mapped_column("invite_code", unique=True)
+    expirationNotifiedOn: Mapped[date | None] = mapped_column("expiration_notified_on")
     createdAt: Mapped[datetime] = mapped_column(
         "created_at", DateTime(timezone=True), server_default=func.now()
     )
