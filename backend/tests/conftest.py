@@ -57,3 +57,9 @@ def client() -> TestClient:
 def databaseSession() -> Session:
     with getSessionFactory()() as session:
         yield session
+
+
+@pytest.fixture(autouse=True)
+def predefinedRecipesOnlyWhenMarked(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch) -> None:
+    if request.node.get_closest_marker("predefinedRecipes") is None:
+        monkeypatch.setattr("application.routers.households.copyPredefinedRecipes", lambda session, householdId: None)

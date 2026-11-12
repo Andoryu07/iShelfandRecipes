@@ -29,3 +29,10 @@ class FoodResponse(BaseModel):
     genericName: str | None
     category: FoodCategory
     baseUnit: MeasurementUnit
+
+
+class NewFoodRequest(BaseModel):
+    name: FoodName
+    genericName: OptionalName | None = None
+    category: FoodCategory = FoodCategory.other
+    baseUnit: MeasurementUnit

@@ -1,0 +1,143 @@
+{
+  "foods": [
+    {"name": "Hovězí zadní", "genericName": "Hovězí maso", "category": "meatAndSausages", "baseUnit": "gram"},
+    {"name": "Hovězí kližka", "genericName": "Hovězí maso", "category": "meatAndSausages", "baseUnit": "gram"},
+    {"name": "Vepřová plec", "genericName": "Vepřové maso", "category": "meatAndSausages", "baseUnit": "gram"},
+    {"name": "Slanina", "genericName": "Slanina", "category": "meatAndSausages", "baseUnit": "gram"},
+    {"name": "Eidam", "genericName": "Sýr", "category": "dairy", "baseUnit": "gram"},
+    {"name": "Smetana ke šlehání", "genericName": "Smetana", "category": "dairy", "baseUnit": "milliliter"},
+    {"name": "Máslo", "genericName": "Máslo", "category": "dairy", "baseUnit": "gram"},
+    {"name": "Vejce", "genericName": "Vejce", "category": "other", "baseUnit": "piece"},
+    {"name": "Mrkev", "genericName": "Mrkev", "category": "vegetables", "baseUnit": "gram"},
+    {"name": "Petržel kořenová", "genericName": "Petržel", "category": "vegetables", "baseUnit": "gram"},
+    {"name": "Celer bulvový", "genericName": "Celer", "category": "vegetables", "baseUnit": "gram"},
+    {"name": "Cibule", "genericName": "Cibule", "category": "vegetables", "baseUnit": "gram"},
+    {"name": "Česnek", "genericName": "Česnek", "category": "vegetables", "baseUnit": "piece"},
+    {"name": "Brambory", "genericName": "Brambory", "category": "vegetables", "baseUnit": "gram"},
+    {"name": "Kysané zelí", "genericName": "Zelí", "category": "vegetables", "baseUnit": "gram"},
+    {"name": "Citron", "genericName": "Citron", "category": "fruit", "baseUnit": "piece"},
+    {"name": "Brusinky", "genericName": "Brusinky", "category": "canned", "baseUnit": "gram"},
+    {"name": "Mouka hladká", "genericName": "Mouka", "category": "dryGoods", "baseUnit": "gram"},
+    {"name": "Strouhanka", "genericName": "Strouhanka", "category": "bakery", "baseUnit": "gram"},
+    {"name": "Cukr krystal", "genericName": "Cukr", "category": "dryGoods", "baseUnit": "gram"},
+    {"name": "Houskový knedlík", "genericName": "Knedlík", "category": "bakery", "baseUnit": "piece"},
+    {"name": "Rajčatový protlak", "genericName": "Rajčatový protlak", "category": "canned", "baseUnit": "gram"},
+    {"name": "Hořčice", "genericName": "Hořčice", "category": "other", "baseUnit": "gram"},
+    {"name": "Olej slunečnicový", "genericName": "Olej", "category": "other", "baseUnit": "milliliter"},
+    {"name": "Sádlo", "genericName": "Sádlo", "category": "other", "baseUnit": "gram"},
+    {"name": "Ocet", "genericName": "Ocet", "category": "other", "baseUnit": "milliliter"},
+    {"name": "Tatarská omáčka", "genericName": "Tatarská omáčka", "category": "other", "baseUnit": "gram"},
+    {"name": "Paprika sladká mletá", "genericName": "Paprika mletá", "category": "spices", "baseUnit": "gram"},
+    {"name": "Kmín", "genericName": "Kmín", "category": "spices", "baseUnit": "gram"},
+    {"name": "Majoránka", "genericName": "Majoránka", "category": "spices", "baseUnit": "gram"},
+    {"name": "Bobkový list", "genericName": "Bobkový list", "category": "spices", "baseUnit": "piece"},
+    {"name": "Nové koření", "genericName": "Nové koření", "category": "spices", "baseUnit": "gram"},
+    {"name": "Pepř černý", "genericName": "Pepř", "category": "spices", "baseUnit": "gram"},
+    {"name": "Sůl", "genericName": "Sůl", "category": "spices", "baseUnit": "gram"}
+  ],
+  "recipes": [
+    {
+      "name": "Svíčková na smetaně",
+      "servings": 4,
+      "preparationMinutes": 180,
+      "ingredients": [
+        {"food": "Hovězí zadní", "quantity": 800, "acceptsAnyOfKind": false},
+        {"food": "Slanina", "quantity": 80},
+        {"food": "Mrkev", "quantity": 200},
+        {"food": "Petržel kořenová", "quantity": 100},
+        {"food": "Celer bulvový", "quantity": 100},
+        {"food": "Cibule", "quantity": 150},
+        {"food": "Máslo", "quantity": 50},
+        {"food": "Smetana ke šlehání", "quantity": 250, "acceptsAnyOfKind": false},
+        {"food": "Mouka hladká", "quantity": 30, "acceptsAnyOfKind": false},
+        {"food": "Citron", "quantity": 1},
+        {"food": "Hořčice", "quantity": 20},
+        {"food": "Houskový knedlík", "quantity": 2},
+        {"food": "Bobkový list", "quantity": 3, "isOptional": true},
+        {"food": "Nové koření", "quantity": 2, "isOptional": true},
+        {"food": "Pepř černý", "quantity": 2, "isOptional": true},
+        {"food": "Cukr krystal", "quantity": 10, "isOptional": true},
+        {"food": "Sůl", "quantity": 10, "isOptional": true},
+        {"food": "Brusinky", "quantity": 100, "isOptional": true}
+      ],
+      "instructions": "1. Maso omyj, osuš a prošpikuj nudličkami slaniny. Osol, opepři a potři hořčicí.\n2. Mrkev, petržel, celer a cibuli oloupej a nakrájej na menší kousky.\n3. Na másle v pekáči nebo širokém hrnci opeč maso ze všech stran dozlatova a vyndej ho.\n4. Na výpeku orestuj zeleninu, aby lehce zezlátla. Přidej bobkový list, nové koření a pepř.\n5. Maso polož na zeleninu, podlij asi půl litrem vody, přikryj a duste na mírném ohni nebo v troubě na 160 °C asi 2 hodiny. Podle potřeby podlévej.\n6. Měkké maso vyndej a nech ho chvíli odpočinout. Koření vylov.\n7. Zeleninu s výpekem rozmixuj dohladka. Smetanu rozmíchej s moukou, vlij do omáčky a za stálého míchání povař asi 10 minut.\n8. Omáčku dochuť citronovou šťávou, cukrem a solí, aby byla jemně sladkokyselá.\n9. Maso nakrájej na plátky přes vlákna. Podávej s omáčkou, houskovým knedlíkem, plátkem citronu a brusinkami."
+    },
+    {
+      "name": "Vepřo knedlo zelo",
+      "servings": 4,
+      "preparationMinutes": 150,
+      "ingredients": [
+        {"food": "Vepřová plec", "quantity": 1000},
+        {"food": "Sádlo", "quantity": 30},
+        {"food": "Cibule", "quantity": 200},
+        {"food": "Česnek", "quantity": 1},
+        {"food": "Kysané zelí", "quantity": 800},
+        {"food": "Mouka hladká", "quantity": 20, "acceptsAnyOfKind": false},
+        {"food": "Cukr krystal", "quantity": 20},
+        {"food": "Houskový knedlík", "quantity": 2},
+        {"food": "Kmín", "quantity": 5, "isOptional": true},
+        {"food": "Ocet", "quantity": 10, "isOptional": true},
+        {"food": "Sůl", "quantity": 15, "isOptional": true}
+      ],
+      "instructions": "1. Maso nakrájej na větší kusy, osol a posyp kmínem. Česnek oloupej a nasekej, polovinu cibule nakrájej na měsíčky.\n2. V pekáči rozpusť sádlo, vlož maso, cibuli a česnek a podlij trochou vody.\n3. Peč přikryté v troubě na 170 °C asi hodinu a půl, potom odkryj a dopeč dozlatova. Maso občas přelij výpekem.\n4. Mezitím na lžíci sádla zpěň zbylou cibuli nakrájenou nadrobno, přidej zelí, trochu kmínu a podlij vodou.\n5. Zelí duste doměkka asi 30 minut. Zahusti moukou rozmíchanou ve studené vodě a krátce povař.\n6. Zelí dochuť cukrem, solí a případně octem, aby bylo sladkokyselé.\n7. Knedlík ohřej v páře a nakrájej. Podávej maso s výpekem, zelím a knedlíkem."
+    },
+    {
+      "name": "Smažený sýr",
+      "servings": 4,
+      "preparationMinutes": 30,
+      "ingredients": [
+        {"food": "Eidam", "quantity": 600, "acceptsAnyOfKind": false},
+        {"food": "Vejce", "quantity": 2},
+        {"food": "Mouka hladká", "quantity": 60},
+        {"food": "Strouhanka", "quantity": 150},
+        {"food": "Olej slunečnicový", "quantity": 500},
+        {"food": "Brambory", "quantity": 800},
+        {"food": "Tatarská omáčka", "quantity": 200, "isOptional": true},
+        {"food": "Sůl", "quantity": 10, "isOptional": true}
+      ],
+      "instructions": "1. Brambory oloupej, uvař v osolené vodě doměkka nebo z nich připrav hranolky.\n2. Sýr nakrájej na plátky silné asi 1,5 cm.\n3. Připrav si tři talíře: mouku, vejce rozšlehaná se špetkou soli a strouhanku.\n4. Každý plátek obal v mouce, vejci a strouhance. Pro pevnější obal namoč plátek ještě jednou do vejce a strouhanky a dbej, aby okraje byly dobře zakryté.\n5. V pánvi rozehřej olej asi na 170 °C, aby sýr do oleje sahal alespoň do poloviny.\n6. Smaž plátky krátce z obou stran dozlatova, jen asi minutu z každé strany, aby sýr nevytekl.\n7. Usmažený sýr nech okapat na papírové utěrce. Podávej hned s bramborami a tatarskou omáčkou."
+    },
+    {
+      "name": "Hovězí guláš",
+      "servings": 4,
+      "preparationMinutes": 150,
+      "ingredients": [
+        {"food": "Hovězí kližka", "quantity": 800},
+        {"food": "Cibule", "quantity": 500},
+        {"food": "Sádlo", "quantity": 40},
+        {"food": "Paprika sladká mletá", "quantity": 20},
+        {"food": "Rajčatový protlak", "quantity": 70},
+        {"food": "Česnek", "quantity": 1},
+        {"food": "Mouka hladká", "quantity": 20},
+        {"food": "Houskový knedlík", "quantity": 2},
+        {"food": "Kmín", "quantity": 5, "isOptional": true},
+        {"food": "Majoránka", "quantity": 3, "isOptional": true},
+        {"food": "Pepř černý", "quantity": 2, "isOptional": true},
+        {"food": "Sůl", "quantity": 10, "isOptional": true}
+      ],
+      "instructions": "1. Maso nakrájej na kostky asi 3 cm, cibuli nadrobno, česnek nasekej.\n2. V hrnci rozpusť sádlo a cibuli na něm pomalu smaž asi 15 minut, dokud nezhnědne. Na cibuli záleží chuť guláše.\n3. Přidej maso a opékej ho ze všech stran.\n4. Stáhni hrnec z ohně, vmíchej papriku a protlak a krátce promíchej, aby paprika nezhořkla.\n5. Podlij vodou tak, aby bylo maso skoro zakryté, přidej kmín, pepř a sůl a duste přikryté na mírném ohni asi 2 hodiny, dokud maso nezměkne. Podle potřeby podlévej.\n6. Na konci přidej česnek a majoránku. Pokud je guláš řídký, zahusti ho moukou rozmíchanou ve studené vodě a 10 minut povař.\n7. Podávej s houskovým knedlíkem a nakrájenou cibulí."
+    },
+    {
+      "name": "Rajská omáčka",
+      "servings": 4,
+      "preparationMinutes": 120,
+      "ingredients": [
+        {"food": "Hovězí zadní", "quantity": 600},
+        {"food": "Mrkev", "quantity": 100},
+        {"food": "Petržel kořenová", "quantity": 100},
+        {"food": "Celer bulvový", "quantity": 50},
+        {"food": "Cibule", "quantity": 100},
+        {"food": "Rajčatový protlak", "quantity": 140},
+        {"food": "Máslo", "quantity": 40},
+        {"food": "Mouka hladká", "quantity": 40, "acceptsAnyOfKind": false},
+        {"food": "Cukr krystal", "quantity": 40},
+        {"food": "Houskový knedlík", "quantity": 2},
+        {"food": "Bobkový list", "quantity": 2, "isOptional": true},
+        {"food": "Nové koření", "quantity": 2, "isOptional": true},
+        {"food": "Ocet", "quantity": 10, "isOptional": true},
+        {"food": "Sůl", "quantity": 10, "isOptional": true}
+      ],
+      "instructions": "1. Maso vlož do hrnce, zalij asi 1,5 litru studené vody, přidej bobkový list, nové koření a sůl a vař pomalu doměkka asi hodinu a půl. Vývar si nech.\n2. Mrkev, petržel, celer a cibuli oloupej a nastrouhej nebo nakrájej nadrobno.\n3. Na másle osmahni zeleninu, přidej mouku a připrav světlou jíšku.\n4. Vmíchej protlak, krátce orestuj a postupně za stálého míchání přilévej asi litr vývaru z masa.\n5. Omáčku vař na mírném ohni 20 až 30 minut a občas zamíchej, aby se nepřichytila. Potom ji rozmixuj dohladka.\n6. Dochuť cukrem, solí a případně trochou octa, aby byla příjemně sladkokyselá.\n7. Maso nakrájej na plátky a podávej v omáčce s houskovým knedlíkem."
+    }
+  ]
+}

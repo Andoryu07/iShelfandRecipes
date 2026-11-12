@@ -39,8 +39,8 @@ erDiagram
 - **reservations**: id, stock_item_id, user_id, recipe_id (nullable), quantity, note, status (active, fulfilled, cancelled), created_at
 - **receipts**: id, household_id, user_id, store_name, purchased_on, total_amount, items_sum_matches_total, processing_milliseconds, created_at. The photo is never stored.
 - **receipt_items**: id, receipt_id, food_id (nullable until confirmed), original_text, name, category, quantity, unit, price, discount, corrected_by_user
-- **recipes**: id, household_id, name, instructions, servings, is_predefined, created_at. Predefined recipes are copied into a household when it is created.
-- **recipe_ingredients**: id, recipe_id, food_id, quantity
+- **recipes**: id, household_id, name, instructions, servings, preparation_minutes, is_predefined, created_at. Predefined recipes are copied into a household when it is created.
+- **recipe_ingredients**: id, recipe_id, food_id, quantity, accepts_any_of_kind (any food with the same generic name and unit counts), is_optional (never counted as missing)
 - **push_subscriptions**: id, user_id, endpoint (unique), public_key, authentication_secret
 - **refresh_tokens**: id, user_id, token_hash (unique), expires_at, revoked_at (nullable), created_at
 

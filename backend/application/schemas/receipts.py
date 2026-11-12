@@ -5,8 +5,8 @@ from typing import Annotated, Self
 from pydantic import BaseModel, Field, StringConstraints, model_validator
 
 from application.models.enumerations import FoodCategory, MeasurementUnit
-from application.schemas.foods import FoodResponse
-from application.schemas.common import FoodName, RequiredName
+from application.schemas.foods import FoodResponse, NewFoodRequest
+from application.schemas.common import RequiredName
 from application.schemas.common import PositiveQuantity, QuantityValue
 
 
@@ -35,13 +35,6 @@ class ScanReceiptResponse(BaseModel):
 
 Money = Annotated[Decimal, Field(max_digits=12, decimal_places=2)]
 NonNegativeMoney = Annotated[Decimal, Field(ge=0, max_digits=12, decimal_places=2)]
-
-
-class NewFoodRequest(BaseModel):
-    name: FoodName
-    genericName: Annotated[str, StringConstraints(strip_whitespace=True, max_length=100)] | None = None
-    category: FoodCategory = FoodCategory.other
-    baseUnit: MeasurementUnit
 
 
 class SaveReceiptItemRequest(BaseModel):

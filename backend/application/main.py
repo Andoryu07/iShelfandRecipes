@@ -5,6 +5,7 @@ from application.routers import (
     foods,
     households,
     receipts,
+    recipes,
     reservations,
     stock_items,
     storage_locations,
@@ -18,6 +19,7 @@ application.include_router(foods.router)
 application.include_router(stock_items.router)
 application.include_router(receipts.router)
 application.include_router(reservations.router)
+application.include_router(recipes.router)
 
 
 @application.get("/health")

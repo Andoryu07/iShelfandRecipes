@@ -17,6 +17,7 @@ from application.households import (
 )
 from application.models import Household, HouseholdMember, User
 from application.models.enumerations import HouseholdRole
+from application.recipes.predefined import copyPredefinedRecipes
 from application.schemas.households import (
     CreateHouseholdRequest,
     HouseholdMemberResponse,
@@ -40,6 +41,7 @@ def createHousehold(
     session.flush()
     session.add(HouseholdMember(userId=user.id, householdId=household.id, role=HouseholdRole.owner))
     createDefaultStorageLocations(session, household.id)
+    copyPredefinedRecipes(session, household.id)
     try:
         session.commit()
     except IntegrityError:

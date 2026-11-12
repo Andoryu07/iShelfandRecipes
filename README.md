@@ -147,13 +147,16 @@ docker compose run --rm -v ./receipt.jpg:/receipt.jpg backend python -m applicat
 
 | Endpoint | Purpose | Status |
 | --- | --- | --- |
-| `GET /households/{householdId}/recipes` | List recipes | planned |
-| `POST /households/{householdId}/recipes` | Create a recipe | planned |
-| `GET /recipes/{recipeId}` | Recipe detail with ingredients | planned |
-| `PATCH /recipes/{recipeId}` | Edit a recipe | planned |
-| `DELETE /recipes/{recipeId}` | Delete a recipe | planned |
-| `GET /recipes/{recipeId}/availability` | Available and missing ingredients for the current user and a price estimate | planned |
+| `GET /households/{householdId}/recipes` | List recipes | done |
+| `POST /households/{householdId}/recipes` | Create a recipe | done |
+| `GET /recipes/{recipeId}` | Recipe detail with ingredients | done |
+| `PATCH /recipes/{recipeId}` | Edit a recipe | done |
+| `DELETE /recipes/{recipeId}` | Delete a recipe | done |
+| `GET /recipes/{recipeId}/availability?servings=` | Available and missing ingredients for the current user (price estimate comes later) | done |
+| `POST /recipes/{recipeId}/reserve` | Reserve everything that is available for the recipe, earliest expiration first | done |
 | `POST /recipes/{recipeId}/cook` | Deduct the ingredients from stock and fulfil the related reservations | planned |
+
+A new household gets five predefined recipes written for this project (`backend/application/recipes/predefined.json`) together with the foods they need. Every ingredient points to a food; `acceptsAnyOfKind` lets any food of the same general kind and unit count (any milk), otherwise only that food counts (plain flour). Optional ingredients (salt, spices) never count as missing. For user A and recipe R, the available quantity is the stock minus active reservations of other users, minus A's own reservations for a different recipe.
 
 ### Notifications
 
