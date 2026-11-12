@@ -13,6 +13,7 @@ from application.schemas.stock import PositiveQuantity, QuantityValue
 class ScannedReceiptItem(BaseModel):
     originalText: str
     name: str
+    genericName: str | None
     category: FoodCategory
     isFood: bool
     quantity: QuantityValue | None
@@ -38,6 +39,7 @@ NonNegativeMoney = Annotated[Decimal, Field(ge=0, max_digits=12, decimal_places=
 
 class NewFoodRequest(BaseModel):
     name: RequiredName
+    genericName: Annotated[str, StringConstraints(strip_whitespace=True, max_length=100)] | None = None
     category: FoodCategory = FoodCategory.other
     baseUnit: MeasurementUnit
 

@@ -35,6 +35,7 @@ class Food(Base):
         "household_id", ForeignKey("households.id", ondelete="CASCADE")
     )
     name: Mapped[str]
+    genericName: Mapped[str | None] = mapped_column("generic_name")
     category: Mapped[str | None]
     baseUnit: Mapped[MeasurementUnit] = mapped_column(
         "base_unit", measurementUnitType

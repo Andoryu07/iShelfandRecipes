@@ -36,7 +36,7 @@ def milkItem(**fields) -> dict:
 
 def test_saveReceiptCreatesFoodsStockAndLinks(client: TestClient, databaseSession: Session) -> None:
     household = ReceiptHousehold(client)
-    newMilk = {"name": "Mléko polotučné", "category": "dairy", "baseUnit": "milliliter"}
+    newMilk = {"name": "Mléko polotučné", "genericName": "Mléko", "category": "dairy", "baseUnit": "milliliter"}
     items = [
         milkItem(newFood=newMilk, addToStock=True, storageLocationId=household.fridgeId, expirationDate="2026-11-20"),
         milkItem(newFood=newMilk, addToStock=True, storageLocationId=household.fridgeId, expirationDate="2026-11-25"),
@@ -56,7 +56,7 @@ def test_saveReceiptCreatesFoodsStockAndLinks(client: TestClient, databaseSessio
     assert body["items"][0]["foodId"] == body["items"][1]["foodId"] is not None
     assert body["items"][2]["foodId"] is None
     assert body["items"][2]["correctedByUser"] is True
-    assert databaseSession.scalar(select(func.count()).select_from(Food)) == 1
+    assert databaseSession.scalar(select(Food.genericName)) == "Mléko"
 
     stock = client.get(f"/households/{household.id}/stock-items", headers=household.headers).json()
     assert [(item["food"]["name"], item["quantity"], item["expirationDate"]) for item in stock] == [

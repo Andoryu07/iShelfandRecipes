@@ -7,7 +7,7 @@ from pathlib import Path
 from application.configuration import getConfiguration
 from application.receipts.dependencies import getReceiptReader
 from application.receipts.reading import ReceiptReadingError
-from application.receipts.scanning import expandItem, sumTolerance, toMoney
+from application.receipts.scanning import expandItem, formatStoreName, sumTolerance, toMoney
 
 
 def main() -> None:
@@ -31,13 +31,14 @@ def main() -> None:
     itemsSum = sum((toMoney(item.price) for item in receipt.items), Decimal("0.00"))
     total = toMoney(receipt.totalAmount) if receipt.totalAmount is not None else None
     matches = total is not None and abs(itemsSum - total) <= sumTolerance
+    print(f"Store {formatStoreName(receipt.storeName)}, purchased on {receipt.purchasedOn}")
     print(f"Items sum {itemsSum}, total {total}, sum matches: {matches}")
     print("\nItems after splitting packages:")
     for item in receipt.items:
         for expanded in expandItem(item):
             quantity = f"{expanded['quantity']} {expanded['unit'].value}" if expanded["quantity"] is not None else "?"
             foodMark = "" if expanded["isFood"] else " (not food)"
-            print(f"  {expanded['name']}: {quantity}, {expanded['price']} CZK{foodMark}")
+            print(f"  {expanded['name']} ({expanded['genericName']}): {quantity}, {expanded['price']} CZK{foodMark}")
 
 
 if __name__ == "__main__":

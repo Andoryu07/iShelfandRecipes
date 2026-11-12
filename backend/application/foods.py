@@ -10,6 +10,7 @@ def buildFoodResponse(food: Food) -> FoodResponse:
     return FoodResponse(
         id=food.id,
         name=food.name,
+        genericName=food.genericName,
         category=FoodCategory(food.category) if food.category else FoodCategory.other,
         baseUnit=food.baseUnit,
     )

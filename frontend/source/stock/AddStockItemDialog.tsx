@@ -47,6 +47,7 @@ export function AddStockItemDialog({
   const [foodInput, setFoodInput] = useState("");
   const [selectedFood, setSelectedFood] = useState<FoodOption | null>(null);
   const [newFoodCategory, setNewFoodCategory] = useState<FoodCategory>("other");
+  const [newFoodGenericName, setNewFoodGenericName] = useState("");
   const [newFoodBaseUnit, setNewFoodBaseUnit] = useState<MeasurementUnit>("gram");
   const [quantityText, setQuantityText] = useState("");
   const [unitSymbol, setUnitSymbol] = useState("g");
@@ -76,6 +77,7 @@ export function AddStockItemDialog({
         selectedFood && "newFoodName" in selectedFood
           ? await createFood(householdId, {
               name: selectedFood.newFoodName,
+              genericName: newFoodGenericName.trim() || null,
               category: newFoodCategory,
               baseUnit: newFoodBaseUnit,
             })
@@ -169,6 +171,13 @@ export function AddStockItemDialog({
                   </MenuItem>
                 ))}
               </TextField>
+              <TextField
+                label={texts.stock.genericName}
+                value={newFoodGenericName}
+                onChange={(event) => setNewFoodGenericName(event.target.value)}
+                helperText={texts.stock.genericNameHint}
+                slotProps={{ htmlInput: { maxLength: 100 } }}
+              />
               <TextField
                 select
                 label={texts.stock.category}

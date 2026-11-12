@@ -99,6 +99,8 @@ export const texts = {
     newFoodHint: "Nová potravina, vyber jednotku a kategorii",
     createFoodOption: (name: string) => `Přidat „${name}“`,
     baseUnit: "Měří se v",
+    genericName: "Obecný druh (nepovinné)",
+    genericNameHint: "Např. Mléko, Mouka, Sýr. Podle něj recepty poznají vhodnou náhradu.",
     category: "Kategorie",
     quantity: "Množství",
     unit: "Jednotka",

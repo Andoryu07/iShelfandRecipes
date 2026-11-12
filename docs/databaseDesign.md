@@ -33,7 +33,7 @@ erDiagram
 - **households**: id, name, invite_code (unique), created_at
 - **household_members**: id, user_id, household_id, role (owner, member), joined_at. A user belongs to one household for now; several households are a premium feature.
 - **storage_locations**: id, household_id, name, kind (fridge, freezer, pantry, custom)
-- **foods**: id, household_id, name (unique per household ignoring letter case), category (fixed list kept in the application), base_unit (gram, milliliter, piece). Each household has its own catalog of foods.
+- **foods**: id, household_id, name (unique per household ignoring letter case, as specific as known, for example "Mouka hladká"), generic_name (nullable general kind, for example "Mouka"; recipes will accept any food of the same kind unless they require a specific food), category (fixed list kept in the application), base_unit (gram, milliliter, piece). Each household has its own catalog of foods.
 - **stock_items**: id, storage_location_id, food_id, quantity (remaining), expiration_date (nullable), receipt_item_id (nullable), created_at
 - **stock_movements**: id, stock_item_id, user_id, quantity_change, reason (eaten, spoiled, destroyed, cooked, correction), created_at
 - **reservations**: id, stock_item_id, user_id, recipe_id (nullable), quantity, note, status (active, fulfilled, cancelled), created_at

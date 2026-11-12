@@ -41,6 +41,7 @@ def createFood(
     food = Food(
         householdId=membership.householdId,
         name=request.name,
+        genericName=request.genericName or None,
         category=request.category.value,
         baseUnit=request.baseUnit,
     )
@@ -68,6 +69,8 @@ def updateFood(
         food.baseUnit = request.baseUnit
     if request.name is not None:
         food.name = request.name
+    if "genericName" in request.model_fields_set:
+        food.genericName = request.genericName or None
     if request.category is not None:
         food.category = request.category.value
     try:

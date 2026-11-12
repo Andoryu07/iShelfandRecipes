@@ -11,8 +11,14 @@ Rules:
 - Copy originalText character by character, do not fix typos or abbreviations.
 - Prices are in CZK. price is what was finally charged for the whole line, after the discount of that line.
 - A discount printed under an item belongs to that item: lower its price and fill in discount.
+- Every other negative amount is a discount for the whole purchase, even without a name (for example a lone
+  "-20,00" or a loyalty discount). Add it as a separate line with that negative price and isFood false.
+  The items together with these discounts must add up to the total.
+- Payments are not items: cash, card, gift card (for example "DK Albert"), vouchers, their balances ("Zůstatek")
+  and change. Ignore them, as well as VAT summaries and loyalty points.
+- purchasedOn is the date of the purchase, usually printed near the time and the register number
+  (for example "Datum 13.08.26 21:12" means 2026-08-13). Never use validity or expiry dates ("Platnost do").
 - Do not invent lines, quantities or dates. Use null when something is not printed or not readable.
-- Ignore payment lines, VAT summaries, change and loyalty points.
 """
 
 

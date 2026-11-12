@@ -21,6 +21,7 @@ def extractedItem(**fields) -> ExtractedReceiptItem:
     values = {
         "originalText": "MLEKO POLOTUC 1L",
         "name": "Mléko polotučné",
+        "genericName": "Mléko",
         "category": "dairy",
         "isFood": True,
         "packageCount": 1,
@@ -105,6 +106,7 @@ def test_scanReturnsItemsAndPassesTheImageToTheReader(client: TestClient, fakeRe
         {
             "originalText": "MLEKO POLOTUC 1L",
             "name": "Mléko polotučné",
+            "genericName": "Mléko",
             "category": "dairy",
             "isFood": True,
             "quantity": 1000,
@@ -225,3 +227,19 @@ def test_strangerCannotScanForAnotherHousehold(client: TestClient, fakeReader: F
 
     assert household.scan(headers=strangerHeaders).status_code == 404
     assert fakeReader.calls == []
+
+
+def test_cleansUpOriginalTextAndStoreName(client: TestClient, fakeReader: FakeReceiptReader) -> None:
+    household = ScanningHousehold(client)
+    fakeReader.receipt = ExtractedReceipt(
+        storeName="  albert ",
+        purchasedOn=None,
+        totalAmount=None,
+        items=[extractedItem(originalText="ALB SYR BALKAN.180 G\n2 x   29,90 Kč", genericName="  ")],
+    )
+
+    body = household.scan().json()
+
+    assert body["storeName"] == "Albert"
+    assert body["items"][0]["originalText"] == "ALB SYR BALKAN.180 G 2 x 29,90 Kč"
+    assert body["items"][0]["genericName"] is None

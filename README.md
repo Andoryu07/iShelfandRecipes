@@ -92,7 +92,7 @@ Every member of the household can manage storage locations. A storage location t
 | `POST /households/{householdId}/foods` | Add a food | done |
 | `PATCH /foods/{foodId}` | Change name, category or base unit | done |
 
-Food names are unique within a household regardless of letter case, and search ignores case and accents (`mleko` finds `Mléko`). Categories are a fixed list: `dairy`, `meatAndSausages`, `fish`, `fruit`, `vegetables`, `bakery`, `dryGoods`, `canned`, `frozen`, `beverages`, `spices`, `sweets`, `other`. The base unit cannot change once the food is in stock or in a recipe.
+Every food has a specific name (`Mléko polotučné`) and optionally a general kind (`genericName`, for example `Mléko`), which recipes will use to accept a suitable substitute. Food names are unique within a household regardless of letter case, and search ignores case and accents (`mleko` finds `Mléko`). Categories are a fixed list: `dairy`, `meatAndSausages`, `fish`, `fruit`, `vegetables`, `bakery`, `dryGoods`, `canned`, `frozen`, `beverages`, `spices`, `sweets`, `other`. The base unit cannot change once the food is in stock or in a recipe.
 
 ### Stock
 

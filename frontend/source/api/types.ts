@@ -61,6 +61,7 @@ export type StockMovementReason = "eaten" | "spoiled" | "destroyed" | "cooked" |
 export interface Food {
   id: number;
   name: string;
+  genericName: string | null;
   category: FoodCategory;
   baseUnit: MeasurementUnit;
 }

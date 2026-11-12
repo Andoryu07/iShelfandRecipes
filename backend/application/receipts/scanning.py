@@ -24,6 +24,15 @@ def splitAmount(total: Decimal, partCount: int) -> list[Decimal]:
     return [part] * (partCount - 1) + [total - part * (partCount - 1)]
 
 
+def normalizeWhitespace(text: str) -> str:
+    return " ".join(text.split())
+
+
+def formatStoreName(storeName: str | None) -> str | None:
+    storeName = normalizeWhitespace(storeName or "")
+    return storeName[:1].upper() + storeName[1:] if storeName else None
+
+
 def parsePurchaseDate(text: str | None) -> date | None:
     try:
         return date.fromisoformat(text) if text else None
@@ -57,8 +66,9 @@ def expandItem(item: ExtractedReceiptItem) -> list[dict]:
     discounts = splitAmount(toMoney(abs(item.discount)), packageCount)
     return [
         {
-            "originalText": item.originalText,
+            "originalText": normalizeWhitespace(item.originalText),
             "name": item.name.strip(),
+            "genericName": item.genericName.strip() or None,
             "category": item.category,
             "isFood": item.isFood,
             "quantity": Decimal(str(quantity)).quantize(Decimal("0.001")) if quantity is not None else None,
@@ -77,7 +87,7 @@ def buildScanResponse(session: Session, householdId: int, result: ReceiptReading
     itemsSum = sum((toMoney(item.price) for item in receipt.items), Decimal("0.00"))
     totalAmount = toMoney(receipt.totalAmount) if receipt.totalAmount is not None else None
     return ScanReceiptResponse(
-        storeName=receipt.storeName.strip() if receipt.storeName else None,
+        storeName=formatStoreName(receipt.storeName),
         purchasedOn=parsePurchaseDate(receipt.purchasedOn),
         totalAmount=totalAmount,
         itemsSum=itemsSum,

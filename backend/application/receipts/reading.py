@@ -11,7 +11,13 @@ class ExtractedReceiptItem(BaseModel):
         description="The item exactly as printed on the receipt. If the item continues on the next line "
         "(for example '2 x 24,90'), join both lines with a space."
     )
-    name: str = Field(description="A short general Czech name of the product, for example 'Mléko polotučné'.")
+    name: str = Field(
+        description="A short Czech name of the product without the brand, as specific as the receipt allows, "
+        "for example 'Mléko polotučné', 'Mouka hladká', 'Sýr Gran Moravia'."
+    )
+    genericName: str = Field(
+        description="The general kind of the product in Czech, for example 'Mléko', 'Mouka', 'Sýr', 'Rohlík'."
+    )
     category: FoodCategory
     isFood: bool = Field(
         description="False for things that are not food or drink: bags, deposits, drugstore goods, discounts."

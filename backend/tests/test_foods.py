@@ -22,7 +22,13 @@ def test_createAndListFoodsSortedByName(client: TestClient) -> None:
     createFood(client, headers, householdId, "Banány")
 
     assert created.status_code == 201
-    assert created.json() == {"id": created.json()["id"], "name": "Mléko", "category": "dairy", "baseUnit": "milliliter"}
+    assert created.json() == {
+        "id": created.json()["id"],
+        "name": "Mléko",
+        "genericName": None,
+        "category": "dairy",
+        "baseUnit": "milliliter",
+    }
     names = [food["name"] for food in client.get(f"/households/{householdId}/foods", headers=headers).json()]
     assert names == ["Banány", "chléb", "Mléko"]
 
@@ -71,9 +77,19 @@ def test_updateFoodAndBlockUnitChangeWhenInStock(client: TestClient, databaseSes
     food = createFood(client, headers, householdId, "Rýže").json()
 
     updated = client.patch(
-        f"/foods/{food['id']}", json={"name": "Rýže basmati", "category": "dryGoods", "baseUnit": "piece"}, headers=headers
+        f"/foods/{food['id']}",
+        json={"name": "Rýže basmati", "genericName": "Rýže", "category": "dryGoods", "baseUnit": "piece"},
+        headers=headers,
     )
-    assert updated.json() == {"id": food["id"], "name": "Rýže basmati", "category": "dryGoods", "baseUnit": "piece"}
+    assert updated.json() == {
+        "id": food["id"],
+        "name": "Rýže basmati",
+        "genericName": "Rýže",
+        "category": "dryGoods",
+        "baseUnit": "piece",
+    }
+    assert client.patch(f"/foods/{food['id']}", json={"category": "other"}, headers=headers).json()["genericName"] == "Rýže"
+    assert client.patch(f"/foods/{food['id']}", json={"genericName": None}, headers=headers).json()["genericName"] is None
 
     storageLocationId = databaseSession.scalar(
         select(StorageLocation.id).where(StorageLocation.householdId == householdId)

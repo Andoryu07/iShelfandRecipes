@@ -44,6 +44,7 @@ class FoodResolver:
         food = Food(
             householdId=self.householdId,
             name=item.newFood.name,
+            genericName=item.newFood.genericName or None,
             category=item.newFood.category.value,
             baseUnit=item.newFood.baseUnit,
         )

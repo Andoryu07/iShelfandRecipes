@@ -7,7 +7,7 @@ export function searchFoods(householdId: number, search: string): Promise<Food[]
 
 export function createFood(
   householdId: number,
-  food: { name: string; category: FoodCategory; baseUnit: MeasurementUnit },
+  food: { name: string; genericName: string | null; category: FoodCategory; baseUnit: MeasurementUnit },
 ): Promise<Food> {
   return apiRequest<Food>(`/households/${householdId}/foods`, { method: "POST", body: food });
 }
