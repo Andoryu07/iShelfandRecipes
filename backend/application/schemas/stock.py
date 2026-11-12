@@ -1,15 +1,12 @@
 from datetime import date, datetime
-from decimal import Decimal
-from typing import Annotated, Self
+from typing import Self
 
-from pydantic import BaseModel, Field, PlainSerializer, model_validator
+from pydantic import BaseModel, model_validator
 
 from application.models.enumerations import StockMovementReason
+from application.schemas.common import NonNegativeQuantity, PositiveQuantity, QuantityValue
 from application.schemas.foods import FoodResponse
-
-PositiveQuantity = Annotated[Decimal, Field(gt=0, max_digits=12, decimal_places=3)]
-NonNegativeQuantity = Annotated[Decimal, Field(ge=0, max_digits=12, decimal_places=3)]
-QuantityValue = Annotated[Decimal, PlainSerializer(float, return_type=float, when_used="json")]
+from application.schemas.reservations import ReservationResponse
 
 
 class CreateStockItemRequest(BaseModel):
@@ -50,6 +47,7 @@ class StockItemResponse(BaseModel):
     availableQuantity: QuantityValue
     expirationDate: date | None
     createdAt: datetime
+    reservations: list[ReservationResponse]
 
 
 class StockMovementResponse(BaseModel):

@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field, StringConstraints, model_validator
 from application.models.enumerations import FoodCategory, MeasurementUnit
 from application.schemas.foods import FoodResponse
 from application.schemas.common import FoodName, RequiredName
-from application.schemas.stock import PositiveQuantity, QuantityValue
+from application.schemas.common import PositiveQuantity, QuantityValue
 
 
 class ScannedReceiptItem(BaseModel):

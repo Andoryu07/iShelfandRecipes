@@ -117,10 +117,12 @@ The list contains only items with something left, sorted by expiration date (ite
 
 | Endpoint | Purpose | Status |
 | --- | --- | --- |
-| `GET /households/{householdId}/reservations?status=` | List reservations of the household | planned |
-| `POST /households/{householdId}/reservations` | Reserve a quantity of a stock item, optionally for a recipe | planned |
-| `PATCH /reservations/{reservationId}` | Change quantity or note (author) | planned |
-| `POST /reservations/{reservationId}/cancel` | Cancel a reservation (author) | planned |
+| `GET /households/{householdId}/reservations?status=` | List reservations of the household | done |
+| `POST /households/{householdId}/reservations` | Reserve a quantity of a stock item, optionally for a recipe | done |
+| `PATCH /reservations/{reservationId}` | Change quantity or note (author) | done |
+| `POST /reservations/{reservationId}/cancel` | Cancel a reservation (author) | done |
+
+Reservations are made only from the free quantity (stock minus all active reservations). Other members can eat only the free quantity; when the author eats, free food is used first and then their own reservation, which becomes fulfilled when used up. Spoiled or destroyed food and corrections down may cut into reservations, the newest first. Only the author changes or cancels a reservation. Every stock item in the stock list carries its active reservations.
 
 ### Receipts
 

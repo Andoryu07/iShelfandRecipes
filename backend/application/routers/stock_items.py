@@ -14,8 +14,9 @@ from application.schemas.stock import (
     StockMovementResponse,
     UpdateStockItemRequest,
 )
+from application.reservations import activeReservations, reservedQuantity, trimReservations
 from application.stock import (
-    buildStockItemResponse,
+    buildStockItemResponses,
     expirationLimit,
     findHouseholdStorageLocation,
     householdIdOfStockItem,
@@ -45,7 +46,7 @@ def listStockItems(
     query = query.order_by(
         StockItem.expirationDate.asc().nulls_last(), func.lower(Food.name), StockItem.id
     )
-    return [buildStockItemResponse(row.StockItem, row.Food, row.reservedQuantity) for row in session.execute(query)]
+    return buildStockItemResponses(session, session.execute(query))
 
 
 @router.post(
@@ -126,6 +127,7 @@ def createStockMovement(
     lockedStockItem = session.scalar(
         select(StockItem).where(StockItem.id == stockItem.id).with_for_update().execution_options(populate_existing=True)
     )
+    reservations = activeReservations(session, lockedStockItem.id)
     if request.reason == StockMovementReason.correction:
         quantityChange = request.newQuantity - lockedStockItem.quantity
         if quantityChange == 0:
@@ -135,8 +137,16 @@ def createStockMovement(
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT, detail="Cannot write off more than the remaining quantity"
             )
+        reservedByOthers = reservedQuantity(reservations, excludedUserId=user.id)
+        if request.reason == StockMovementReason.eaten and request.quantity > lockedStockItem.quantity - reservedByOthers:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail="Part of the quantity is reserved by someone else"
+            )
         quantityChange = -request.quantity
     lockedStockItem.quantity += quantityChange
+    trimReservations(
+        reservations, lockedStockItem.quantity, user.id, eatenByActingUser=request.reason == StockMovementReason.eaten
+    )
     session.add(
         StockMovement(stockItemId=lockedStockItem.id, userId=user.id, quantityChange=quantityChange, reason=request.reason)
     )

@@ -8,6 +8,8 @@ from sqlalchemy.orm import Session
 from application.foods import buildFoodResponse
 from application.models import Food, Reservation, StockItem, StorageLocation
 from application.models.enumerations import ReservationStatus
+from application.reservations import activeReservationsByStockItem
+from application.schemas.reservations import ReservationResponse
 from application.schemas.stock import StockItemResponse
 
 householdTimeZone = ZoneInfo("Europe/Prague")
@@ -41,7 +43,9 @@ def stockItemsQuery(householdId: int) -> Select:
     )
 
 
-def buildStockItemResponse(stockItem: StockItem, food: Food, reservedQuantity: Decimal) -> StockItemResponse:
+def buildStockItemResponse(
+    stockItem: StockItem, food: Food, reservedQuantity: Decimal, reservations: list[ReservationResponse]
+) -> StockItemResponse:
     reservedQuantity = Decimal(reservedQuantity)
     return StockItemResponse(
         id=stockItem.id,
@@ -52,12 +56,21 @@ def buildStockItemResponse(stockItem: StockItem, food: Food, reservedQuantity: D
         availableQuantity=max(stockItem.quantity - reservedQuantity, Decimal(0)),
         expirationDate=stockItem.expirationDate,
         createdAt=stockItem.createdAt,
+        reservations=reservations,
     )
 
 
+def buildStockItemResponses(session: Session, rows) -> list[StockItemResponse]:
+    rows = list(rows)
+    reservations = activeReservationsByStockItem(session, [row.StockItem.id for row in rows])
+    return [
+        buildStockItemResponse(row.StockItem, row.Food, row.reservedQuantity, reservations[row.StockItem.id])
+        for row in rows
+    ]
+
+
 def loadStockItemResponse(session: Session, householdId: int, stockItemId: int) -> StockItemResponse:
-    row = session.execute(stockItemsQuery(householdId).where(StockItem.id == stockItemId)).one()
-    return buildStockItemResponse(row.StockItem, row.Food, row.reservedQuantity)
+    return buildStockItemResponses(session, session.execute(stockItemsQuery(householdId).where(StockItem.id == stockItemId)))[0]
 
 
 def findHouseholdStorageLocation(session: Session, householdId: int, storageLocationId: int) -> StorageLocation | None:
