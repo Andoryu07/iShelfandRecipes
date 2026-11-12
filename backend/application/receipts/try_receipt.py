@@ -12,7 +12,7 @@ from application.receipts.scanning import expandItem, formatStoreName, sumTolera
 
 def main() -> None:
     if len(sys.argv) != 2:
-        sys.exit("Usage: python -m application.receipts.try_receipt <path to receipt photo>")
+        sys.exit("Usage: python -m application.receipts.try_receipt <path to receipt photo or PDF>")
     imagePath = Path(sys.argv[1])
     mimeType = mimetypes.guess_type(imagePath.name)[0] or "image/jpeg"
     configuration = getConfiguration()

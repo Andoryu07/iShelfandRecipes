@@ -6,7 +6,7 @@ from google.genai import types
 from application.receipts.reading import ExtractedReceipt, ReceiptReadingError, ReceiptReadingResult
 
 instructions = """You digitize Czech grocery receipts.
-Read every purchased line of the receipt in the image and fill in the schema.
+Read every purchased line of the receipt (a photo or a PDF) and fill in the schema.
 Rules:
 - Copy the product name into originalText character by character, do not fix typos or abbreviations.
   Quantity, price and discount lines are not part of it, they go into their own fields.
@@ -43,12 +43,12 @@ class GeminiReceiptReader:
             thinking_config=types.ThinkingConfig(thinking_level=self.thinkingLevel.upper()),
         )
 
-    def readReceipt(self, image: bytes, mimeType: str) -> ReceiptReadingResult:
+    def readReceipt(self, content: bytes, mimeType: str) -> ReceiptReadingResult:
         startTime = time.perf_counter()
         try:
             response = self.client.models.generate_content(
                 model=self.modelName,
-                contents=[types.Part.from_bytes(data=image, mime_type=mimeType)],
+                contents=[types.Part.from_bytes(data=content, mime_type=mimeType)],
                 config=self.buildConfiguration(),
             )
         except Exception as error:

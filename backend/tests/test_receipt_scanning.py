@@ -39,8 +39,8 @@ class FakeReceiptReader:
         self.error: Exception | None = None
         self.calls: list[tuple[bytes, str]] = []
 
-    def readReceipt(self, image: bytes, mimeType: str) -> ReceiptReadingResult:
-        self.calls.append((image, mimeType))
+    def readReceipt(self, content: bytes, mimeType: str) -> ReceiptReadingResult:
+        self.calls.append((content, mimeType))
         if self.error:
             raise self.error
         return ReceiptReadingResult(receipt=self.receipt, processingMilliseconds=1234, inputTokens=1000, outputTokens=200)
@@ -65,7 +65,7 @@ class ScanningHousehold:
     def scan(self, image: bytes = fakeImage, contentType: str = "image/jpeg", headers: dict[str, str] | None = None):
         return self.client.post(
             f"/households/{self.id}/receipts/scan",
-            files={"image": ("receipt.jpg", image, contentType)},
+            files={"file": ("receipt.jpg", image, contentType)},
             headers=headers or self.headers,
         )
 
@@ -193,9 +193,16 @@ def test_suggestsExistingFoodIgnoringCaseAndAccents(client: TestClient, fakeRead
 def test_rejectsWrongTypeAndTooLargeImages(client: TestClient, fakeReader: FakeReceiptReader) -> None:
     household = ScanningHousehold(client)
 
-    assert household.scan(contentType="application/pdf").status_code == 415
+    assert household.scan(contentType="text/plain").status_code == 415
     assert household.scan(image=b"x" * (10 * 1024 * 1024 + 1)).status_code == 413
     assert fakeReader.calls == []
+
+
+def test_acceptsPdfReceipts(client: TestClient, fakeReader: FakeReceiptReader) -> None:
+    household = ScanningHousehold(client)
+
+    assert household.scan(image=b"%PDF-1.7 fake", contentType="application/pdf").status_code == 200
+    assert fakeReader.calls == [(b"%PDF-1.7 fake", "application/pdf")]
 
 
 def test_readerFailureReturnsBadGateway(client: TestClient, fakeReader: FakeReceiptReader) -> None:

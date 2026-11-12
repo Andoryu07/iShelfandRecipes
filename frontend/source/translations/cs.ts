@@ -130,6 +130,7 @@ export const texts = {
   },
   receipts: {
     scan: "Vyfotit účtenku",
+    uploadFile: "Nahrát soubor (fotka nebo PDF)",
     scanning: "Čtu účtenku, chvilku to potrvá…",
     empty: "Zatím žádné účtenky. Vyfoť první účtenku a položky se přidají do zásob.",
     consentTitle: "Souhlas se zpracováním účtenek",
@@ -164,7 +165,8 @@ export const texts = {
     discardConfirmation: "Opravdu zahodit přečtenou účtenku?",
     readFailed: "Účtenku se nepodařilo přečíst. Zkus ji vyfotit znovu, rovně a s dobrým světlem.",
     notConfigured: "Čtení účtenek teď není dostupné.",
-    imageTooLarge: "Fotka je příliš velká.",
+    imageTooLarge: "Soubor je příliš velký (nejvýš 10 MB).",
+    unsupportedFile: "Tento typ souboru nejde načíst. Použij fotku nebo PDF.",
     itemCount: (count: number) => `${count} ${count === 1 ? "položka" : count < 5 ? "položky" : "položek"}`,
     sumMismatchShort: "nesedí součet",
     addedToStock: "v zásobách",

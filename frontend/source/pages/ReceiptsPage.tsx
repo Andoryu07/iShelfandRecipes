@@ -1,4 +1,5 @@
 import PhotoCameraRoundedIcon from "@mui/icons-material/PhotoCameraRounded";
+import UploadFileRoundedIcon from "@mui/icons-material/UploadFileRounded";
 import {
   Alert,
   Button,
@@ -37,7 +38,9 @@ export function ReceiptsPage() {
 
 function Receipts({ householdId }: { householdId: number }) {
   const { user, replaceUser } = useAuthentication();
+  const cameraInput = useRef<HTMLInputElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+  const [pendingInput, setPendingInput] = useState<"camera" | "file">("camera");
   const [isConsentOpen, setIsConsentOpen] = useState(false);
   const [scannedReceipt, setScannedReceipt] = useState<ScannedReceipt | null>(null);
   const [selectedReceiptId, setSelectedReceiptId] = useState<number | null>(null);
@@ -52,18 +55,23 @@ function Receipts({ householdId }: { householdId: number }) {
     onSuccess: (updatedUser) => {
       replaceUser(updatedUser);
       setIsConsentOpen(false);
-      fileInput.current?.click();
+      (pendingInput === "camera" ? cameraInput : fileInput).current?.click();
     },
   });
   const scanMutation = useMutation({
-    mutationFn: async (file: File) => scanReceipt(householdId, await resizeImage(file)),
+    mutationFn: async (file: File) => {
+      const content = await resizeImage(file);
+      const fileName = content === file ? file.name : "receipt.jpg";
+      return scanReceipt(householdId, content, fileName);
+    },
     onSuccess: setScannedReceipt,
   });
 
-  function startScan() {
+  function startScan(input: "camera" | "file") {
     if (user?.receiptConsentGivenAt) {
-      fileInput.current?.click();
+      (input === "camera" ? cameraInput : fileInput).current?.click();
     } else {
+      setPendingInput(input);
       setIsConsentOpen(true);
     }
   }
@@ -97,10 +105,17 @@ function Receipts({ householdId }: { householdId: number }) {
         {texts.navigation.receipts}
       </Typography>
       <input
-        ref={fileInput}
+        ref={cameraInput}
         type="file"
         accept="image/*"
         capture="environment"
+        hidden
+        onChange={handleFileSelected}
+      />
+      <input
+        ref={fileInput}
+        type="file"
+        accept="image/*,application/pdf"
         hidden
         onChange={handleFileSelected}
       />
@@ -111,16 +126,27 @@ function Receipts({ householdId }: { householdId: number }) {
         startIcon={
           scanMutation.isPending ? <CircularProgress size={20} color="inherit" /> : <PhotoCameraRoundedIcon />
         }
-        onClick={startScan}
+        onClick={() => startScan("camera")}
         disabled={scanMutation.isPending}
         sx={{ mt: 2 }}
       >
         {scanMutation.isPending ? texts.receipts.scanning : texts.receipts.scan}
       </Button>
+      <Button
+        variant="outlined"
+        fullWidth
+        startIcon={<UploadFileRoundedIcon />}
+        onClick={() => startScan("file")}
+        disabled={scanMutation.isPending}
+        sx={{ mt: 1 }}
+      >
+        {texts.receipts.uploadFile}
+      </Button>
       {scanMutation.error && (
         <Alert severity="error" sx={{ mt: 2 }}>
           {describeError(scanMutation.error, {
             413: texts.receipts.imageTooLarge,
+            415: texts.receipts.unsupportedFile,
             502: texts.receipts.readFailed,
             503: texts.receipts.notConfigured,
           })}

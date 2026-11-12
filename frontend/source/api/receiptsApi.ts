@@ -1,9 +1,9 @@
 import { apiRequest } from "./apiClient";
 import type { Receipt, ReceiptSummary, SaveReceiptItem, ScannedReceipt } from "./types";
 
-export function scanReceipt(householdId: number, image: Blob): Promise<ScannedReceipt> {
+export function scanReceipt(householdId: number, file: Blob, fileName: string): Promise<ScannedReceipt> {
   const formData = new FormData();
-  formData.append("image", image, "receipt.jpg");
+  formData.append("file", file, fileName);
   return apiRequest<ScannedReceipt>(`/households/${householdId}/receipts/scan`, {
     method: "POST",
     body: formData,

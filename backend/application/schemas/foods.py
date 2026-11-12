@@ -3,21 +3,21 @@ from typing import Annotated
 from pydantic import BaseModel, StringConstraints
 
 from application.models.enumerations import FoodCategory, MeasurementUnit
-from application.schemas.common import RequiredName
+from application.schemas.common import FoodName
 
 
 OptionalName = Annotated[str, StringConstraints(strip_whitespace=True, max_length=100)]
 
 
 class CreateFoodRequest(BaseModel):
-    name: RequiredName
+    name: FoodName
     genericName: OptionalName | None = None
     category: FoodCategory = FoodCategory.other
     baseUnit: MeasurementUnit
 
 
 class UpdateFoodRequest(BaseModel):
-    name: RequiredName | None = None
+    name: FoodName | None = None
     genericName: OptionalName | None = None
     category: FoodCategory | None = None
     baseUnit: MeasurementUnit | None = None

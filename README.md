@@ -94,7 +94,7 @@ Every member of the household can manage storage locations. A storage location t
 | `POST /households/{householdId}/foods` | Add a food | done |
 | `PATCH /foods/{foodId}` | Change name, category or base unit | done |
 
-Every food has a specific name (`Mléko polotučné`) and optionally a general kind (`genericName`, for example `Mléko`), which recipes will use to accept a suitable substitute. Food names are unique within a household regardless of letter case, and search ignores case and accents (`mleko` finds `Mléko`). Categories are a fixed list: `dairy`, `meatAndSausages`, `fish`, `fruit`, `vegetables`, `bakery`, `dryGoods`, `canned`, `frozen`, `beverages`, `spices`, `sweets`, `other`. The base unit cannot change once the food is in stock or in a recipe.
+Every food has a specific name (`Mléko polotučné`) and optionally a general kind (`genericName`, for example `Mléko`), which recipes will use to accept a suitable substitute. Food names always start with a capital letter (`mléko` is saved as `Mléko`) and are unique within a household regardless of letter case, and search ignores case and accents (`mleko` finds `Mléko`). Categories are a fixed list: `dairy`, `meatAndSausages`, `fish`, `fruit`, `vegetables`, `bakery`, `dryGoods`, `canned`, `frozen`, `beverages`, `spices`, `sweets`, `other`. The base unit cannot change once the food is in stock or in a recipe.
 
 ### Stock
 
@@ -128,7 +128,7 @@ The list contains only items with something left, sorted by expiration date (ite
 
 Saving sends the reviewed items; each item either names an existing food (`foodId`), a new one (`newFood`, reused when a food with the same name already exists) or none, and with `addToStock` also `quantity` in the food's base unit, `storageLocationId` and optionally `expirationDate`. The whole receipt is saved in one transaction, so an invalid item saves nothing.
 
-Scanning requires the receipt consent of the current user. The photo is sent as multipart field `image` (JPEG, PNG, WebP or HEIC, at most 10 MB) and is kept only in memory. The model returns the number of identical packages on a line and the server splits them into separate items with a share of the price, so every package can get its own expiration date (at most 20 per line). The server checks the sum of the items against the total with a tolerance of 1 CZK and suggests matching foods from the household catalog.
+Scanning requires the receipt consent of the current user. The photo or PDF is sent as multipart field `file` (JPEG, PNG, WebP, HEIC or PDF, at most 10 MB) and is kept only in memory. The model returns the number of identical packages on a line and the server splits them into separate items with a share of the price, so every package can get its own expiration date (at most 20 per line). The server checks the sum of the items against the total with a tolerance of 1 CZK and suggests matching foods from the household catalog.
 
 Receipts are read by Gemini, configured in `.env` (`GEMINI_API_KEY`, `GEMINI_MODEL`, `GEMINI_THINKING_LEVEL`). Automated tests never call it. To try a real receipt by hand:
 

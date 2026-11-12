@@ -7,6 +7,9 @@ export function scaledSize(width: number, height: number): { width: number; heig
 }
 
 export async function resizeImage(file: File): Promise<Blob> {
+  if (!file.type.startsWith("image/")) {
+    return file;
+  }
   try {
     const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
     const size = scaledSize(bitmap.width, bitmap.height);

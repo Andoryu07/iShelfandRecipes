@@ -72,7 +72,7 @@ def test_newFoodReusesExistingFoodIgnoringCase(client: TestClient, databaseSessi
     existing = createFood(client, household.headers, household.id, "mléko polotučné", baseUnit="milliliter").json()
 
     body = household.save(
-        [milkItem(newFood={"name": "Mléko Polotučné", "baseUnit": "milliliter"})], totalAmount=24.90
+        [milkItem(newFood={"name": "mléko Polotučné", "baseUnit": "milliliter"})], totalAmount=24.90
     ).json()
 
     assert body["items"][0]["foodId"] == existing["id"]

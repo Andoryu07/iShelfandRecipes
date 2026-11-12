@@ -15,13 +15,13 @@ from application.schemas.receipts import ReceiptResponse, ReceiptSummaryResponse
 
 router = APIRouter(tags=["receipts"])
 logger = logging.getLogger(__name__)
-maximumImageBytes = 10 * 1024 * 1024
-acceptedImageTypes = {"image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"}
+maximumFileBytes = 10 * 1024 * 1024
+acceptedFileTypes = {"image/jpeg", "image/png", "image/webp", "image/heic", "image/heif", "application/pdf"}
 
 
 @router.post("/households/{householdId}/receipts/scan", response_model=ScanReceiptResponse)
 def scanReceipt(
-    image: UploadFile = File(),
+    file: UploadFile = File(),
     membership: HouseholdMember = Depends(getHouseholdMembership),
     user: User = Depends(getCurrentUser),
     session: Session = Depends(getDatabaseSession),
@@ -29,18 +29,18 @@ def scanReceipt(
 ) -> ScanReceiptResponse:
     if user.receiptConsentGivenAt is None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Receipt consent has not been given")
-    if image.content_type not in acceptedImageTypes:
-        raise HTTPException(status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, detail="Unsupported image type")
-    imageBytes = image.file.read(maximumImageBytes + 1)
-    if len(imageBytes) > maximumImageBytes:
-        raise HTTPException(status_code=status.HTTP_413_CONTENT_TOO_LARGE, detail="The image is too large")
+    if file.content_type not in acceptedFileTypes:
+        raise HTTPException(status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, detail="Unsupported file type")
+    fileBytes = file.file.read(maximumFileBytes + 1)
+    if len(fileBytes) > maximumFileBytes:
+        raise HTTPException(status_code=status.HTTP_413_CONTENT_TOO_LARGE, detail="The file is too large")
     try:
-        result = receiptReader.readReceipt(imageBytes, image.content_type)
+        result = receiptReader.readReceipt(fileBytes, file.content_type)
     except ReceiptReadingError as error:
         logger.warning("Receipt reading failed: %s", error)
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="The receipt could not be read")
     finally:
-        del imageBytes
+        del fileBytes
     logger.info(
         "Receipt read in %d ms, %s input and %s output tokens",
         result.processingMilliseconds,

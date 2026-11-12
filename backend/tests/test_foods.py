@@ -30,7 +30,9 @@ def test_createAndListFoodsSortedByName(client: TestClient) -> None:
         "baseUnit": "milliliter",
     }
     names = [food["name"] for food in client.get(f"/households/{householdId}/foods", headers=headers).json()]
-    assert names == ["Banány", "chléb", "Mléko"]
+    assert names == ["Banány", "Chléb", "Mléko"]
+    renamed = client.patch(f"/foods/{created.json()['id']}", json={"name": "mléko plnotučné"}, headers=headers)
+    assert renamed.json()["name"] == "Mléko plnotučné"
 
 
 def test_categoryDefaultsToOtherAndMustBeKnown(client: TestClient) -> None:
