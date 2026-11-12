@@ -74,12 +74,17 @@ class IngredientAvailabilityResponse(BaseModel):
     missingQuantity: QuantityValue
     reservedForRecipe: QuantityValue
     reservedByOthers: QuantityValue
+    unitPrice: QuantityValue | None
+    estimatedPrice: QuantityValue | None
 
 
 class RecipeAvailabilityResponse(BaseModel):
     recipeId: int
     servings: int
     missingCount: int
+    estimatedPrice: QuantityValue | None
+    pricedIngredientCount: int
+    requiredIngredientCount: int
     ingredients: list[IngredientAvailabilityResponse]
 
 

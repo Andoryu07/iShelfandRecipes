@@ -206,12 +206,17 @@ export interface IngredientAvailability {
   missingQuantity: number;
   reservedForRecipe: number;
   reservedByOthers: number;
+  unitPrice: number | null;
+  estimatedPrice: number | null;
 }
 
 export interface RecipeAvailability {
   recipeId: number;
   servings: number;
   missingCount: number;
+  estimatedPrice: number | null;
+  pricedIngredientCount: number;
+  requiredIngredientCount: number;
   ingredients: IngredientAvailability[];
 }
 

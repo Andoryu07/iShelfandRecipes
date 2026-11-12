@@ -25,6 +25,7 @@ import { LoadingScreen } from "../components/LoadingScreen";
 import { describeError } from "../errorMessages";
 import { useCurrentHousehold } from "../households/useCurrentHousehold";
 import { RecipeEditorDialog } from "../recipes/RecipeEditorDialog";
+import { formatMoney } from "../receipts/money";
 import { formatQuantity } from "../stock/quantities";
 import { stockItemsQueryKey } from "../stock/stockQueries";
 import { texts } from "../translations/cs";
@@ -106,6 +107,27 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
       {recipe.preparationMinutes && (
         <Typography color="text.secondary">{texts.recipes.minutes(recipe.preparationMinutes)}</Typography>
       )}
+      {availabilityQuery.data && (
+        <>
+          <Typography color="text.secondary">
+            {availabilityQuery.data.estimatedPrice !== null
+              ? texts.recipes.priceEstimate(
+                  formatMoney(availabilityQuery.data.estimatedPrice),
+                  formatMoney(availabilityQuery.data.estimatedPrice / availabilityQuery.data.servings),
+                )
+              : texts.recipes.priceUnknown}
+          </Typography>
+          {availabilityQuery.data.estimatedPrice !== null &&
+            availabilityQuery.data.pricedIngredientCount < availabilityQuery.data.requiredIngredientCount && (
+              <Typography variant="body2" color="text.secondary">
+                {texts.recipes.pricePartial(
+                  availabilityQuery.data.pricedIngredientCount,
+                  availabilityQuery.data.requiredIngredientCount,
+                )}
+              </Typography>
+            )}
+        </>
+      )}
 
       {availabilityQuery.data && (
         <Card
@@ -183,6 +205,7 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
                   ingredient.reservedForRecipe > 0
                     ? texts.recipes.statusReserved(quantityOf(ingredient, ingredient.reservedForRecipe))
                     : null,
+                  ingredient.estimatedPrice !== null ? formatMoney(ingredient.estimatedPrice) : null,
                 ]
                   .filter(Boolean)
                   .join(" · ")}

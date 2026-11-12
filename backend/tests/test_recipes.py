@@ -226,3 +226,69 @@ def test_strangersCannotSeeOrChangeRecipes(client: TestClient) -> None:
     assert client.patch(f"/recipes/{recipeId}", json={"name": "X"}, headers=stranger).status_code == 404
     assert client.delete(f"/recipes/{recipeId}", headers=stranger).status_code == 404
     assert client.get(f"/households/{kitchen.householdId}/recipes", headers=stranger).status_code == 404
+
+
+def saveReceipt(kitchen: Kitchen, purchasedOn: str, items: list[dict]) -> None:
+    response = kitchen.client.post(
+        f"/households/{kitchen.householdId}/receipts",
+        json={"purchasedOn": purchasedOn, "totalAmount": sum(item["price"] for item in items), "items": items},
+        headers=kitchen.anna,
+    )
+    assert response.status_code == 201
+
+
+def receiptItem(foodId: int, quantity: float | None, unit: str | None, price: float) -> dict:
+    return {"originalText": "X", "name": "X", "foodId": foodId, "quantity": quantity, "unit": unit, "price": price}
+
+
+def test_priceEstimateUsesTheLatestReceiptPrice(client: TestClient) -> None:
+    kitchen = Kitchen(client)
+    semiSkimmed = kitchen.food("Mléko polotučné", "Mléko")
+    whole = kitchen.food("Mléko plnotučné", "Mléko")
+    flour = kitchen.food("Mouka hladká", "Mouka", baseUnit="gram")
+    salt = kitchen.food("Sůl", "Sůl", baseUnit="gram")
+    eggs = kitchen.food("Vejce", "Vejce", baseUnit="piece")
+    saveReceipt(kitchen, "2026-10-01", [receiptItem(semiSkimmed, 1000, "milliliter", 24.90), receiptItem(flour, 1000, "gram", 19.90)])
+    saveReceipt(kitchen, "2026-11-01", [receiptItem(semiSkimmed, 1000, "milliliter", 29.90), receiptItem(eggs, None, None, 49.90)])
+    saveReceipt(kitchen, "2026-11-05", [receiptItem(whole, 1000, "milliliter", 34.90), receiptItem(salt, 1000, "gram", 9.90)])
+    pancakes = kitchen.recipe(
+        [
+            {"foodId": semiSkimmed, "quantity": 500},
+            {"foodId": flour, "quantity": 250, "acceptsAnyOfKind": False},
+            {"foodId": eggs, "quantity": 2},
+            {"foodId": salt, "quantity": 5, "isOptional": True},
+        ]
+    ).json()["id"]
+
+    availability = kitchen.availability(pancakes)
+
+    assert ingredientFor(availability, "Mléko polotučné")["estimatedPrice"] == 14.95
+    assert ingredientFor(availability, "Mouka hladká")["estimatedPrice"] == 4.98
+    assert ingredientFor(availability, "Vejce")["estimatedPrice"] is None
+    assert (availability["estimatedPrice"], availability["pricedIngredientCount"], availability["requiredIngredientCount"]) == (
+        19.93,
+        2,
+        3,
+    )
+    assert kitchen.availability(pancakes, servings=8)["estimatedPrice"] == 39.85
+
+
+def test_priceFallsBackToTheSameKindOnlyForGenericIngredients(client: TestClient) -> None:
+    kitchen = Kitchen(client)
+    semiSkimmed = kitchen.food("Mléko polotučné", "Mléko")
+    whole = kitchen.food("Mléko plnotučné", "Mléko")
+    plainFlour = kitchen.food("Mouka hladká", "Mouka", baseUnit="gram")
+    coarseFlour = kitchen.food("Mouka hrubá", "Mouka", baseUnit="gram")
+    saveReceipt(kitchen, "2026-11-05", [receiptItem(whole, 1000, "milliliter", 30.00), receiptItem(coarseFlour, 1000, "gram", 20.00)])
+    recipeId = kitchen.recipe(
+        [
+            {"foodId": semiSkimmed, "quantity": 500},
+            {"foodId": plainFlour, "quantity": 500, "acceptsAnyOfKind": False},
+        ]
+    ).json()["id"]
+
+    availability = kitchen.availability(recipeId)
+
+    assert ingredientFor(availability, "Mléko polotučné")["estimatedPrice"] == 15
+    assert ingredientFor(availability, "Mouka hladká")["estimatedPrice"] is None
+    assert availability["estimatedPrice"] == 15

@@ -201,7 +201,9 @@ def getRecipeAvailability(
     session: Session = Depends(getDatabaseSession),
 ) -> RecipeAvailabilityResponse:
     ingredients = loadIngredients(session, [recipe.id])[recipe.id]
-    return AvailabilityCalculator(session, recipe.householdId, user.id).calculate(recipe, ingredients, servings)
+    return AvailabilityCalculator(session, recipe.householdId, user.id).calculate(
+        recipe, ingredients, servings, includePrices=True
+    )
 
 
 @router.post("/recipes/{recipeId}/reserve", response_model=RecipeAvailabilityResponse)

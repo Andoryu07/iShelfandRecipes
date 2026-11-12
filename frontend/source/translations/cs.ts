@@ -204,6 +204,10 @@ export const texts = {
     statusReserved: (quantity: string) => `zarezervováno ${quantity}`,
     anyOfKind: (kind: string) => `jakékoli: ${kind}`,
     instructionsTitle: "Postup",
+    priceEstimate: (total: string, perServing: string) => `Odhad ceny: ${total} (${perServing} za porci)`,
+    pricePartial: (priced: number, total: number) =>
+      `odhad z ${priced} z ${total} surovin podle dřívějších účtenek`,
+    priceUnknown: "Odhad ceny zatím není, nejdřív naskenuj účtenky s těmito surovinami.",
     reserveIngredients: "Rezervovat suroviny",
     reserved: "Suroviny zarezervovány",
     edit: "Upravit",
