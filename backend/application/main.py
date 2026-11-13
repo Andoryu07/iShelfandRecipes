@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI
 
 from application.routers import (
@@ -12,7 +14,13 @@ from application.routers import (
     storage_locations,
 )
 
-application = FastAPI(title="iShelf and Recipes")
+apiDocumentationEnabled = os.environ.get("API_DOCUMENTATION", "true").lower() != "false"
+application = FastAPI(
+    title="iShelf and Recipes",
+    docs_url="/docs" if apiDocumentationEnabled else None,
+    redoc_url="/redoc" if apiDocumentationEnabled else None,
+    openapi_url="/openapi.json" if apiDocumentationEnabled else None,
+)
 application.include_router(authentication.router)
 application.include_router(households.router)
 application.include_router(storage_locations.router)

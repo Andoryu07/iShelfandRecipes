@@ -13,6 +13,10 @@ Set `JWT_SECRET` in `.env` to a long random value first (for example the output 
 
 The app is then available at http://localhost:5173 (the development server reloads on every change and forwards `/api` to the backend). The backend shares its code with the containers and restarts on every change too, so a rebuild is needed only when dependencies change (`requirements*.txt`, `package.json`). The API is available at http://localhost:8000, interactive documentation is at http://localhost:8000/docs and `GET /health` returns `{"status": "ok"}`. Database migrations run automatically when the backend starts.
 
+## Deployment
+
+Production runs with `docker-compose.production.yml` (Caddy with automatic HTTPS, backend, worker, PostgreSQL and nightly database backups). The step-by-step guide for a Hetzner server and a `.cz` domain is in [docs/deployment.md](docs/deployment.md).
+
 ## Run tests
 
 ```

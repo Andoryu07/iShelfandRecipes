@@ -1,0 +1,99 @@
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-backend-environment: &backendEnvironment
+  DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}
+  JWT_SECRET: ${JWT_SECRET}
+  REFRESH_TOKEN_COOKIE_SECURE: "true"
+  API_DOCUMENTATION: "false"
+  GEMINI_API_KEY: ${GEMINI_API_KEY}
+  GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.8-flash}
+  GEMINI_THINKING_LEVEL: ${GEMINI_THINKING_LEVEL:-low}
+  VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+  VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+  VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:admin@example.com}
+
+services:
+  database:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - databaseData:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    logging: *logging
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment: *backendEnvironment
+    command:
+      - sh
+      - -c
+      - alembic upgrade head && uvicorn application.main:application --host 0.0.0.0 --port 8000 --workers 2 --proxy-headers --forwarded-allow-ips "*"
+    depends_on:
+      database:
+        condition: service_healthy
+    logging: *logging
+
+  worker:
+    build: ./backend
+    restart: unless-stopped
+    environment: *backendEnvironment
+    command: ["python", "-m", "application.jobs.worker"]
+    depends_on:
+      - backend
+    logging: *logging
+
+  backup:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      PGHOST: database
+      PGUSER: ${POSTGRES_USER}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: ${POSTGRES_DB}
+      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-14}
+      TZ: Europe/Prague
+    entrypoint: ["sh", "/backup.sh"]
+    volumes:
+      - ./backups:/backups
+      - ./deploy/backup.sh:/backup.sh:ro
+    depends_on:
+      database:
+        condition: service_healthy
+    logging: *logging
+
+  caddy:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.production
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddyData:/data
+      - caddyConfig:/config
+    depends_on:
+      - backend
+    logging: *logging
+
+volumes:
+  databaseData:
+  caddyData:
+  caddyConfig:
