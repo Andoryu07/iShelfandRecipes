@@ -107,7 +107,7 @@ export const texts = {
     addStockItem: "Přidat do zásob",
     food: "Potravina",
     startTyping: "Začni psát název potraviny",
-    newFoodHint: "Nová potravina, vyber jednotku a kategorii",
+    newFoodHint: "Nová potravina, vyber kategorii",
     createFoodOption: (name: string) => `Přidat „${name}“`,
     baseUnit: "Měří se v",
     genericName: "Obecný druh (nepovinné)",
@@ -172,9 +172,6 @@ export const texts = {
     itemName: "Název",
     price: "Cena (Kč)",
     addToStock: "Přidat do zásob",
-    newFoodSummary: (unit: string, category: string, genericName: string) =>
-      `Nová potravina · ${unit} · ${category}${genericName.trim() ? ` · druh ${genericName.trim()}` : ""}`,
-    editNewFood: "Upravit",
     removeItem: "Odebrat položku",
     addItem: "Přidat položku",
     newItemText: "Ruční položka",

@@ -67,7 +67,6 @@ export function AddStockItemDialog({
   const [expirationDate, setExpirationDate] = useState("");
   const [isPickingDate, setIsPickingDate] = useState(false);
   const [quantityError, setQuantityError] = useState<string | null>(null);
-  const [isEditingNewFood, setIsEditingNewFood] = useState(false);
   const baseUnit = baseUnitOf(food);
 
   const saveMutation = useMutation({
@@ -139,23 +138,7 @@ export function AddStockItemDialog({
               ))}
             </Stack>
           )}
-          {isNewFood(food) &&
-            (isEditingNewFood ? (
-              <NewFoodFields value={food} onChange={changeFood} />
-            ) : (
-              <Stack direction="row" sx={{ alignItems: "center", gap: 1, mt: 1 }}>
-                <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
-                  {texts.receipts.newFoodSummary(
-                    texts.units[food.baseUnit],
-                    texts.foodCategories[food.category],
-                    food.genericName,
-                  )}
-                </Typography>
-                <Button size="small" onClick={() => setIsEditingNewFood(true)}>
-                  {texts.receipts.editNewFood}
-                </Button>
-              </Stack>
-            ))}
+          {isNewFood(food) && <NewFoodFields value={food} onChange={changeFood} />}
           {baseUnit && (
             <QuantityInput
               label={texts.stock.quantity}

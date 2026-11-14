@@ -38,7 +38,6 @@ export function ReviewItemCard({
   onRemove,
 }: ReviewItemCardProps) {
   const baseUnit = baseUnitOf(item.food);
-  const [isEditingNewFood, setIsEditingNewFood] = useState(false);
   const [isExpanded, setIsExpanded] = useState(item.name === "");
 
   function changeFood(food: FoodChoice | null) {
@@ -130,23 +129,7 @@ export function ReviewItemCard({
         {item.addToStock && (
           <>
             <FoodPicker householdId={householdId} value={item.food} onChange={changeFood} />
-            {isNewFood(item.food) &&
-              (isEditingNewFood ? (
-                <NewFoodFields value={item.food} onChange={changeFood} />
-              ) : (
-                <Stack direction="row" sx={{ alignItems: "center", gap: 1 }}>
-                  <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
-                    {texts.receipts.newFoodSummary(
-                      texts.units[item.food.baseUnit],
-                      texts.foodCategories[item.food.category],
-                      item.food.genericName,
-                    )}
-                  </Typography>
-                  <Button size="small" onClick={() => setIsEditingNewFood(true)}>
-                    {texts.receipts.editNewFood}
-                  </Button>
-                </Stack>
-              ))}
+            {isNewFood(item.food) && <NewFoodFields value={item.food} onChange={changeFood} />}
             {baseUnit && (
               <QuantityInput
                 label={texts.stock.quantity}

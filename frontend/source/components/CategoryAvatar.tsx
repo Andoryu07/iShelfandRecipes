@@ -1,7 +1,7 @@
 import { Avatar } from "@mui/material";
 import type { FoodCategory } from "../api/types";
 
-const categoryEmoji: Record<FoodCategory, string> = {
+export const categoryEmoji: Record<FoodCategory, string> = {
   dairy: "🥛",
   meatAndSausages: "🥩",
   fish: "🐟",

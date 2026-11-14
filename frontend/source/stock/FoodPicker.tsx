@@ -1,8 +1,9 @@
-import { Autocomplete, MenuItem, TextField, Typography } from "@mui/material";
+import { Autocomplete, Chip, Stack, TextField, Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { useDeferredValue, useState } from "react";
 import { searchFoods } from "../api/stockApi";
 import { foodCategories, type Food, type FoodCategory, type MeasurementUnit } from "../api/types";
+import { categoryEmoji } from "../components/CategoryAvatar";
 import { texts } from "../translations/cs";
 import { suggestFood } from "./foodSuggestions";
 
@@ -92,21 +93,20 @@ export function FoodPicker({
 export function NewFoodFields({ value, onChange }: { value: NewFood; onChange: (value: NewFood) => void }) {
   return (
     <>
-      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+      <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5, mb: 1 }}>
         {texts.stock.newFoodHint}
       </Typography>
-      <TextField
-        select
-        label={texts.stock.baseUnit}
-        value={value.baseUnit}
-        onChange={(event) => onChange({ ...value, baseUnit: event.target.value as MeasurementUnit })}
-      >
-        {measurementUnits.map((unit) => (
-          <MenuItem key={unit} value={unit}>
-            {texts.units[unit]}
-          </MenuItem>
+      <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
+        {foodCategories.map((category) => (
+          <Chip
+            key={category}
+            size="small"
+            label={`${categoryEmoji[category]} ${texts.foodCategories[category]}`}
+            color={value.category === category ? "primary" : "default"}
+            onClick={() => onChange({ ...value, category })}
+          />
         ))}
-      </TextField>
+      </Stack>
       <TextField
         label={texts.stock.genericName}
         value={value.genericName}
@@ -114,18 +114,20 @@ export function NewFoodFields({ value, onChange }: { value: NewFood; onChange: (
         helperText={texts.stock.genericNameHint}
         slotProps={{ htmlInput: { maxLength: 100 } }}
       />
-      <TextField
-        select
-        label={texts.stock.category}
-        value={value.category}
-        onChange={(event) => onChange({ ...value, category: event.target.value as FoodCategory })}
-      >
-        {foodCategories.map((category) => (
-          <MenuItem key={category} value={category}>
-            {texts.foodCategories[category]}
-          </MenuItem>
+      <Typography variant="body2" color="text.secondary" sx={{ mt: 1, mb: 1 }}>
+        {texts.stock.baseUnit}
+      </Typography>
+      <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
+        {measurementUnits.map((unit) => (
+          <Chip
+            key={unit}
+            size="small"
+            label={texts.units[unit]}
+            color={value.baseUnit === unit ? "primary" : "default"}
+            onClick={() => onChange({ ...value, baseUnit: unit })}
+          />
         ))}
-      </TextField>
+      </Stack>
     </>
   );
 }
