@@ -58,7 +58,7 @@ export const foodCategories = [
 
 export type FoodCategory = (typeof foodCategories)[number];
 
-export type StockMovementReason = "eaten" | "spoiled" | "destroyed" | "cooked" | "correction";
+export type StockMovementReason = "eaten" | "spoiled" | "destroyed" | "cooked" | "correction" | "moved";
 
 export interface Food {
   id: number;
@@ -86,6 +86,27 @@ export interface StockMovement {
   quantityChange: number;
   reason: StockMovementReason;
   userId: number | null;
+  userDisplayName: string | null;
+  storageLocationId: number | null;
+  targetStorageLocationId: number | null;
+  createdAt: string;
+}
+
+export type StorageLocationHistoryKind =
+  Exclude<StockMovementReason, "moved"> | "added" | "movedIn" | "movedOut";
+
+export interface StorageLocationHistoryEvent {
+  kind: StorageLocationHistoryKind;
+  food: Food;
+  quantity: number | null;
+  userDisplayName: string | null;
+  otherStorageLocationId: number | null;
+  createdAt: string;
+}
+
+export interface RecipeCooking {
+  id: number;
+  servings: number;
   userDisplayName: string | null;
   createdAt: string;
 }

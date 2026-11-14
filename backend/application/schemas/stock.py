@@ -30,6 +30,8 @@ class CreateStockMovementRequest(BaseModel):
     def checkQuantityMatchesReason(self) -> Self:
         if self.reason == StockMovementReason.cooked:
             raise ValueError("Cooked movements are recorded only by cooking a recipe")
+        if self.reason == StockMovementReason.moved:
+            raise ValueError("Moves are recorded by changing the storage location")
         if self.reason == StockMovementReason.correction:
             if self.newQuantity is None or self.quantity is not None:
                 raise ValueError("A correction needs newQuantity and no quantity")
@@ -56,4 +58,15 @@ class StockMovementResponse(BaseModel):
     reason: StockMovementReason
     userId: int | None
     userDisplayName: str | None
+    storageLocationId: int | None
+    targetStorageLocationId: int | None
+    createdAt: datetime
+
+
+class StorageLocationHistoryEvent(BaseModel):
+    kind: str
+    food: FoodResponse
+    quantity: QuantityValue | None
+    userDisplayName: str | None
+    otherStorageLocationId: int | None
     createdAt: datetime

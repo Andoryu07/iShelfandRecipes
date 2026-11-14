@@ -108,6 +108,13 @@ class CookedIngredientResponse(BaseModel):
     missingQuantity: QuantityValue
 
 
+class RecipeCookingResponse(BaseModel):
+    id: int
+    servings: int
+    userDisplayName: str | None
+    createdAt: datetime
+
+
 class CookRecipeResponse(BaseModel):
     servings: int
     ingredients: list[CookedIngredientResponse]

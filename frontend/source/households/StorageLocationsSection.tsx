@@ -10,6 +10,7 @@ import {
   List,
   ListItem,
   ListItemAvatar,
+  ListItemButton,
   ListItemText,
   Typography,
 } from "@mui/material";
@@ -24,6 +25,7 @@ import {
 import { ApiError } from "../api/apiClient";
 import type { StorageLocation } from "../api/types";
 import { IconPickerSheet } from "../components/IconPicker";
+import { StorageLocationHistorySheet } from "./StorageLocationHistorySheet";
 import { storageLocationIcon, storageLocationIcons } from "../components/icons";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
 import { TextInputDialog } from "../components/TextInputDialog";
@@ -47,6 +49,7 @@ export function StorageLocationsSection({ householdId }: { householdId: number }
   const [storageLocationToRename, setStorageLocationToRename] = useState<StorageLocation | null>(null);
   const [storageLocationToDelete, setStorageLocationToDelete] = useState<StorageLocation | null>(null);
   const [storageLocationForIcon, setStorageLocationForIcon] = useState<StorageLocation | null>(null);
+  const [storageLocationForHistory, setStorageLocationForHistory] = useState<StorageLocation | null>(null);
 
   const storageLocationsQuery = useStorageLocations(householdId);
   const onSuccess = () => queryClient.invalidateQueries({ queryKey });
@@ -111,15 +114,20 @@ export function StorageLocationsSection({ householdId }: { householdId: number }
                   <Avatar sx={{ bgcolor: "action.hover" }}>{storageLocationIcon(storageLocation)}</Avatar>
                 </IconButton>
               </ListItemAvatar>
-              <ListItemText
-                primary={displayStorageLocationName(storageLocation)}
-                secondary={
-                  displayStorageLocationName(storageLocation) ===
-                  texts.storageLocationKinds[storageLocation.kind]
-                    ? null
-                    : texts.storageLocationKinds[storageLocation.kind]
-                }
-              />
+              <ListItemButton
+                onClick={() => setStorageLocationForHistory(storageLocation)}
+                sx={{ borderRadius: 2, mr: 10, px: 1 }}
+              >
+                <ListItemText
+                  primary={displayStorageLocationName(storageLocation)}
+                  secondary={
+                    displayStorageLocationName(storageLocation) ===
+                    texts.storageLocationKinds[storageLocation.kind]
+                      ? null
+                      : texts.storageLocationKinds[storageLocation.kind]
+                  }
+                />
+              </ListItemButton>
             </ListItem>
           ))}
         </List>
@@ -150,6 +158,13 @@ export function StorageLocationsSection({ householdId }: { householdId: number }
             setStorageLocationToRename(null);
           }}
           onClose={() => setStorageLocationToRename(null)}
+        />
+      )}
+      {storageLocationForHistory && (
+        <StorageLocationHistorySheet
+          storageLocation={storageLocationForHistory}
+          storageLocations={storageLocationsQuery.data ?? []}
+          onClose={() => setStorageLocationForHistory(null)}
         />
       )}
       <IconPickerSheet

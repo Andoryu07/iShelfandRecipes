@@ -1,5 +1,11 @@
 import { apiRequest } from "./apiClient";
-import type { Household, HouseholdMember, StorageLocation, StorageLocationKind } from "./types";
+import type {
+  Household,
+  HouseholdMember,
+  StorageLocation,
+  StorageLocationHistoryEvent,
+  StorageLocationKind,
+} from "./types";
 
 export function listHouseholds(): Promise<Household[]> {
   return apiRequest<Household[]>("/households");
@@ -55,6 +61,10 @@ export function changeStorageLocationIcon(
     method: "PATCH",
     body: { icon },
   });
+}
+
+export function getStorageLocationHistory(storageLocationId: number): Promise<StorageLocationHistoryEvent[]> {
+  return apiRequest<StorageLocationHistoryEvent[]>(`/storage-locations/${storageLocationId}/history`);
 }
 
 export function deleteStorageLocation(storageLocationId: number): Promise<void> {

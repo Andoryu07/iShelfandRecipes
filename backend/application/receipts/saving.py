@@ -69,6 +69,7 @@ def saveReceipt(session: Session, householdId: int, user: User, request: SaveRec
                 quantity=item.quantity,
                 expirationDate=item.expirationDate,
                 receiptItemId=receiptItem.id,
+                createdByUserId=user.id,
             )
         )
     session.flush()

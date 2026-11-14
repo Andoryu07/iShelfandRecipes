@@ -1,10 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, status
-from sqlalchemy import select, update
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from sqlalchemy import func, or_, select, update
 from sqlalchemy.orm import Session
 
 from application.database import getDatabaseSession
 from application.dependencies import getAccessibleStorageLocation, getHouseholdMembership
-from application.models import HouseholdMember, StockItem, StorageLocation
+from application.foods import buildFoodResponse
+from application.models import Food, HouseholdMember, StockItem, StockMovement, StorageLocation, User
+from application.models.enumerations import StockMovementReason
+from application.schemas.stock import StorageLocationHistoryEvent
 from application.schemas.storage_locations import (
     CreateStorageLocationRequest,
     StorageLocationResponse,
@@ -111,3 +114,90 @@ def deleteStorageLocation(
     session.delete(storageLocation)
     session.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+def movementEvent(movement: StockMovement, food: Food, displayName: str | None, storageLocationId: int):
+    if movement.reason == StockMovementReason.moved:
+        isIncoming = movement.targetStorageLocationId == storageLocationId
+        return StorageLocationHistoryEvent(
+            kind="movedIn" if isIncoming else "movedOut",
+            food=buildFoodResponse(food),
+            quantity=None,
+            userDisplayName=displayName,
+            otherStorageLocationId=movement.storageLocationId if isIncoming else movement.targetStorageLocationId,
+            createdAt=movement.createdAt,
+        )
+    return StorageLocationHistoryEvent(
+        kind=movement.reason.value,
+        food=buildFoodResponse(food),
+        quantity=abs(movement.quantityChange),
+        userDisplayName=displayName,
+        otherStorageLocationId=None,
+        createdAt=movement.createdAt,
+    )
+
+
+@router.get("/storage-locations/{storageLocationId}/history", response_model=list[StorageLocationHistoryEvent])
+def getStorageLocationHistory(
+    limit: int = Query(default=50, ge=1, le=200),
+    storageLocation: StorageLocation = Depends(getAccessibleStorageLocation),
+    session: Session = Depends(getDatabaseSession),
+) -> list[StorageLocationHistoryEvent]:
+    movementRows = session.execute(
+        select(StockMovement, Food, User.displayName)
+        .join(StockItem, StockItem.id == StockMovement.stockItemId)
+        .join(Food, Food.id == StockItem.foodId)
+        .outerjoin(User, User.id == StockMovement.userId)
+        .where(
+            or_(
+                StockMovement.storageLocationId == storageLocation.id,
+                StockMovement.targetStorageLocationId == storageLocation.id,
+            )
+        )
+        .order_by(StockMovement.createdAt.desc(), StockMovement.id.desc())
+        .limit(limit)
+    ).all()
+    events = [
+        movementEvent(movement, food, displayName, storageLocation.id) for movement, food, displayName in movementRows
+    ]
+
+    firstMoveIds = (
+        select(func.min(StockMovement.id).label("id"))
+        .where(StockMovement.reason == StockMovementReason.moved)
+        .group_by(StockMovement.stockItemId)
+        .subquery()
+    )
+    firstMoves = (
+        select(StockMovement.stockItemId, StockMovement.storageLocationId)
+        .join(firstMoveIds, firstMoveIds.c.id == StockMovement.id)
+        .subquery()
+    )
+    quantityChanges = (
+        select(StockMovement.stockItemId, func.sum(StockMovement.quantityChange).label("total"))
+        .group_by(StockMovement.stockItemId)
+        .subquery()
+    )
+    initialStorageLocationId = func.coalesce(firstMoves.c.storageLocationId, StockItem.storageLocationId)
+    addedRows = session.execute(
+        select(StockItem, Food, User.displayName, func.coalesce(quantityChanges.c.total, 0))
+        .join(Food, Food.id == StockItem.foodId)
+        .outerjoin(User, User.id == StockItem.createdByUserId)
+        .outerjoin(firstMoves, firstMoves.c.stockItemId == StockItem.id)
+        .outerjoin(quantityChanges, quantityChanges.c.stockItemId == StockItem.id)
+        .where(Food.householdId == storageLocation.householdId, initialStorageLocationId == storageLocation.id)
+        .order_by(StockItem.createdAt.desc(), StockItem.id.desc())
+        .limit(limit)
+    ).all()
+    events.extend(
+        StorageLocationHistoryEvent(
+            kind="added",
+            food=buildFoodResponse(food),
+            quantity=stockItem.quantity - changes,
+            userDisplayName=displayName,
+            otherStorageLocationId=None,
+            createdAt=stockItem.createdAt,
+        )
+        for stockItem, food, displayName, changes in addedRows
+    )
+    events.sort(key=lambda event: event.createdAt, reverse=True)
+    return events[:limit]

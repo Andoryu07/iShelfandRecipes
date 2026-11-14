@@ -25,6 +25,7 @@ class StockMovementReason(enum.Enum):
     destroyed = "destroyed"
     cooked = "cooked"
     correction = "correction"
+    moved = "moved"
 
 
 class ReservationStatus(enum.Enum):

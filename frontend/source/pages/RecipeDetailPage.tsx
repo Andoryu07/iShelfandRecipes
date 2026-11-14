@@ -41,6 +41,7 @@ import { LoadingScreen } from "../components/LoadingScreen";
 import { describeError } from "../errorMessages";
 import { useCurrentHousehold } from "../households/useCurrentHousehold";
 import { AddMissingFoodsSheet } from "../recipes/AddMissingFoodsSheet";
+import { CookingHistory } from "../recipes/CookingHistory";
 import { RecipeEditorDialog } from "../recipes/RecipeEditorDialog";
 import { useStorageLocations } from "../households/useStorageLocations";
 import { formatMoney } from "../receipts/money";
@@ -309,6 +310,8 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
           <Typography sx={{ whiteSpace: "pre-line", lineHeight: 1.7 }}>{recipe.instructions}</Typography>
         </section>
       )}
+
+      <CookingHistory recipeId={recipeId} />
 
       <Box
         sx={{

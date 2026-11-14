@@ -102,6 +102,7 @@ A user who is not a member of the household gets `404`. Invite codes have 8 char
 | `POST /households/{householdId}/storage-locations` | Add a storage location | done |
 | `PATCH /storage-locations/{storageLocationId}` | Rename, change the kind or the icon | done |
 | `DELETE /storage-locations/{storageLocationId}` | Delete an empty storage location | done |
+| `GET /storage-locations/{storageLocationId}/history?limit=` | What happened in the location, newest first: items added there, write-offs, corrections, cooking and moves in or out | done |
 
 Every member of the household can manage storage locations. A storage location that still holds food (remaining quantity above zero) cannot be deleted. Used-up stock items of a deleted location are moved to another storage location of the household, so their history is kept; the last storage location with such history cannot be deleted.
 
@@ -124,8 +125,8 @@ Storage locations, foods and recipes have an optional `icon` (one emoji, up to 1
 | --- | --- | --- |
 | `GET /households/{householdId}/stock-items?storageLocationId=&expiringWithinDays=` | List stock with remaining and reserved quantities | done |
 | `POST /households/{householdId}/stock-items` | Add a stock item manually | done |
-| `PATCH /stock-items/{stockItemId}` | Change expiration date or storage location | done |
-| `GET /stock-items/{stockItemId}/movements` | History of decreases | done |
+| `PATCH /stock-items/{stockItemId}` | Change expiration date or storage location (a move is recorded in the history) | done |
+| `GET /stock-items/{stockItemId}/movements` | History of decreases, corrections and moves | done |
 | `POST /stock-items/{stockItemId}/movements` | Write off a quantity (eaten, spoiled, destroyed, correction) | done |
 
 The list contains only items with something left, sorted by expiration date (items without a date last). Every purchase is its own stock item, the same food is never merged. Write-offs send `{"reason": "eaten" | "spoiled" | "destroyed", "quantity": 250}` and cannot exceed what remains; a correction sends `{"reason": "correction", "newQuantity": 3}` and may also increase the quantity. Stock added by mistake is corrected to zero, never deleted. Expiration filters use the Europe/Prague date.
@@ -171,6 +172,7 @@ docker compose run --rm -v ./receipt.jpg:/receipt.jpg backend python -m applicat
 | `DELETE /recipes/{recipeId}` | Delete a recipe | done |
 | `GET /recipes/{recipeId}/availability?servings=` | Available and missing ingredients for the current user and a price estimate from the latest receipt price of each food (or of the same kind) | done |
 | `POST /recipes/{recipeId}/reserve` | Reserve everything that is available for the recipe, earliest expiration first | done |
+| `GET /recipes/{recipeId}/cookings` | Who cooked the recipe, when and for how many servings (newest 50) | done |
 | `POST /recipes/{recipeId}/cook` | Deduct the ingredients from stock (own reservations for the recipe first, then free stock with the earliest expiration) and fulfil the related reservations | done |
 
 A new household gets five predefined recipes written for this project (`backend/application/recipes/predefined.json`) together with the foods they need. Every ingredient points to a food; `acceptsAnyOfKind` lets any food of the same general kind and unit count (any milk), otherwise only that food counts (plain flour). Optional ingredients (salt, spices) never count as missing. For user A and recipe R, the available quantity is the stock minus active reservations of other users, minus A's own reservations for a different recipe.

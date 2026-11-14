@@ -189,6 +189,11 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
     }
   }
 
+  function storageLocationName(storageLocationId: number | null): string {
+    const location = storageLocations.find((candidate) => candidate.id === storageLocationId);
+    return location ? displayStorageLocationName(location) : texts.history.unknownStorageLocation;
+  }
+
   const storageLocation = storageLocations.find((location) => location.id === stockItem.storageLocationId);
   const errorMessage =
     inputError ?? (actionMutation.error ? describeActionError(actionMutation.error) : null);
@@ -390,10 +395,17 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
               {movementsQuery.data?.map((movement) => (
                 <ListItem key={movement.id} disableGutters>
                   <ListItemText
-                    primary={`${texts.movementReasons[movement.reason]}: ${movement.quantityChange > 0 ? "+" : "−"}${formatQuantity(
-                      Math.abs(movement.quantityChange),
-                      food.baseUnit,
-                    )}`}
+                    primary={
+                      movement.reason === "moved"
+                        ? texts.history.movedBetween(
+                            storageLocationName(movement.storageLocationId),
+                            storageLocationName(movement.targetStorageLocationId),
+                          )
+                        : `${texts.movementReasons[movement.reason]}: ${movement.quantityChange > 0 ? "+" : "−"}${formatQuantity(
+                            Math.abs(movement.quantityChange),
+                            food.baseUnit,
+                          )}`
+                    }
                     secondary={`${movement.userDisplayName ?? texts.stock.unknownUser}, ${formatTimestamp(movement.createdAt)}`}
                   />
                 </ListItem>

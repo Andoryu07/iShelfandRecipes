@@ -7,6 +7,7 @@ from application.database import getDatabaseSession
 from application.dependencies import getAccessibleFood, getHouseholdMembership
 from application.foods import buildFoodResponse, escapeLikePattern, foodIsInUse
 from application.models import Food, HouseholdMember, StockItem, StockMovement
+from application.models.enumerations import StockMovementReason
 from application.schemas.foods import CreateFoodRequest, FoodResponse, LastAddedQuantityResponse, UpdateFoodRequest
 
 router = APIRouter(tags=["foods"])
@@ -98,7 +99,7 @@ def getLastAddedQuantity(
         return LastAddedQuantityResponse(quantity=None)
     changes = session.scalar(
         select(func.coalesce(func.sum(StockMovement.quantityChange), 0)).where(
-            StockMovement.stockItemId == stockItem.id
+            StockMovement.stockItemId == stockItem.id, StockMovement.reason != StockMovementReason.moved
         )
     )
     return LastAddedQuantityResponse(quantity=stockItem.quantity - changes)

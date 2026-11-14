@@ -47,7 +47,11 @@ class Cook:
         stockItem.quantity -= taken
         self.session.add(
             StockMovement(
-                stockItemId=stockItem.id, userId=self.userId, quantityChange=-taken, reason=StockMovementReason.cooked
+                stockItemId=stockItem.id,
+                userId=self.userId,
+                quantityChange=-taken,
+                reason=StockMovementReason.cooked,
+                storageLocationId=stockItem.storageLocationId,
             )
         )
         if fromRecipeReservation:

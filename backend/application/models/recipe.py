@@ -39,3 +39,15 @@ class RecipeIngredient(Base):
     quantity: Mapped[Decimal] = mapped_column(Numeric(12, 3))
     acceptsAnyOfKind: Mapped[bool] = mapped_column("accepts_any_of_kind", default=True, server_default=true())
     isOptional: Mapped[bool] = mapped_column("is_optional", default=False, server_default=false())
+
+
+class RecipeCooking(Base):
+    __tablename__ = "recipe_cookings"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    recipeId: Mapped[int] = mapped_column("recipe_id", ForeignKey("recipes.id", ondelete="CASCADE"), index=True)
+    userId: Mapped[int | None] = mapped_column("user_id", ForeignKey("users.id", ondelete="SET NULL"))
+    servings: Mapped[int]
+    createdAt: Mapped[datetime] = mapped_column(
+        "created_at", DateTime(timezone=True), server_default=func.now()
+    )

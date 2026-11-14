@@ -8,7 +8,7 @@ from application.database import getDatabaseSession
 from application.dependencies import getCurrentUser, getHouseholdMembership, notFoundError
 from application.foods import FoodNotFoundError, FoodResolver, buildFoodResponse
 from application.households import findMembership
-from application.models import Food, HouseholdMember, Recipe, RecipeIngredient, Reservation, User
+from application.models import Food, HouseholdMember, Recipe, RecipeCooking, RecipeIngredient, Reservation, User
 from application.recipes.availability import AvailabilityCalculator, scaledQuantity
 from application.recipes.cooking import Cook, lockHouseholdStock
 from application.schemas.recipes import (
@@ -16,6 +16,7 @@ from application.schemas.recipes import (
     CookRecipeResponse,
     CreateRecipeRequest,
     RecipeAvailabilityResponse,
+    RecipeCookingResponse,
     RecipeIngredientRequest,
     RecipeIngredientResponse,
     RecipeResponse,
@@ -274,5 +275,25 @@ def cookRecipe(
     servings = request.servings or recipe.servings
     ingredients = loadIngredients(session, [recipe.id])[recipe.id]
     results = Cook(session, recipe, user.id).cook(ingredients, servings)
+    session.add(RecipeCooking(recipeId=recipe.id, userId=user.id, servings=servings))
     session.commit()
     return CookRecipeResponse(servings=servings, ingredients=results)
+
+
+@router.get("/recipes/{recipeId}/cookings", response_model=list[RecipeCookingResponse])
+def listRecipeCookings(
+    recipe: Recipe = Depends(getAccessibleRecipe), session: Session = Depends(getDatabaseSession)
+) -> list[RecipeCookingResponse]:
+    rows = session.execute(
+        select(RecipeCooking, User.displayName)
+        .outerjoin(User, User.id == RecipeCooking.userId)
+        .where(RecipeCooking.recipeId == recipe.id)
+        .order_by(RecipeCooking.createdAt.desc(), RecipeCooking.id.desc())
+        .limit(50)
+    ).all()
+    return [
+        RecipeCookingResponse(
+            id=cooking.id, servings=cooking.servings, userDisplayName=displayName, createdAt=cooking.createdAt
+        )
+        for cooking, displayName in rows
+    ]

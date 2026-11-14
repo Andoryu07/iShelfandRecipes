@@ -58,6 +58,9 @@ class StockItem(Base):
     receiptItemId: Mapped[int | None] = mapped_column(
         "receipt_item_id", ForeignKey("receipt_items.id", ondelete="SET NULL"), unique=True
     )
+    createdByUserId: Mapped[int | None] = mapped_column(
+        "created_by_user_id", ForeignKey("users.id", ondelete="SET NULL")
+    )
     createdAt: Mapped[datetime] = mapped_column(
         "created_at", DateTime(timezone=True), server_default=func.now()
     )
@@ -65,7 +68,7 @@ class StockItem(Base):
 
 class StockMovement(Base):
     __tablename__ = "stock_movements"
-    __table_args__ = (CheckConstraint("quantity_change <> 0", name="quantity_change_not_zero"),)
+    __table_args__ = (CheckConstraint("quantity_change <> 0 OR reason = 'moved'", name="quantity_change_not_zero"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     stockItemId: Mapped[int] = mapped_column(
@@ -75,6 +78,12 @@ class StockMovement(Base):
     quantityChange: Mapped[Decimal] = mapped_column("quantity_change", Numeric(12, 3))
     reason: Mapped[StockMovementReason] = mapped_column(
         databaseEnum(StockMovementReason, "stock_movement_reason")
+    )
+    storageLocationId: Mapped[int | None] = mapped_column(
+        "storage_location_id", ForeignKey("storage_locations.id", ondelete="SET NULL"), index=True
+    )
+    targetStorageLocationId: Mapped[int | None] = mapped_column(
+        "target_storage_location_id", ForeignKey("storage_locations.id", ondelete="SET NULL"), index=True
     )
     createdAt: Mapped[datetime] = mapped_column(
         "created_at", DateTime(timezone=True), server_default=func.now()

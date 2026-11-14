@@ -67,6 +67,7 @@ def createStockItem(
         foodId=food.id,
         quantity=request.quantity,
         expirationDate=request.expirationDate,
+        createdByUserId=membership.userId,
     )
     session.add(stockItem)
     session.commit()
@@ -77,12 +78,23 @@ def createStockItem(
 def updateStockItem(
     request: UpdateStockItemRequest,
     stockItem: StockItem = Depends(getAccessibleStockItem),
+    user: User = Depends(getCurrentUser),
     session: Session = Depends(getDatabaseSession),
 ) -> StockItemResponse:
     householdId = householdIdOfStockItem(session, stockItem)
-    if request.storageLocationId is not None:
+    if request.storageLocationId is not None and request.storageLocationId != stockItem.storageLocationId:
         if findHouseholdStorageLocation(session, householdId, request.storageLocationId) is None:
             raise notFoundError("Storage location")
+        session.add(
+            StockMovement(
+                stockItemId=stockItem.id,
+                userId=user.id,
+                quantityChange=0,
+                reason=StockMovementReason.moved,
+                storageLocationId=stockItem.storageLocationId,
+                targetStorageLocationId=request.storageLocationId,
+            )
+        )
         stockItem.storageLocationId = request.storageLocationId
     if "expirationDate" in request.model_fields_set:
         stockItem.expirationDate = request.expirationDate
@@ -108,6 +120,8 @@ def listStockMovements(
             reason=movement.reason,
             userId=movement.userId,
             userDisplayName=displayName,
+            storageLocationId=movement.storageLocationId,
+            targetStorageLocationId=movement.targetStorageLocationId,
             createdAt=movement.createdAt,
         )
         for movement, displayName in rows
@@ -148,7 +162,13 @@ def createStockMovement(
         reservations, lockedStockItem.quantity, user.id, eatenByActingUser=request.reason == StockMovementReason.eaten
     )
     session.add(
-        StockMovement(stockItemId=lockedStockItem.id, userId=user.id, quantityChange=quantityChange, reason=request.reason)
+        StockMovement(
+            stockItemId=lockedStockItem.id,
+            userId=user.id,
+            quantityChange=quantityChange,
+            reason=request.reason,
+            storageLocationId=lockedStockItem.storageLocationId,
+        )
     )
     session.commit()
     return loadStockItemResponse(session, householdId, lockedStockItem.id)
