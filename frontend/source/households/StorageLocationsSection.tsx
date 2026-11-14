@@ -1,12 +1,23 @@
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
-import { Alert, Button, IconButton, List, ListItem, ListItemText, Typography } from "@mui/material";
+import {
+  Alert,
+  Avatar,
+  Button,
+  Card,
+  IconButton,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  Typography,
+} from "@mui/material";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { createStorageLocation, deleteStorageLocation, renameStorageLocation } from "../api/householdsApi";
 import { ApiError } from "../api/apiClient";
-import type { StorageLocation } from "../api/types";
+import type { StorageLocation, StorageLocationKind } from "../api/types";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
 import { TextInputDialog } from "../components/TextInputDialog";
 import { describeError } from "../errorMessages";
@@ -21,6 +32,13 @@ function describeDeletionError(error: unknown): string {
   }
   return describeError(error);
 }
+
+const storageLocationEmoji: Record<StorageLocationKind, string> = {
+  fridge: "🧊",
+  freezer: "❄️",
+  pantry: "🥫",
+  custom: "📦",
+};
 
 export function StorageLocationsSection({ householdId }: { householdId: number }) {
   const queryClient = useQueryClient();
@@ -48,46 +66,51 @@ export function StorageLocationsSection({ householdId }: { householdId: number }
     (deleteMutation.error && describeDeletionError(deleteMutation.error));
 
   return (
-    <section className="section">
-      <Typography variant="h6" component="h2">
+    <section>
+      <Typography className="listSectionTitle" component="h2">
         {texts.household.storageLocationsTitle}
       </Typography>
       {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
-      <List>
-        {storageLocationsQuery.data?.map((storageLocation) => (
-          <ListItem
-            key={storageLocation.id}
-            disableGutters
-            secondaryAction={
-              <>
-                <IconButton
-                  aria-label={texts.common.rename}
-                  onClick={() => setStorageLocationToRename(storageLocation)}
-                >
-                  <EditRoundedIcon />
-                </IconButton>
-                <IconButton
-                  edge="end"
-                  aria-label={texts.common.delete}
-                  onClick={() => setStorageLocationToDelete(storageLocation)}
-                >
-                  <DeleteOutlineRoundedIcon />
-                </IconButton>
-              </>
-            }
-          >
-            <ListItemText
-              primary={displayStorageLocationName(storageLocation)}
-              secondary={
-                displayStorageLocationName(storageLocation) ===
-                texts.storageLocationKinds[storageLocation.kind]
-                  ? null
-                  : texts.storageLocationKinds[storageLocation.kind]
+      <Card>
+        <List disablePadding>
+          {storageLocationsQuery.data?.map((storageLocation, index) => (
+            <ListItem
+              key={storageLocation.id}
+              divider={index < (storageLocationsQuery.data?.length ?? 0) - 1}
+              secondaryAction={
+                <>
+                  <IconButton
+                    aria-label={texts.common.rename}
+                    onClick={() => setStorageLocationToRename(storageLocation)}
+                  >
+                    <EditRoundedIcon />
+                  </IconButton>
+                  <IconButton
+                    edge="end"
+                    aria-label={texts.common.delete}
+                    onClick={() => setStorageLocationToDelete(storageLocation)}
+                  >
+                    <DeleteOutlineRoundedIcon />
+                  </IconButton>
+                </>
               }
-            />
-          </ListItem>
-        ))}
-      </List>
+            >
+              <ListItemAvatar>
+                <Avatar sx={{ bgcolor: "action.hover" }}>{storageLocationEmoji[storageLocation.kind]}</Avatar>
+              </ListItemAvatar>
+              <ListItemText
+                primary={displayStorageLocationName(storageLocation)}
+                secondary={
+                  displayStorageLocationName(storageLocation) ===
+                  texts.storageLocationKinds[storageLocation.kind]
+                    ? null
+                    : texts.storageLocationKinds[storageLocation.kind]
+                }
+              />
+            </ListItem>
+          ))}
+        </List>
+      </Card>
       <Button startIcon={<AddRoundedIcon />} onClick={() => setIsCreating(true)}>
         {texts.household.newStorageLocation}
       </Button>

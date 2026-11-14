@@ -31,17 +31,17 @@ export function InviteCodeCard({ household }: { household: Household }) {
   }
 
   return (
-    <Card variant="outlined" className="section">
-      <CardContent>
+    <Card sx={{ mt: 2, bgcolor: "action.hover", borderStyle: "dashed", borderWidth: 2 }}>
+      <CardContent sx={{ textAlign: "center" }}>
         <Typography variant="h6" component="h2">
           {texts.household.inviteTitle}
         </Typography>
         <Typography color="text.secondary">{texts.household.inviteDescription}</Typography>
-        <Typography className="inviteCode" sx={{ mt: 2 }}>
+        <Typography className="inviteCode" sx={{ mt: 2, fontWeight: 700 }}>
           {household.inviteCode}
         </Typography>
       </CardContent>
-      <CardActions>
+      <CardActions sx={{ justifyContent: "center", pb: 2 }}>
         <Button variant="contained" onClick={shareInviteCode}>
           {texts.household.shareInviteCode}
         </Button>

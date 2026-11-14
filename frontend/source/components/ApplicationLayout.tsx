@@ -157,7 +157,13 @@ export function ApplicationLayout() {
                 value={item.path}
                 label={item.label}
                 icon={item.icon}
-                sx={{ minWidth: 0, px: 0.5 }}
+                sx={{
+                  minWidth: 0,
+                  px: 0.25,
+                  "& .MuiBottomNavigationAction-label, & .MuiBottomNavigationAction-label.Mui-selected": {
+                    fontSize: "0.7rem",
+                  },
+                }}
               />
             ))}
           </BottomNavigation>
