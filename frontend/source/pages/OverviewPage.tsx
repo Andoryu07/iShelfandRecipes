@@ -22,6 +22,7 @@ import { listActiveReservations, listStockItems } from "../api/stockApi";
 import { useAuthentication } from "../authentication/AuthenticationContext";
 import { CategoryAvatar } from "../components/CategoryAvatar";
 import { useCurrentHousehold } from "../households/useCurrentHousehold";
+import { greetingFor, vocative } from "../overview/vocative";
 import { ExpirationChip } from "../stock/ExpirationChip";
 import { formatQuantity } from "../stock/quantities";
 import { stockItemsQueryKey } from "../stock/stockQueries";
@@ -71,7 +72,10 @@ function Overview({ householdId }: { householdId: number }) {
   return (
     <>
       <Typography variant="h5" component="h2" sx={{ mt: 1 }}>
-        {texts.overview.greeting(user?.displayName.trim().split(/\s+/)[0] ?? "")}
+        {texts.overview.greeting(
+          greetingFor(new Date().getHours()),
+          vocative(user?.displayName.trim().split(/\s+/)[0] ?? ""),
+        )}
       </Typography>
       <Stack direction="row" spacing={1} useFlexGap sx={{ mt: 2 }}>
         <Button

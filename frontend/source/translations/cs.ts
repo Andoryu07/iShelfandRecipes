@@ -325,7 +325,8 @@ export const texts = {
     contactEmail: "liskaondra2@gmail.com",
   },
   overview: {
-    greeting: (name: string) => `Ahoj, ${name}`,
+    greeting: (partOfDay: "morning" | "day" | "evening", name: string) =>
+      `${partOfDay === "morning" ? "Dobré ráno" : partOfDay === "evening" ? "Dobrý večer" : "Ahoj"}${name ? `, ${name}` : ""}`,
     scanReceipt: "Vyfotit účtenku",
     addFood: "Přidat potravinu",
     expiringTitle: "Brzy projde",
