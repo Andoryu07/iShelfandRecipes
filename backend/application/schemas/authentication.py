@@ -26,6 +26,20 @@ class DeleteAccountRequest(BaseModel):
     password: str = Field(max_length=128)
 
 
+class PasswordResetRequest(BaseModel):
+    email: EmailStr
+
+
+class PasswordResetConfirmation(BaseModel):
+    token: str = Field(min_length=1, max_length=200)
+    newPassword: str = Field(min_length=8, max_length=128)
+
+
+class ChangePasswordRequest(BaseModel):
+    currentPassword: str = Field(max_length=128)
+    newPassword: str = Field(min_length=8, max_length=128)
+
+
 class TokenResponse(BaseModel):
     accessToken: str
     tokenType: str = "bearer"

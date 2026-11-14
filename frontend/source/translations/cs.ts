@@ -35,6 +35,28 @@ export const texts = {
     incorrectCredentials: "Nesprávný e-mail nebo heslo.",
     emailAlreadyRegistered: "Tento e-mail už je zaregistrovaný.",
     invalidInput: "Zkontroluj prosím vyplněné údaje.",
+    forgotPassword: "Zapomenuté heslo?",
+  },
+  passwordReset: {
+    forgotTitle: "Zapomenuté heslo",
+    forgotIntroduction: "Zadej e-mail, se kterým se přihlašuješ. Pošleme ti odkaz na nastavení nového hesla.",
+    sendLink: "Poslat odkaz",
+    linkSent: (email: string) =>
+      `Pokud účet s e-mailem ${email} existuje, poslali jsme na něj odkaz. Platí 1 hodinu. Nevidíš ho? Podívej se i do spamu.`,
+    backToLogIn: "Zpět na přihlášení",
+    newPasswordTitle: "Nové heslo",
+    newPassword: "Nové heslo",
+    repeatPassword: "Nové heslo znovu",
+    passwordsDiffer: "Hesla se neshodují.",
+    savePassword: "Uložit heslo",
+    passwordChanged: "Heslo je změněné a ostatní zařízení jsou odhlášená. Teď se přihlas novým heslem.",
+    invalidLink: "Odkaz je neplatný nebo už vypršel. Požádej o nový.",
+    requestNewLink: "Poslat nový odkaz",
+    changeTitle: "Heslo",
+    changeDescription: "Po změně se odhlásíš na ostatních zařízeních.",
+    changeButton: "Změnit heslo",
+    currentPassword: "Současné heslo",
+    changed: "Heslo změněno",
   },
   navigation: {
     overview: "Přehled",
@@ -363,7 +385,6 @@ export const texts = {
     privacyDescription: "Zásady, souhlas se skenováním účtenek",
     about: "O aplikaci",
     aboutDescription: "Verze, kontakt",
-    passwordComingSoon: "Změnu a obnovu hesla připravujeme.",
     theme: "Motiv",
     themeLight: "Světlý",
     themeDark: "Tmavý",
@@ -413,7 +434,7 @@ export const texts = {
   registrationConsentLink: "zásadami ochrany soukromí",
   privacyPolicy: {
     title: "Zásady ochrany soukromí",
-    effectiveFrom: "Účinné od 13. 11. 2026",
+    effectiveFrom: "Účinné od 14. 11. 2026",
     back: "Zpět",
     sections: [
       {
@@ -436,14 +457,21 @@ export const texts = {
         paragraphs: [
           "Když vyfotíš nebo nahraješ účtenku, odešleme fotku nebo PDF ke zpracování službě Google Gemini, která z ní přečte položky. Používáme placenou úroveň této služby, u které Google podle svých podmínek odeslaná data nepoužívá k trénování svých modelů.",
           "Fotku ani PDF nikde neukládáme, zpracují se jen v paměti a hned se zahodí. Uloží se pouze položky, které na obrazovce kontroly potvrdíš.",
-          "Skenování je možné jen s tvým souhlasem, který udělíš před první účtenkou. Souhlas můžeš kdykoli odvolat na stránce Domácnost. Už uložené položky tím zůstanou zachované.",
+          "Skenování je možné jen s tvým souhlasem, který udělíš před první účtenkou. Souhlas můžeš kdykoli odvolat v Profilu v části Soukromí a data. Už uložené položky tím zůstanou zachované.",
+        ],
+      },
+      {
+        heading: "E-maily",
+        paragraphs: [
+          "Na tvůj e-mail posíláme jen zprávy k účtu: odkaz na obnovu hesla, upozornění na změnu hesla a upozornění na žádost o smazání účtu. Žádné reklamní e-maily neposíláme.",
+          "E-maily odesílá služba Brevo (Sendinblue SAS, Francie, EU), které kvůli tomu předáváme tvůj e-mail a text zprávy.",
         ],
       },
       {
         heading: "Kdo údaje vidí",
         paragraphs: [
           "Členové tvé domácnosti vidí sdílené zásoby, účtenky, rezervace a jména ostatních členů. E-maily ostatních členů nevidí nikdo z domácnosti.",
-          "Údaje jsou uložené na serverech v Evropské unii. Kromě služby Google Gemini pro čtení účtenek je nepředáváme nikomu dalšímu.",
+          "Údaje jsou uložené na serverech v Evropské unii. Kromě služby Google Gemini pro čtení účtenek a služby Brevo pro odesílání e-mailů je nepředáváme nikomu dalšímu.",
         ],
       },
       {
@@ -456,7 +484,7 @@ export const texts = {
       {
         heading: "Tvoje práva",
         paragraphs: [
-          "Máš právo na přístup ke svým údajům, jejich opravu a výmaz, na omezení zpracování, na přenositelnost a na odvolání souhlasu. Účet můžeš kdykoli smazat sám na stránce Domácnost, ostatní žádosti pošli na uvedený e-mail.",
+          "Máš právo na přístup ke svým údajům, jejich opravu a výmaz, na omezení zpracování, na přenositelnost a na odvolání souhlasu. Účet můžeš kdykoli smazat sám v Profilu v části Účet, ostatní žádosti pošli na uvedený e-mail.",
           "Pokud si myslíš, že s údaji nakládáme v rozporu se zákonem, můžeš podat stížnost u Úřadu pro ochranu osobních údajů (www.uoou.gov.cz).",
         ],
       },

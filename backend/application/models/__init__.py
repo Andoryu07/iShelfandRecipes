@@ -1,4 +1,4 @@
-from application.models.authentication import RefreshToken
+from application.models.authentication import PasswordResetToken, RefreshToken
 from application.models.base import Base
 from application.models.notification import PushSubscription
 from application.models.receipt import Receipt, ReceiptItem
@@ -11,6 +11,7 @@ __all__ = [
     "Food",
     "Household",
     "HouseholdMember",
+    "PasswordResetToken",
     "PushSubscription",
     "Receipt",
     "ReceiptItem",

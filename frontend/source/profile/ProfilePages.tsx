@@ -28,6 +28,7 @@ import { ConfirmationDialog } from "../components/ConfirmationDialog";
 import { describeError } from "../errorMessages";
 import { NotificationsSection } from "../households/NotificationsSection";
 import { formatTimestamp, texts } from "../translations/cs";
+import { ChangePasswordCard } from "./ChangePasswordCard";
 import { DeleteAccountButton } from "./DeleteAccountButton";
 import { SettingsList } from "./SettingsList";
 
@@ -107,9 +108,7 @@ export function AccountSettingsPage() {
           <Typography>{user?.email}</Typography>
         </CardContent>
       </Card>
-      <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-        {texts.profile.passwordComingSoon}
-      </Typography>
+      <ChangePasswordCard />
       <Box className="section">
         <DeleteAccountButton />
       </Box>

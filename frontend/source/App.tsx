@@ -7,6 +7,7 @@ import {
   RequireSignedOut,
 } from "./components/RouteGuards";
 import { AuthenticationForm } from "./pages/AuthenticationForm";
+import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import { HouseholdPage } from "./pages/HouseholdPage";
 import { HouseholdSetupPage } from "./pages/HouseholdSetupPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
@@ -15,6 +16,7 @@ import { RecipeDetailPage } from "./pages/RecipeDetailPage";
 import { RecipesPage } from "./pages/RecipesPage";
 import { PrivacyPolicyPage } from "./pages/PrivacyPolicyPage";
 import { ReceiptsPage } from "./pages/ReceiptsPage";
+import { ResetPasswordPage } from "./pages/ResetPasswordPage";
 import { StockPage } from "./pages/StockPage";
 import {
   AboutPage,
@@ -31,6 +33,7 @@ const router = createBrowserRouter([
     children: [
       { path: "/login", element: <AuthenticationForm key="logIn" mode="logIn" /> },
       { path: "/register", element: <AuthenticationForm key="register" mode="register" /> },
+      { path: "/forgot-password", element: <ForgotPasswordPage /> },
     ],
   },
   {
@@ -66,6 +69,7 @@ const router = createBrowserRouter([
     ],
   },
   { path: "/privacy", element: <PrivacyPolicyPage /> },
+  { path: "/reset-password", element: <ResetPasswordPage /> },
   { path: "*", element: <NotFoundPage /> },
 ]);
 

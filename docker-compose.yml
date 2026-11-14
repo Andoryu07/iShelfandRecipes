@@ -25,6 +25,13 @@ services:
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
       VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:admin@example.com}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      EMAIL_FROM: ${EMAIL_FROM:-iShelf <noreply@ishelf.cz>}
+      EMAIL_REPLY_TO: ${EMAIL_REPLY_TO:-}
+      APPLICATION_URL: ${APPLICATION_URL:-http://localhost:5173}
       WATCHFILES_FORCE_POLLING: "true"
     command: ["sh", "-c", "alembic upgrade head && uvicorn application.main:application --host 0.0.0.0 --port 8000 --reload"]
     volumes:

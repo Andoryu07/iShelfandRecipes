@@ -18,6 +18,7 @@ os.environ["DATABASE_URL"] = testDatabaseUrl
 os.environ["JWT_SECRET"] = "secret-used-only-in-automated-tests-0123456789"
 
 from application.database import getEngine, getSessionFactory  # noqa: E402
+from application.emails.sending import Email, getEmailSender  # noqa: E402
 from application.main import application  # noqa: E402
 from application.models import Base  # noqa: E402
 
@@ -63,3 +64,19 @@ def databaseSession() -> Session:
 def predefinedRecipesOnlyWhenMarked(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch) -> None:
     if request.node.get_closest_marker("predefinedRecipes") is None:
         monkeypatch.setattr("application.routers.households.copyPredefinedRecipes", lambda session, householdId: None)
+
+
+class RecordingEmailSender:
+    def __init__(self) -> None:
+        self.sentEmails: list[Email] = []
+
+    def send(self, email: Email) -> None:
+        self.sentEmails.append(email)
+
+
+@pytest.fixture(autouse=True)
+def sentEmails() -> list[Email]:
+    sender = RecordingEmailSender()
+    application.dependency_overrides[getEmailSender] = lambda: sender
+    yield sender.sentEmails
+    application.dependency_overrides.pop(getEmailSender, None)

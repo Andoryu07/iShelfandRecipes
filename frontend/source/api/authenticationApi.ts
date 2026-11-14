@@ -20,6 +20,21 @@ export function logOut(): Promise<void> {
   return apiRequest<void>("/auth/logout", { method: "POST" });
 }
 
+export function requestPasswordReset(email: string): Promise<void> {
+  return apiRequest<void>("/auth/password-reset/request", { method: "POST", body: { email } });
+}
+
+export function confirmPasswordReset(token: string, newPassword: string): Promise<void> {
+  return apiRequest<void>("/auth/password-reset/confirm", { method: "POST", body: { token, newPassword } });
+}
+
+export function changePassword(currentPassword: string, newPassword: string): Promise<TokenResponse> {
+  return apiRequest<TokenResponse>("/auth/me/password", {
+    method: "POST",
+    body: { currentPassword, newPassword },
+  });
+}
+
 export function giveReceiptConsent(): Promise<User> {
   return apiRequest<User>("/auth/me/receipt-consent", { method: "POST" });
 }

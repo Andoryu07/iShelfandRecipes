@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
+from fastapi import APIRouter, BackgroundTasks, Cookie, Depends, HTTPException, Response, status
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -12,13 +12,20 @@ from application.authentication import (
     refreshTokenCookieName,
     revokeAllRefreshTokens,
 )
+from application.configuration import getConfiguration
 from application.database import getDatabaseSession
+from application.emails.messages import accountDeletionEmail, passwordChangedEmail, passwordResetEmail
+from application.emails.sending import EmailSender, getEmailSender, sendSafely
+from application.passwords import createPasswordResetToken, findUsablePasswordResetToken, setNewPassword
 from application.accounts import requestAccountDeletion, scheduledDeletionTime
 from application.dependencies import getCurrentUser, getCurrentUserEvenIfPendingDeletion
 from application.models import User
 from application.schemas.authentication import (
+    ChangePasswordRequest,
     DeleteAccountRequest,
     LoginRequest,
+    PasswordResetConfirmation,
+    PasswordResetRequest,
     RegisterRequest,
     TokenResponse,
     UserResponse,
@@ -98,6 +105,59 @@ def logout(
     return response
 
 
+@router.post("/password-reset/request", status_code=status.HTTP_202_ACCEPTED)
+def requestPasswordReset(
+    request: PasswordResetRequest,
+    backgroundTasks: BackgroundTasks,
+    session: Session = Depends(getDatabaseSession),
+    emailSender: EmailSender = Depends(getEmailSender),
+) -> None:
+    user = session.scalar(select(User).where(User.email == request.email.lower()))
+    token = createPasswordResetToken(session, user) if user else None
+    if user is None or token is None:
+        return
+    session.commit()
+    resetUrl = f"{getConfiguration().applicationUrl}/reset-password#token={token}"
+    backgroundTasks.add_task(sendSafely, emailSender, passwordResetEmail(user.email, resetUrl))
+
+
+@router.post("/password-reset/confirm", status_code=status.HTTP_204_NO_CONTENT)
+def confirmPasswordReset(
+    request: PasswordResetConfirmation,
+    backgroundTasks: BackgroundTasks,
+    session: Session = Depends(getDatabaseSession),
+    emailSender: EmailSender = Depends(getEmailSender),
+) -> Response:
+    storedToken = findUsablePasswordResetToken(session, request.token)
+    if storedToken is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired reset link")
+    user = session.get(User, storedToken.userId)
+    setNewPassword(session, user, request.newPassword)
+    session.commit()
+    backgroundTasks.add_task(
+        sendSafely, emailSender, passwordChangedEmail(user.email, getConfiguration().applicationUrl)
+    )
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/me/password", response_model=TokenResponse)
+def changePassword(
+    request: ChangePasswordRequest,
+    response: Response,
+    backgroundTasks: BackgroundTasks,
+    user: User = Depends(getCurrentUser),
+    session: Session = Depends(getDatabaseSession),
+    emailSender: EmailSender = Depends(getEmailSender),
+) -> TokenResponse:
+    if not verifyPassword(request.currentPassword, user.passwordHash):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Incorrect password")
+    setNewPassword(session, user, request.newPassword)
+    backgroundTasks.add_task(
+        sendSafely, emailSender, passwordChangedEmail(user.email, getConfiguration().applicationUrl)
+    )
+    return issueTokens(session, user, response)
+
+
 def buildUserResponse(user: User) -> UserResponse:
     return UserResponse(
         id=user.id,
@@ -125,13 +185,20 @@ def restoreAccount(
 @router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
 def deleteAccount(
     request: DeleteAccountRequest,
+    backgroundTasks: BackgroundTasks,
     user: User = Depends(getCurrentUser),
     session: Session = Depends(getDatabaseSession),
+    emailSender: EmailSender = Depends(getEmailSender),
 ) -> Response:
     if not verifyPassword(request.password, user.passwordHash):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Incorrect password")
     requestAccountDeletion(session, user)
     session.commit()
+    backgroundTasks.add_task(
+        sendSafely,
+        emailSender,
+        accountDeletionEmail(user.email, scheduledDeletionTime(user), getConfiguration().applicationUrl),
+    )
     response = Response(status_code=status.HTTP_204_NO_CONTENT)
     deleteRefreshTokenCookie(response)
     return response

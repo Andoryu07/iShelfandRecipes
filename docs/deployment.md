@@ -387,6 +387,27 @@ cd ~/iShelfandRecipes && deploy/deploy.sh
 
 It pulls the code, rebuilds the images, restarts what changed (migrations run on start) and removes old images and the build cache, so the 15 GB disk does not fill up. Check the free space now and then with `df -h /`.
 
+## 13. E-mails (Brevo)
+
+The app sends e-mails for password reset, after a password change and when someone asks to delete their account. Without SMTP settings it only writes them to the backend log.
+
+1. Create a free account at brevo.com (300 e-mails a day, no card).
+2. In Brevo open Senders, Domains & Dedicated IPs → Domains → Add a domain, enter `ishelf.cz` and choose to set up the records yourself.
+3. In the DNS at czechia.com add every record Brevo shows: the `brevo-code` TXT record, the DKIM records and the DMARC record (`_dmarc`, start with `v=DMARC1; p=none`). For SPF there may be only one TXT record starting with `v=spf1` on the domain; if Brevo asks for one, use `v=spf1 include:spf.brevo.com ~all`. Then press Verify in Brevo (DNS changes can take up to a few hours).
+4. Add the sender `noreply@ishelf.cz` (Senders). The address does not need a mailbox.
+5. In SMTP & API → SMTP create an SMTP key. Put into `.env` on the server:
+
+   ```
+   SMTP_HOST=smtp-relay.brevo.com
+   SMTP_PORT=587
+   SMTP_USERNAME=<the login shown on the SMTP page>
+   SMTP_PASSWORD=<the SMTP key>
+   EMAIL_FROM=iShelf <noreply@ishelf.cz>
+   EMAIL_REPLY_TO=<your e-mail, or leave empty>
+   ```
+
+6. Run `deploy/deploy.sh`, open https://ishelf.cz/forgot-password, enter your own e-mail and check that the e-mail arrives (also in spam) and the link works.
+
 ## Troubleshooting
 
 - **The browser says the connection is not secure or the site does not load:** the domain does not point to the server yet (step 4) or ports 80 and 443 are closed (check `sudo ufw status`, step 5). See `docker compose -f docker-compose.production.yml logs caddy`. Caddy tries again on its own.
@@ -394,6 +415,7 @@ It pulls the code, rebuilds the images, restarts what changed (migrations run on
 - **No space left on the disk:** run `docker system prune -f` and delete old backups you have already copied to your computer.
 - **A service keeps restarting:** see its log, for example `docker compose -f docker-compose.production.yml logs backend`, and send it to Claude.
 - **Receipts cannot be read:** check `GEMINI_API_KEY` in `.env` and run `deploy/deploy.sh` again.
+- **E-mails do not arrive:** see `docker compose -f docker-compose.production.yml logs backend | grep -i e-mail`. Check the SMTP values in `.env` and that the domain is verified in Brevo. If the connection times out, try `SMTP_PORT=2525`.
 - **Notifications do not arrive:** check the VAPID keys in `.env` and run the daily jobs by hand:
 
   ```

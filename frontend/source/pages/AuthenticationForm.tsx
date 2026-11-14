@@ -71,6 +71,11 @@ export function AuthenticationForm({ mode }: { mode: "logIn" | "register" }) {
           slotProps={{ htmlInput: { minLength: isRegistration ? 8 : undefined, maxLength: 128 } }}
           required
         />
+        {!isRegistration && (
+          <Link component={RouterLink} to="/forgot-password" variant="body2" sx={{ display: "block", mt: 1 }}>
+            {texts.authentication.forgotPassword}
+          </Link>
+        )}
         {errorMessage && (
           <Alert severity="error" sx={{ mt: 1 }}>
             {errorMessage}

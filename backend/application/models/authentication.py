@@ -17,3 +17,16 @@ class RefreshToken(Base):
     createdAt: Mapped[datetime] = mapped_column(
         "created_at", DateTime(timezone=True), server_default=func.now()
     )
+
+
+class PasswordResetToken(Base):
+    __tablename__ = "password_reset_tokens"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    userId: Mapped[int] = mapped_column("user_id", ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    tokenHash: Mapped[str] = mapped_column("token_hash", unique=True)
+    expiresAt: Mapped[datetime] = mapped_column("expires_at", DateTime(timezone=True))
+    usedAt: Mapped[datetime | None] = mapped_column("used_at", DateTime(timezone=True))
+    createdAt: Mapped[datetime] = mapped_column(
+        "created_at", DateTime(timezone=True), server_default=func.now()
+    )
