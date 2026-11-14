@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="820" viewBox="0 0 400 820">
+<rect width="400" height="820" fill="#fafafa"/>
+<text x="20" y="26" font-size="15" font-weight="bold" fill="#222" font-family="Helvetica, Arial, sans-serif">03 Detail položky (spodní panel)</text>
+<rect x="20" y="40" width="360" height="760" rx="22" fill="#fff" stroke="#222" stroke-width="2"/>
+<text x="36" y="80" font-size="20" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Zásoby</text>
+<circle cx="350" cy="74" r="13" fill="#e6e6e6" stroke="#999" stroke-width="1.2"/>
+<text x="350" y="79" font-size="12" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">A</text>
+<circle cx="52" cy="120" r="15" fill="#e6e6e6" stroke="#999" stroke-width="1.2"/>
+<text x="52" y="124" font-size="10" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">🥛</text>
+<text x="76" y="117" font-size="13" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Mléko</text>
+<text x="76" y="134" font-size="11" fill="#777" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Lednice</text>
+<text x="364" y="125" font-size="13" fill="#222" font-weight="bold" text-anchor="end" font-family="Helvetica, Arial, sans-serif">1 l</text>
+<line x1="36" y1="146" x2="364" y2="146" stroke="#ddd" stroke-width="1.2"/>
+<rect x="20" y="40" width="360" height="760" rx="22" fill="#000" fill-opacity="0.18" stroke="none" stroke-width="1.2"/>
+<rect x="20" y="290" width="360" height="510" rx="18" fill="#fff" stroke="#222" stroke-width="1.5"/>
+<rect x="180.0" y="298" width="40" height="5" rx="3" fill="#999" stroke="none" stroke-width="1.2"/>
+<circle cx="56" cy="332" r="15" fill="#e6e6e6" stroke="#999" stroke-width="1.2"/>
+<text x="56" y="336" font-size="10" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">🥛</text>
+<text x="80" y="330" font-size="17" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Mléko polotučné</text>
+<text x="80" y="348" font-size="11" fill="#777" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Mléčné výrobky</text>
+<text x="36" y="390" font-size="28" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">1 l</text>
+<rect x="100" y="372" width="68.19999999999999" height="26" rx="13" fill="#f4f4f4" stroke="#999" stroke-width="1.2"/>
+<text x="134.1" y="389" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Lednice</text>
+<rect x="174.2" y="372" width="88.0" height="26" rx="13" fill="#f4f4f4" stroke="#999" stroke-width="1.2"/>
+<text x="218.2" y="389" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">do 14. 11.</text>
+<rect x="36" y="412" width="328" height="40" rx="8" fill="#f4f4f4" stroke="#999" stroke-width="1.2"/>
+<text x="48" y="437" font-size="12" fill="#222" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Anna 600 ml (na palačinky) · volné 400 ml</text>
+<text x="352" y="437" font-size="12" fill="#222" font-weight="bold" text-anchor="end" font-family="Helvetica, Arial, sans-serif">Zrušit</text>
+<rect x="36" y="468" width="328" height="40" rx="10" fill="#222" stroke="#222" stroke-width="1.2"/>
+<text x="200.0" y="493.0" font-size="13" fill="#fff" font-weight="bold" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Snězeno vše</text>
+<rect x="36" y="516" width="160.0" height="40" rx="10" fill="#fff" stroke="#222" stroke-width="1.2"/>
+<text x="116.0" y="541.0" font-size="13" fill="#222" font-weight="bold" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Odepsat část</text>
+<rect x="204.0" y="516" width="160.0" height="40" rx="10" fill="#fff" stroke="#222" stroke-width="1.2"/>
+<text x="284.0" y="541.0" font-size="13" fill="#222" font-weight="bold" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Vyhodit (zkažené)</text>
+<rect x="36" y="564" width="160.0" height="40" rx="10" fill="#fff" stroke="#222" stroke-width="1.2"/>
+<text x="116.0" y="589.0" font-size="13" fill="#222" font-weight="bold" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Rezervovat</text>
+<rect x="204.0" y="564" width="160.0" height="40" rx="10" fill="#fff" stroke="#222" stroke-width="1.2"/>
+<text x="284.0" y="589.0" font-size="13" fill="#222" font-weight="bold" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Upravit</text>
+<text x="36" y="634" font-size="13" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">▸ Historie (2)</text>
+<text x="36" y="660" font-size="10" fill="#a33" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">historie sbalená, rozbalí se klepnutím</text>
+</svg>

@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="820" viewBox="0 0 420 820">
+<rect width="420" height="820" fill="#fafafa"/>
+<text x="20" y="26" font-size="15" font-weight="bold" fill="#222" font-family="Helvetica, Arial, sans-serif">09 Tok mezi obrazovkami</text>
+<rect x="40" y="70" width="160" height="44" rx="6" fill="#fff" stroke="#222" stroke-width="1.2"/>
+<text x="120" y="97" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Přihlášení / registrace</text>
+<rect x="220" y="70" width="160" height="44" rx="6" fill="#fff" stroke="#222" stroke-width="1.2"/>
+<text x="300" y="97" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Založit / připojit domácnost</text>
+<rect x="130" y="170" width="110" height="44" rx="6" fill="#fff" stroke="#222" stroke-width="1.2"/>
+<text x="185" y="197" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">01 Přehled</text>
+<rect x="30" y="280" width="110" height="44" rx="6" fill="#fff" stroke="#222" stroke-width="1.2"/>
+<text x="85" y="307" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">02 Zásoby</text>
+<rect x="150" y="280" width="110" height="44" rx="6" fill="#fff" stroke="#222" stroke-width="1.2"/>
+<text x="205" y="307" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">06 Recepty</text>
+<rect x="270" y="280" width="110" height="44" rx="6" fill="#fff" stroke="#222" stroke-width="1.2"/>
+<text x="325" y="307" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">05a Účtenky</text>
+<rect x="30" y="390" width="110" height="44" rx="6" fill="#fff" stroke="#222" stroke-width="1.2"/>
+<text x="85" y="417" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">03 Detail položky</text>
+<rect x="30" y="480" width="110" height="44" rx="6" fill="#fff" stroke="#222" stroke-width="1.2"/>
+<text x="85" y="507" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">04 Přidat potravinu</text>
+<rect x="150" y="390" width="110" height="44" rx="6" fill="#fff" stroke="#222" stroke-width="1.2"/>
+<text x="205" y="417" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">07 Detail receptu</text>
+<rect x="270" y="390" width="110" height="44" rx="6" fill="#fff" stroke="#222" stroke-width="1.2"/>
+<text x="325" y="417" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">05b Kontrola</text>
+<rect x="30" y="600" width="110" height="44" rx="6" fill="#fff" stroke="#222" stroke-width="1.2"/>
+<text x="85" y="627" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">08a Domácnost</text>
+<rect x="220" y="600" width="110" height="44" rx="6" fill="#fff" stroke="#222" stroke-width="1.2"/>
+<text x="275" y="627" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">08b Profil</text>
+<line x1="200" y1="92" x2="220" y2="92" stroke="#222" stroke-width="1.2"/>
+<circle cx="220" cy="92" r="3" fill="#222" stroke="#222" stroke-width="1.2"/>
+<line x1="300" y1="114" x2="210" y2="170" stroke="#222" stroke-width="1.2"/>
+<circle cx="210" cy="170" r="3" fill="#222" stroke="#222" stroke-width="1.2"/>
+<line x1="185" y1="214" x2="85" y2="280" stroke="#222" stroke-width="1.2"/>
+<circle cx="85" cy="280" r="3" fill="#222" stroke="#222" stroke-width="1.2"/>
+<line x1="185" y1="214" x2="205" y2="280" stroke="#222" stroke-width="1.2"/>
+<circle cx="205" cy="280" r="3" fill="#222" stroke="#222" stroke-width="1.2"/>
+<line x1="185" y1="214" x2="325" y2="280" stroke="#222" stroke-width="1.2"/>
+<circle cx="325" cy="280" r="3" fill="#222" stroke="#222" stroke-width="1.2"/>
+<line x1="110" y1="324" x2="110" y2="390" stroke="#222" stroke-width="1.2"/>
+<circle cx="110" cy="390" r="3" fill="#222" stroke="#222" stroke-width="1.2"/>
+<line x1="50" y1="324" x2="50" y2="480" stroke="#222" stroke-width="1.2"/>
+<circle cx="50" cy="480" r="3" fill="#222" stroke="#222" stroke-width="1.2"/>
+<line x1="205" y1="324" x2="205" y2="390" stroke="#222" stroke-width="1.2"/>
+<circle cx="205" cy="390" r="3" fill="#222" stroke="#222" stroke-width="1.2"/>
+<line x1="325" y1="324" x2="325" y2="390" stroke="#222" stroke-width="1.2"/>
+<circle cx="325" cy="390" r="3" fill="#222" stroke="#222" stroke-width="1.2"/>
+<line x1="325" y1="434" x2="140" y2="310" stroke="#222" stroke-width="1.2"/>
+<circle cx="140" cy="310" r="3" fill="#222" stroke="#222" stroke-width="1.2"/>
+<line x1="140" y1="622" x2="220" y2="622" stroke="#222" stroke-width="1.2"/>
+<circle cx="220" cy="622" r="3" fill="#222" stroke="#222" stroke-width="1.2"/>
+<text x="40" y="690" font-size="11" fill="#777" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Spodní lišta: Přehled · Zásoby · Recepty · Účtenky · Domácnost</text>
+<text x="40" y="708" font-size="11" fill="#777" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Profil je dostupný z ikony vpravo nahoře na každé hlavní obrazovce.</text>
+<text x="40" y="726" font-size="11" fill="#777" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Přehled vede na detail položky, recept a skenování účtenky.</text>
+<text x="40" y="744" font-size="11" fill="#777" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Uložená účtenka vede zpět do Zásob; + v Zásobách otevře 04.</text>
+</svg>

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="820" viewBox="0 0 400 820">
+<rect width="400" height="820" fill="#fafafa"/>
+<text x="20" y="26" font-size="15" font-weight="bold" fill="#222" font-family="Helvetica, Arial, sans-serif">07 Detail receptu</text>
+<rect x="20" y="40" width="360" height="760" rx="22" fill="#fff" stroke="#222" stroke-width="2"/>
+<text x="36" y="80" font-size="18" fill="#222" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">←</text>
+<text x="60" y="80" font-size="18" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Hovězí guláš</text>
+<text x="36" y="110" font-size="12" fill="#777" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">2 h 30 min · ~260 Kč (65 Kč/porce)</text>
+<rect x="36" y="124" width="328" height="112" rx="6" fill="#f4f4f4" stroke="#222" stroke-width="2.5"/>
+<text x="48" y="150" font-size="15" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">⚠ Chybí ti 2 suroviny</text>
+<text x="48" y="176" font-size="13" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Hovězí kližka: chybí 300 g z 800 g</text>
+<text x="48" y="200" font-size="13" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Cibule: chybí 500 g</text>
+<text x="48" y="222" font-size="11" fill="#777" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">+ Přidat do nákupního seznamu (později)</text>
+<text x="36" y="266" font-size="13" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Porce</text>
+<rect x="90" y="248" width="110" height="28" rx="14" fill="none" stroke="#999" stroke-width="1.2"/>
+<text x="104" y="267" font-size="16" fill="#222" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">−</text>
+<text x="145" y="267" font-size="13" fill="#222" font-weight="bold" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">4</text>
+<text x="186" y="267" font-size="16" fill="#222" font-weight="normal" text-anchor="end" font-family="Helvetica, Arial, sans-serif">+</text>
+<text x="36" y="306" font-size="11" fill="#777" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">SUROVINY</text>
+<text x="40" y="336" font-size="13" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">✗</text>
+<text x="64" y="336" font-size="13" fill="#222" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Hovězí kližka</text>
+<text x="364" y="336" font-size="13" fill="#777" font-weight="normal" text-anchor="end" font-family="Helvetica, Arial, sans-serif">800 g</text>
+<text x="40" y="370" font-size="13" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">✗</text>
+<text x="64" y="370" font-size="13" fill="#222" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Cibule</text>
+<text x="364" y="370" font-size="13" fill="#777" font-weight="normal" text-anchor="end" font-family="Helvetica, Arial, sans-serif">500 g</text>
+<text x="40" y="404" font-size="13" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">✓</text>
+<text x="64" y="404" font-size="13" fill="#222" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Paprika sladká mletá</text>
+<text x="364" y="404" font-size="13" fill="#777" font-weight="normal" text-anchor="end" font-family="Helvetica, Arial, sans-serif">20 g</text>
+<text x="40" y="438" font-size="13" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">✓</text>
+<text x="64" y="438" font-size="13" fill="#222" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Rajčatový protlak</text>
+<text x="364" y="438" font-size="13" fill="#777" font-weight="normal" text-anchor="end" font-family="Helvetica, Arial, sans-serif">70 g</text>
+<text x="40" y="472" font-size="13" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">✓</text>
+<text x="64" y="472" font-size="13" fill="#222" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Houskový knedlík</text>
+<text x="364" y="472" font-size="13" fill="#777" font-weight="normal" text-anchor="end" font-family="Helvetica, Arial, sans-serif">2 ks</text>
+<text x="36" y="510" font-size="11" fill="#777" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Podle chuti: Kmín, Majoránka, Pepř, Sůl</text>
+<text x="36" y="544" font-size="11" fill="#777" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">POSTUP</text>
+<rect x="36" y="556" width="328" height="10" rx="4" fill="#e6e6e6" stroke="none" stroke-width="1.2"/>
+<rect x="36" y="578" width="298" height="10" rx="4" fill="#e6e6e6" stroke="none" stroke-width="1.2"/>
+<rect x="36" y="600" width="268" height="10" rx="4" fill="#e6e6e6" stroke="none" stroke-width="1.2"/>
+<rect x="36" y="622" width="238" height="10" rx="4" fill="#e6e6e6" stroke="none" stroke-width="1.2"/>
+<rect x="28" y="720" width="344" height="72" rx="14" fill="#fff" stroke="#999" stroke-width="1.2"/>
+<rect x="36" y="740" width="160.0" height="40" rx="10" fill="#fff" stroke="#222" stroke-width="1.2"/>
+<text x="116.0" y="765.0" font-size="13" fill="#222" font-weight="bold" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Rezervovat</text>
+<rect x="204.0" y="740" width="160.0" height="40" rx="10" fill="#222" stroke="#222" stroke-width="1.2"/>
+<text x="284.0" y="765.0" font-size="13" fill="#fff" font-weight="bold" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Uvařeno</text>
+<text x="36" y="670" font-size="10" fill="#a33" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">upravit / smazat recept v menu ⋮ vpravo nahoře</text>
+</svg>

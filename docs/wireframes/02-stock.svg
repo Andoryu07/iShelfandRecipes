@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="820" viewBox="0 0 400 820">
+<rect width="400" height="820" fill="#fafafa"/>
+<text x="20" y="26" font-size="15" font-weight="bold" fill="#222" font-family="Helvetica, Arial, sans-serif">02 Zásoby</text>
+<rect x="20" y="40" width="360" height="760" rx="22" fill="#fff" stroke="#222" stroke-width="2"/>
+<text x="36" y="80" font-size="20" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Zásoby</text>
+<circle cx="350" cy="74" r="13" fill="#e6e6e6" stroke="#999" stroke-width="1.2"/>
+<text x="350" y="79" font-size="12" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">A</text>
+<rect x="36" y="100" width="328" height="40" rx="8" fill="none" stroke="#999" stroke-width="1.2"/>
+<text x="46" y="125.0" font-size="13" fill="#777" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">🔍 Hledat v zásobách</text>
+<rect x="36" y="150" width="41.8" height="26" rx="13" fill="#222" stroke="#222" stroke-width="1.2"/>
+<text x="56.9" y="167" font-size="11" fill="#fff" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Vše</text>
+<rect x="85.8" y="150" width="68.19999999999999" height="26" rx="13" fill="#f4f4f4" stroke="#999" stroke-width="1.2"/>
+<text x="119.89999999999999" y="167" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Lednice</text>
+<rect x="162.0" y="150" width="61.599999999999994" height="26" rx="13" fill="#f4f4f4" stroke="#999" stroke-width="1.2"/>
+<text x="192.8" y="167" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Mrazák</text>
+<rect x="231.6" y="150" width="48.4" height="26" rx="13" fill="#f4f4f4" stroke="#999" stroke-width="1.2"/>
+<text x="255.79999999999998" y="167" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Spíž</text>
+<text x="36" y="202" font-size="11" fill="#777" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">BRZY PROJDE</text>
+<circle cx="52" cy="230" r="15" fill="#e6e6e6" stroke="#999" stroke-width="1.2"/>
+<text x="52" y="234" font-size="10" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">🥛</text>
+<text x="76" y="227" font-size="13" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Mléko  ×3</text>
+<text x="76" y="244" font-size="11" fill="#777" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">nejbližší dnes · Lednice</text>
+<text x="364" y="235" font-size="13" fill="#222" font-weight="bold" text-anchor="end" font-family="Helvetica, Arial, sans-serif">3 l</text>
+<rect x="277.6" y="218" width="44.4" height="26" rx="13" fill="#f4f4f4" stroke="#999" stroke-width="1.2"/>
+<text x="299.8" y="235" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">dnes</text>
+<line x1="36" y1="256" x2="364" y2="256" stroke="#ddd" stroke-width="1.2"/>
+<rect x="36" y="260" width="328" height="120" rx="8" fill="#f4f4f4" stroke="none" stroke-width="1.2"/>
+<text x="68" y="284" font-size="13" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">1 l</text>
+<text x="110" y="284" font-size="11" fill="#555" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">dnes (14. 11.)</text>
+<line x1="60" y1="298" x2="356" y2="298" stroke="#ddd" stroke-width="1.2"/>
+<text x="68" y="322" font-size="13" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">1 l</text>
+<text x="110" y="322" font-size="11" fill="#555" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">do 18. 11.</text>
+<line x1="60" y1="336" x2="356" y2="336" stroke="#ddd" stroke-width="1.2"/>
+<text x="68" y="360" font-size="13" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">1 l</text>
+<text x="110" y="360" font-size="11" fill="#555" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">do 21. 11.</text>
+<line x1="60" y1="374" x2="356" y2="374" stroke="#ddd" stroke-width="1.2"/>
+<circle cx="52" cy="406" r="15" fill="#e6e6e6" stroke="#999" stroke-width="1.2"/>
+<text x="52" y="410" font-size="10" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">🍶</text>
+<text x="76" y="403" font-size="13" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Jogurt</text>
+<text x="76" y="420" font-size="11" fill="#777" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Lednice · rezervováno 2 ks</text>
+<text x="364" y="411" font-size="13" fill="#222" font-weight="bold" text-anchor="end" font-family="Helvetica, Arial, sans-serif">4 ks</text>
+<rect x="271.0" y="394" width="51.0" height="26" rx="13" fill="#f4f4f4" stroke="#999" stroke-width="1.2"/>
+<text x="296.5" y="411" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">zítra</text>
+<line x1="36" y1="432" x2="364" y2="432" stroke="#ddd" stroke-width="1.2"/>
+<text x="36" y="458" font-size="11" fill="#777" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">OSTATNÍ</text>
+<circle cx="52" cy="486" r="15" fill="#e6e6e6" stroke="#999" stroke-width="1.2"/>
+<text x="52" y="490" font-size="10" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">🧀</text>
+<text x="76" y="483" font-size="13" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Eidam</text>
+<text x="76" y="500" font-size="11" fill="#777" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Lednice · do 30. 11.</text>
+<text x="364" y="491" font-size="13" fill="#222" font-weight="bold" text-anchor="end" font-family="Helvetica, Arial, sans-serif">600 g</text>
+<line x1="36" y1="512" x2="364" y2="512" stroke="#ddd" stroke-width="1.2"/>
+<circle cx="52" cy="534" r="15" fill="#e6e6e6" stroke="#999" stroke-width="1.2"/>
+<text x="52" y="538" font-size="10" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">🍝</text>
+<text x="76" y="531" font-size="13" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Těstoviny</text>
+<text x="76" y="548" font-size="11" fill="#777" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Spíž · bez data</text>
+<text x="364" y="539" font-size="13" fill="#222" font-weight="bold" text-anchor="end" font-family="Helvetica, Arial, sans-serif">1 kg</text>
+<line x1="36" y1="560" x2="364" y2="560" stroke="#ddd" stroke-width="1.2"/>
+<circle cx="52" cy="582" r="15" fill="#e6e6e6" stroke="#999" stroke-width="1.2"/>
+<text x="52" y="586" font-size="10" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">🫛</text>
+<text x="76" y="579" font-size="13" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Hrášek</text>
+<text x="76" y="596" font-size="11" fill="#777" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Mrazák · do 11. 3.</text>
+<text x="364" y="587" font-size="13" fill="#222" font-weight="bold" text-anchor="end" font-family="Helvetica, Arial, sans-serif">450 g</text>
+<line x1="36" y1="608" x2="364" y2="608" stroke="#ddd" stroke-width="1.2"/>
+<circle cx="336" cy="696" r="26" fill="#222" stroke="#222" stroke-width="1.2"/>
+<text x="336" y="704" font-size="24" fill="#fff" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">+</text>
+<text x="36" y="630" font-size="10" fill="#a33" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">stejné potraviny v jednom řádku, klepnutí rozbalí jednotlivé kusy</text>
+<text x="36" y="646" font-size="10" fill="#a33" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">štítky: prošlé (červená), dnes / do 3 dnů (oranžová); kus → panel 03</text>
+<line x1="20" y1="736" x2="380" y2="736" stroke="#999" stroke-width="1.2"/>
+<rect x="44.0" y="746" width="24" height="20" rx="6" fill="#e6e6e6" stroke="#999" stroke-width="1.2"/>
+<text x="56.0" y="782" font-size="10" fill="#777" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Přehled</text>
+<rect x="116.0" y="746" width="24" height="20" rx="6" fill="#222" stroke="#999" stroke-width="1.2"/>
+<text x="128.0" y="782" font-size="10" fill="#222" font-weight="bold" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Zásoby</text>
+<rect x="188.0" y="746" width="24" height="20" rx="6" fill="#e6e6e6" stroke="#999" stroke-width="1.2"/>
+<text x="200.0" y="782" font-size="10" fill="#777" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Recepty</text>
+<rect x="260.0" y="746" width="24" height="20" rx="6" fill="#e6e6e6" stroke="#999" stroke-width="1.2"/>
+<text x="272.0" y="782" font-size="10" fill="#777" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Účtenky</text>
+<rect x="332.0" y="746" width="24" height="20" rx="6" fill="#e6e6e6" stroke="#999" stroke-width="1.2"/>
+<text x="344.0" y="782" font-size="10" fill="#777" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Domácnost</text>
+</svg>

@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="820" viewBox="0 0 400 820">
+<rect width="400" height="820" fill="#fafafa"/>
+<text x="20" y="26" font-size="15" font-weight="bold" fill="#222" font-family="Helvetica, Arial, sans-serif">01 Přehled (úvodní obrazovka)</text>
+<rect x="20" y="40" width="360" height="760" rx="22" fill="#fff" stroke="#222" stroke-width="2"/>
+<text x="36" y="80" font-size="20" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Ahoj, Anno</text>
+<circle cx="350" cy="74" r="13" fill="#e6e6e6" stroke="#999" stroke-width="1.2"/>
+<text x="350" y="79" font-size="12" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">A</text>
+<rect x="36" y="104" width="160" height="40" rx="10" fill="#222" stroke="#222" stroke-width="1.2"/>
+<text x="116.0" y="129.0" font-size="13" fill="#fff" font-weight="bold" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">📷 Vyfotit účtenku</text>
+<rect x="204" y="104" width="160" height="40" rx="10" fill="#fff" stroke="#222" stroke-width="1.2"/>
+<text x="284.0" y="129.0" font-size="13" fill="#222" font-weight="bold" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">+ Přidat potravinu</text>
+<rect x="36" y="160" width="328" height="196" rx="6" fill="#fff" stroke="#999" stroke-width="1.2"/>
+<text x="48" y="184" font-size="15" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Brzy projde (3)</text>
+<text x="352" y="184" font-size="12" fill="#777" font-weight="normal" text-anchor="end" font-family="Helvetica, Arial, sans-serif">Vše →</text>
+<circle cx="52" cy="212" r="15" fill="#e6e6e6" stroke="#999" stroke-width="1.2"/>
+<text x="52" y="216" font-size="10" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">🥛</text>
+<text x="76" y="209" font-size="13" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Mléko</text>
+<text x="76" y="226" font-size="11" fill="#777" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Lednice</text>
+<text x="364" y="217" font-size="13" fill="#222" font-weight="bold" text-anchor="end" font-family="Helvetica, Arial, sans-serif">1 l</text>
+<rect x="277.6" y="200" width="44.4" height="26" rx="13" fill="#f4f4f4" stroke="#999" stroke-width="1.2"/>
+<text x="299.8" y="217" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">dnes</text>
+<line x1="36" y1="238" x2="364" y2="238" stroke="#ddd" stroke-width="1.2"/>
+<circle cx="52" cy="264" r="15" fill="#e6e6e6" stroke="#999" stroke-width="1.2"/>
+<text x="52" y="268" font-size="10" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">🍶</text>
+<text x="76" y="261" font-size="13" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Jogurt</text>
+<text x="76" y="278" font-size="11" fill="#777" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Lednice</text>
+<text x="364" y="269" font-size="13" fill="#222" font-weight="bold" text-anchor="end" font-family="Helvetica, Arial, sans-serif">4 ks</text>
+<rect x="271.0" y="252" width="51.0" height="26" rx="13" fill="#f4f4f4" stroke="#999" stroke-width="1.2"/>
+<text x="296.5" y="269" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">zítra</text>
+<line x1="36" y1="290" x2="364" y2="290" stroke="#ddd" stroke-width="1.2"/>
+<circle cx="52" cy="316" r="15" fill="#e6e6e6" stroke="#999" stroke-width="1.2"/>
+<text x="52" y="320" font-size="10" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">🥓</text>
+<text x="76" y="313" font-size="13" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Šunka</text>
+<text x="76" y="330" font-size="11" fill="#777" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Lednice</text>
+<text x="364" y="321" font-size="13" fill="#222" font-weight="bold" text-anchor="end" font-family="Helvetica, Arial, sans-serif">120 g</text>
+<rect x="251.2" y="304" width="70.8" height="26" rx="13" fill="#f4f4f4" stroke="#999" stroke-width="1.2"/>
+<text x="286.59999999999997" y="321" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">za 2 dny</text>
+<line x1="36" y1="342" x2="364" y2="342" stroke="#ddd" stroke-width="1.2"/>
+<rect x="36" y="368" width="328" height="100" rx="6" fill="#fff" stroke="#999" stroke-width="1.2"/>
+<text x="48" y="392" font-size="15" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Moje rezervace</text>
+<circle cx="52" cy="422" r="15" fill="#e6e6e6" stroke="#999" stroke-width="1.2"/>
+<text x="52" y="426" font-size="10" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">🧀</text>
+<text x="76" y="419" font-size="13" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Eidam · 600 g</text>
+<text x="76" y="436" font-size="11" fill="#777" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">na Smažený sýr</text>
+<text x="364" y="427" font-size="13" fill="#222" font-weight="bold" text-anchor="end" font-family="Helvetica, Arial, sans-serif"></text>
+<line x1="36" y1="448" x2="364" y2="448" stroke="#ddd" stroke-width="1.2"/>
+<text x="48" y="492" font-size="15" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Můžeš uvařit hned</text>
+<rect x="36" y="504" width="160" height="120" rx="6" fill="#fff" stroke="#999" stroke-width="1.2"/>
+<rect x="46" y="514" width="140" height="50" rx="6" fill="#f4f4f4" stroke="#999" stroke-width="1.2"/>
+<text x="116" y="544" font-size="10" fill="#777" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">ikona jídla</text>
+<text x="46" y="586" font-size="13" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Smažený sýr</text>
+<text x="46" y="606" font-size="11" fill="#777" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">30 min · 120 Kč</text>
+<rect x="208" y="504" width="160" height="120" rx="6" fill="#fff" stroke="#999" stroke-width="1.2"/>
+<rect x="218" y="514" width="140" height="50" rx="6" fill="#f4f4f4" stroke="#999" stroke-width="1.2"/>
+<text x="288" y="544" font-size="10" fill="#777" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">ikona jídla</text>
+<text x="218" y="586" font-size="13" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Rajská omáčka</text>
+<text x="218" y="606" font-size="11" fill="#777" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">2 h · 180 Kč</text>
+<rect x="36" y="640" width="328" height="80" rx="6" fill="#f4f4f4" stroke="#999" stroke-width="1.2" stroke-dasharray="4 3"/>
+<text x="200.0" y="676" font-size="13" fill="#777" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Útraty tento měsíc (krok 2)</text>
+<text x="200.0" y="696" font-size="10" fill="#777" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">místo připravené pro přehled útrat</text>
+<line x1="20" y1="736" x2="380" y2="736" stroke="#999" stroke-width="1.2"/>
+<rect x="44.0" y="746" width="24" height="20" rx="6" fill="#222" stroke="#999" stroke-width="1.2"/>
+<text x="56.0" y="782" font-size="10" fill="#222" font-weight="bold" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Přehled</text>
+<rect x="116.0" y="746" width="24" height="20" rx="6" fill="#e6e6e6" stroke="#999" stroke-width="1.2"/>
+<text x="128.0" y="782" font-size="10" fill="#777" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Zásoby</text>
+<rect x="188.0" y="746" width="24" height="20" rx="6" fill="#e6e6e6" stroke="#999" stroke-width="1.2"/>
+<text x="200.0" y="782" font-size="10" fill="#777" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Recepty</text>
+<rect x="260.0" y="746" width="24" height="20" rx="6" fill="#e6e6e6" stroke="#999" stroke-width="1.2"/>
+<text x="272.0" y="782" font-size="10" fill="#777" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Účtenky</text>
+<rect x="332.0" y="746" width="24" height="20" rx="6" fill="#e6e6e6" stroke="#999" stroke-width="1.2"/>
+<text x="344.0" y="782" font-size="10" fill="#777" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Domácnost</text>
+</svg>

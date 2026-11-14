@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="820" viewBox="0 0 400 820">
+<rect width="400" height="820" fill="#fafafa"/>
+<text x="20" y="26" font-size="15" font-weight="bold" fill="#222" font-family="Helvetica, Arial, sans-serif">04 Přidat potravinu (spodní panel)</text>
+<rect x="20" y="40" width="360" height="760" rx="22" fill="#fff" stroke="#222" stroke-width="2"/>
+<text x="36" y="80" font-size="20" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Zásoby</text>
+<circle cx="350" cy="74" r="13" fill="#e6e6e6" stroke="#999" stroke-width="1.2"/>
+<text x="350" y="79" font-size="12" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">A</text>
+<rect x="20" y="40" width="360" height="760" rx="22" fill="#000" fill-opacity="0.18" stroke="none" stroke-width="1.2"/>
+<rect x="20" y="190" width="360" height="610" rx="18" fill="#fff" stroke="#222" stroke-width="1.5"/>
+<rect x="180.0" y="198" width="40" height="5" rx="3" fill="#999" stroke="none" stroke-width="1.2"/>
+<text x="36" y="236" font-size="17" fill="#222" font-weight="bold" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Přidat do zásob</text>
+<rect x="36" y="252" width="328" height="40" rx="8" fill="none" stroke="#999" stroke-width="1.2"/>
+<text x="46" y="249" font-size="9" fill="#777" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Potravina</text>
+<text x="46" y="277.0" font-size="13" fill="#222" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Mléko polotučné</text>
+<text x="36" y="314" font-size="11" fill="#777" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Naposledy:</text>
+<rect x="100" y="300" width="55.0" height="26" rx="13" fill="#f4f4f4" stroke="#999" stroke-width="1.2"/>
+<text x="127.5" y="317" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Mléko</text>
+<rect x="161.0" y="300" width="55.0" height="26" rx="13" fill="#f4f4f4" stroke="#999" stroke-width="1.2"/>
+<text x="188.5" y="317" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Chléb</text>
+<rect x="222.0" y="300" width="55.0" height="26" rx="13" fill="#f4f4f4" stroke="#999" stroke-width="1.2"/>
+<text x="249.5" y="317" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Vejce</text>
+<rect x="283.0" y="300" width="55.0" height="26" rx="13" fill="#f4f4f4" stroke="#999" stroke-width="1.2"/>
+<text x="310.5" y="317" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Máslo</text>
+<rect x="36" y="344" width="210" height="40" rx="8" fill="none" stroke="#999" stroke-width="1.2"/>
+<text x="46" y="341" font-size="9" fill="#777" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Množství</text>
+<text x="46" y="369.0" font-size="13" fill="#222" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">1</text>
+<rect x="254" y="344" width="110" height="40" rx="8" fill="none" stroke="#999" stroke-width="1.2"/>
+<text x="264" y="341" font-size="9" fill="#777" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Jednotka</text>
+<text x="264" y="369.0" font-size="13" fill="#222" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">l ▾</text>
+<text x="36" y="412" font-size="11" fill="#777" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Místo</text>
+<rect x="36" y="420" width="68.19999999999999" height="26" rx="13" fill="#222" stroke="#222" stroke-width="1.2"/>
+<text x="70.1" y="437" font-size="11" fill="#fff" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Lednice</text>
+<rect x="110.19999999999999" y="420" width="61.599999999999994" height="26" rx="13" fill="#f4f4f4" stroke="#999" stroke-width="1.2"/>
+<text x="141.0" y="437" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Mrazák</text>
+<rect x="177.79999999999998" y="420" width="48.4" height="26" rx="13" fill="#f4f4f4" stroke="#999" stroke-width="1.2"/>
+<text x="201.99999999999997" y="437" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Spíž</text>
+<text x="36" y="472" font-size="11" fill="#777" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">Spotřebovat do</text>
+<rect x="36" y="480" width="74.8" height="26" rx="13" fill="#f4f4f4" stroke="#999" stroke-width="1.2"/>
+<text x="73.4" y="497" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Bez data</text>
+<rect x="116.8" y="480" width="61.599999999999994" height="26" rx="13" fill="#f4f4f4" stroke="#999" stroke-width="1.2"/>
+<text x="147.6" y="497" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">+3 dny</text>
+<rect x="184.39999999999998" y="480" width="74.8" height="26" rx="13" fill="#222" stroke="#222" stroke-width="1.2"/>
+<text x="221.79999999999998" y="497" font-size="11" fill="#fff" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">+1 týden</text>
+<rect x="265.2" y="480" width="74.8" height="26" rx="13" fill="#f4f4f4" stroke="#999" stroke-width="1.2"/>
+<text x="302.59999999999997" y="497" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">+1 měsíc</text>
+<rect x="36" y="514" width="107.8" height="26" rx="13" fill="#f4f4f4" stroke="#999" stroke-width="1.2"/>
+<text x="89.9" y="531" font-size="11" fill="#222" font-weight="normal" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Vybrat datum…</text>
+<text x="150" y="532" font-size="12" fill="#777" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">= 21. 11. 2026</text>
+<rect x="36" y="560" width="328" height="40" rx="10" fill="#222" stroke="#222" stroke-width="1.2"/>
+<text x="200.0" y="585.0" font-size="13" fill="#fff" font-weight="bold" text-anchor="middle" font-family="Helvetica, Arial, sans-serif">Přidat</text>
+<text x="36" y="630" font-size="10" fill="#a33" font-weight="normal" text-anchor="start" font-family="Helvetica, Arial, sans-serif">nová potravina: jednotka, druh a kategorie pod polem Potravina</text>
+</svg>
