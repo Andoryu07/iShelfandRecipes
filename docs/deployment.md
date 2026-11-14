@@ -62,9 +62,11 @@ The domain has to point to the server's IPv4 address; HTTPS only works after tha
    | Type | A |
    | Data | `<server-ipv4>` |
 
-5. Save. WEDOS applies DNS changes within about an hour.
+5. Add the same record with the name `www` (or edit the existing `www` record), so `www.<domain>` points to the server too; Caddy redirects it to `https://<domain>`.
+6. Remove records the app does not use (for example `ftp`) and all **AAAA** records unless you have set up the server's IPv6 address; an AAAA record pointing elsewhere (for example to a parking page) stops the HTTPS certificate from being issued.
+7. Save. WEDOS applies DNS changes within about an hour.
 
-**Domain at another registrar:** add the same record in its DNS administration (there the empty name is often written as `@`). DNS records at WEDOS have no effect if the domain uses another provider's name servers, and the other way round, so edit the records where the domain's DNS is actually run.
+**Domain at another registrar** (for example czechia.com): set the same records in its DNS administration (there the empty name is often written as `@`): A `@` and A `www` to `<server-ipv4>`, remove `ftp` and all AAAA records that point to the registrar's parking page. If the domain is in a "parking" mode, switch it to plain DNS if the records keep changing back. DNS records at WEDOS have no effect if the domain uses another provider's name servers, and the other way round, so edit the records where the domain's DNS is actually run.
 
 Check it in PowerShell on your computer:
 
@@ -274,6 +276,7 @@ docker compose -f docker-compose.production.yml logs caddy
 Open these addresses in the browser:
 
 - `https://<domain>` shows the sign-in screen.
+- `https://www.<domain>` redirects to `https://<domain>`.
 - `https://<domain>/api/health` shows `{"status":"ok"}`.
 - `https://<domain>/api/docs` shows "Not Found" (the documentation is off in production).
 
