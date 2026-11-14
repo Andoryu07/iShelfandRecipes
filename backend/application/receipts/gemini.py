@@ -22,6 +22,9 @@ Rules:
   ("Zůstatek") and change. Ignore them, as well as VAT summaries and loyalty points.
 - purchasedOn is the date of the purchase, usually printed near the time and the register number
   (for example "Datum 13.08.26 21:12" means 2026-08-13). Never use validity or expiry dates ("Platnost do").
+- Expand an abbreviation in name only when you are sure what product it is. If you do not know an abbreviation
+  (for example a brand like "BBDR"), do not guess a different word: keep it as printed and only fix letter case
+  and accents of common words, for example "BBDR NA MEKKO" becomes "BBDR na měkko".
 - Do not invent lines, quantities or dates. Use null when something is not printed or not readable.
 """
 

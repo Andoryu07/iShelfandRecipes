@@ -6,7 +6,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from application.foods import buildFoodResponse
-from application.models import Food
+from application.models import Food, Receipt, ReceiptItem
+from application.models.enumerations import FoodCategory
 from application.receipts.reading import ExtractedReceipt, ExtractedReceiptItem, ReceiptReadingResult
 from application.schemas.receipts import ScannedReceiptItem, ScanReceiptResponse
 
@@ -80,9 +81,53 @@ def expandItem(item: ExtractedReceiptItem) -> list[dict]:
     ]
 
 
+def findEarlierItems(session: Session, householdId: int, storeName: str | None) -> dict[str, tuple[str, Food]]:
+    rows = session.execute(
+        select(ReceiptItem.originalText, ReceiptItem.name, Receipt.storeName, Food)
+        .join(Receipt, Receipt.id == ReceiptItem.receiptId)
+        .join(Food, Food.id == ReceiptItem.foodId)
+        .where(Receipt.householdId == householdId)
+        .order_by(Receipt.purchasedOn.desc(), Receipt.id.desc(), ReceiptItem.id.desc())
+    ).all()
+    earlier: dict[str, tuple[str, Food]] = {}
+    sameStoreKeys: set[str] = set()
+    normalizedStore = normalizeName(storeName or "")
+    for originalText, name, earlierStoreName, food in rows:
+        key = normalizeName(normalizeWhitespace(originalText))
+        isSameStore = bool(normalizedStore) and normalizeName(earlierStoreName or "") == normalizedStore
+        if key not in earlier or (isSameStore and key not in sameStoreKeys):
+            earlier[key] = (name, food)
+        if isSameStore:
+            sameStoreKeys.add(key)
+    return earlier
+
+
+def rememberEarlierCorrections(items: list[dict], earlier: dict[str, tuple[str, Food]]) -> None:
+    for item in items:
+        remembered = earlier.get(normalizeName(item["originalText"]))
+        item["rememberedFromEarlierReceipt"] = remembered is not None
+        if remembered is not None:
+            name, food = remembered
+            item["name"] = name
+            item["category"] = FoodCategory(food.category) if food.category else item["category"]
+            item["genericName"] = food.genericName or item["genericName"]
+            item["isFood"] = True
+            item["rememberedFood"] = food
+
+
+def suggestedFoodFor(item: dict, matchingFoods: dict[str, Food]) -> Food | None:
+    return item.get("rememberedFood") or matchingFoods.get(item["name"])
+
+
+def buildScannedItem(item: dict, suggestedFood: Food | None) -> ScannedReceiptItem:
+    fields = {key: value for key, value in item.items() if key != "rememberedFood"}
+    return ScannedReceiptItem(**fields, suggestedFood=buildFoodResponse(suggestedFood) if suggestedFood else None)
+
+
 def buildScanResponse(session: Session, householdId: int, result: ReceiptReadingResult) -> ScanReceiptResponse:
     receipt: ExtractedReceipt = result.receipt
     expandedItems = [expanded for item in receipt.items for expanded in expandItem(item)]
+    rememberEarlierCorrections(expandedItems, findEarlierItems(session, householdId, receipt.storeName))
     matchingFoods = findMatchingFoods(session, householdId, {item["name"] for item in expandedItems if item["name"]})
     itemsSum = sum((toMoney(item.price) for item in receipt.items), Decimal("0.00"))
     totalAmount = toMoney(receipt.totalAmount) if receipt.totalAmount is not None else None
@@ -93,11 +138,5 @@ def buildScanResponse(session: Session, householdId: int, result: ReceiptReading
         itemsSum=itemsSum,
         itemsSumMatchesTotal=totalAmount is not None and abs(itemsSum - totalAmount) <= sumTolerance,
         processingMilliseconds=result.processingMilliseconds,
-        items=[
-            ScannedReceiptItem(
-                **item,
-                suggestedFood=buildFoodResponse(matchingFoods[item["name"]]) if item["name"] in matchingFoods else None,
-            )
-            for item in expandedItems
-        ],
+        items=[buildScannedItem(item, suggestedFoodFor(item, matchingFoods)) for item in expandedItems],
     )

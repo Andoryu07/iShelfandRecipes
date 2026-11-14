@@ -114,6 +114,7 @@ def test_scanReturnsItemsAndPassesTheImageToTheReader(client: TestClient, fakeRe
             "price": 24.9,
             "discount": 0,
             "suggestedFood": None,
+            "rememberedFromEarlierReceipt": False,
         }
     ]
 
@@ -250,3 +251,55 @@ def test_cleansUpOriginalTextAndStoreName(client: TestClient, fakeReader: FakeRe
     assert body["storeName"] == "Albert"
     assert body["items"][0]["originalText"] == "ALB SYR BALKAN.180 G 2 x 29,90 Kč"
     assert body["items"][0]["genericName"] is None
+
+
+def saveEarlierReceipt(household: ScanningHousehold, storeName: str, originalText: str, name: str, foodId: int) -> None:
+    response = household.client.post(
+        f"/households/{household.id}/receipts",
+        json={
+            "storeName": storeName,
+            "purchasedOn": "2026-11-01",
+            "totalAmount": 20,
+            "items": [{"originalText": originalText, "name": name, "foodId": foodId, "price": 20, "correctedByUser": True}],
+        },
+        headers=household.headers,
+    )
+    assert response.status_code == 201
+
+
+def test_rememberedCorrectionsReplaceGuessedNames(client: TestClient, fakeReader: FakeReceiptReader) -> None:
+    household = ScanningHousehold(client)
+    biscuits = createFood(client, household.headers, household.id, "BeBe Dobré ráno", genericName="Sušenky").json()
+    saveEarlierReceipt(household, "Albert", "BBDR NA MEKKO", "BeBe Dobré ráno na měkko", biscuits["id"])
+    fakeReader.receipt = ExtractedReceipt(
+        storeName="albert",
+        purchasedOn=None,
+        totalAmount=None,
+        items=[
+            extractedItem(originalText="BBDR  NA MEKKO", name="Brumík na měkko", category="sweets", isFood=False),
+            extractedItem(),
+        ],
+    )
+
+    items = household.scan().json()["items"]
+
+    assert (items[0]["name"], items[0]["suggestedFood"]["id"], items[0]["rememberedFromEarlierReceipt"]) == (
+        "BeBe Dobré ráno na měkko",
+        biscuits["id"],
+        True,
+    )
+    assert (items[0]["isFood"], items[0]["genericName"]) == (True, "Sušenky")
+    assert items[1]["rememberedFromEarlierReceipt"] is False
+
+
+def test_sameStoreCorrectionWinsOverAnotherStore(client: TestClient, fakeReader: FakeReceiptReader) -> None:
+    household = ScanningHousehold(client)
+    albertFood = createFood(client, household.headers, household.id, "Albert výrobek").json()
+    lidlFood = createFood(client, household.headers, household.id, "Lidl výrobek").json()
+    saveEarlierReceipt(household, "Albert", "XYZ 100G", "Albert výrobek", albertFood["id"])
+    saveEarlierReceipt(household, "Lidl", "XYZ 100G", "Lidl výrobek", lidlFood["id"])
+    fakeReader.receipt = ExtractedReceipt(
+        storeName="Albert", purchasedOn=None, totalAmount=None, items=[extractedItem(originalText="XYZ 100G")]
+    )
+
+    assert household.scan().json()["items"][0]["suggestedFood"]["id"] == albertFood["id"]

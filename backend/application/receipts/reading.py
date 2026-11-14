@@ -13,7 +13,7 @@ class ExtractedReceiptItem(BaseModel):
     )
     name: str = Field(
         description="A short Czech name of the product without the brand, as specific as the receipt allows, "
-        "for example 'Mléko polotučné', 'Mouka hladká', 'Sýr Gran Moravia'."
+        "for example 'Mléko polotučné', 'Mouka hladká', 'Sýr Gran Moravia'. Keep unknown abbreviations as printed."
     )
     genericName: str = Field(
         description="The general kind of the product in Czech, for example 'Mléko', 'Mouka', 'Sýr', 'Rohlík'."

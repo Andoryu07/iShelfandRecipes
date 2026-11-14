@@ -21,6 +21,7 @@ class ScannedReceiptItem(BaseModel):
     price: QuantityValue
     discount: QuantityValue
     suggestedFood: FoodResponse | None
+    rememberedFromEarlierReceipt: bool = False
 
 
 class ScanReceiptResponse(BaseModel):
