@@ -85,3 +85,10 @@ export function listActiveReservations(householdId: number): Promise<Reservation
 export function cancelReservation(reservationId: number): Promise<Reservation> {
   return apiRequest<Reservation>(`/reservations/${reservationId}/cancel`, { method: "POST" });
 }
+
+export function updateFood(
+  foodId: number,
+  changes: { name?: string; genericName?: string | null; category?: FoodCategory },
+): Promise<Food> {
+  return apiRequest<Food>(`/foods/${foodId}`, { method: "PATCH", body: changes });
+}

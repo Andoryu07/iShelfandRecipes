@@ -4,6 +4,7 @@ import { useDeferredValue, useState } from "react";
 import { searchFoods } from "../api/stockApi";
 import { foodCategories, type Food, type FoodCategory, type MeasurementUnit } from "../api/types";
 import { texts } from "../translations/cs";
+import { suggestFood } from "./foodSuggestions";
 
 export interface NewFood {
   newFoodName: string;
@@ -50,11 +51,12 @@ export function FoodPicker({
   });
   const foundFoods = foodsQuery.data ?? [];
   const exactMatch = foundFoods.some((food) => food.name.toLowerCase() === searchText.toLowerCase());
+  const suggestion = suggestFood(searchText);
   const newFoodOption: NewFood = {
     newFoodName: searchText,
-    baseUnit: newFoodDefaults?.baseUnit ?? "gram",
-    category: newFoodDefaults?.category ?? "other",
-    genericName: newFoodDefaults?.genericName ?? "",
+    baseUnit: newFoodDefaults?.baseUnit ?? suggestion?.baseUnit ?? "gram",
+    category: newFoodDefaults?.category ?? suggestion?.category ?? "other",
+    genericName: newFoodDefaults?.genericName ?? suggestion?.genericName ?? "",
   };
   const options: FoodChoice[] = searchText && !exactMatch ? [...foundFoods, newFoodOption] : foundFoods;
 

@@ -71,25 +71,25 @@ function Overview({ householdId }: { householdId: number }) {
   return (
     <>
       <Typography variant="h5" component="h2" sx={{ mt: 1 }}>
-        {texts.overview.greeting(user?.displayName ?? "")}
+        {texts.overview.greeting(user?.displayName.trim().split(/\s+/)[0] ?? "")}
       </Typography>
       <Stack direction="row" spacing={1} useFlexGap sx={{ mt: 2 }}>
         <Button
           variant="contained"
           size="large"
-          startIcon={<PhotoCameraRoundedIcon />}
-          sx={{ flex: 1, py: 1.5 }}
+          sx={{ flex: 1, py: 1.5, flexDirection: "column", gap: 0.5, lineHeight: 1.2 }}
           onClick={() => navigate("/receipts")}
         >
+          <PhotoCameraRoundedIcon />
           {texts.overview.scanReceipt}
         </Button>
         <Button
           variant="outlined"
           size="large"
-          startIcon={<AddRoundedIcon />}
-          sx={{ flex: 1, py: 1.5 }}
+          sx={{ flex: 1, py: 1.5, flexDirection: "column", gap: 0.5, lineHeight: 1.2 }}
           onClick={() => navigate("/stock?add=1")}
         >
+          <AddRoundedIcon />
           {texts.overview.addFood}
         </Button>
       </Stack>
@@ -109,7 +109,10 @@ function Overview({ householdId }: { householdId: number }) {
                 onClick={() => navigate(`/stock?item=${stockItem.id}`)}
               >
                 <ListItemAvatar>
-                  <CategoryAvatar category={stockItem.food.category} />
+                  <CategoryAvatar
+                    category={stockItem.food.category}
+                    genericName={stockItem.food.genericName}
+                  />
                 </ListItemAvatar>
                 <ListItemText
                   primary={stockItem.food.name}

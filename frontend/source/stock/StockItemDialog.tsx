@@ -1,7 +1,7 @@
 import {
   Alert,
   Button,
-  Dialog,
+  Collapse,
   DialogActions,
   DialogContent,
   DialogTitle,
@@ -22,9 +22,13 @@ import {
   correctStockQuantity,
   createReservation,
   listStockMovements,
+  updateFood,
   updateStockItem,
   writeOffStock,
 } from "../api/stockApi";
+import { foodCategories, type FoodCategory } from "../api/types";
+import { BottomSheet } from "../components/BottomSheet";
+import { CategoryAvatar } from "../components/CategoryAvatar";
 import { useAuthentication } from "../authentication/AuthenticationContext";
 import type { StockItem, StorageLocation } from "../api/types";
 import { describeError } from "../errorMessages";
@@ -57,6 +61,9 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
   const { user } = useAuthentication();
   const [mode, setMode] = useState<"overview" | "writeOff" | "edit" | "reserve">("overview");
   const [reservationNote, setReservationNote] = useState("");
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [foodCategory, setFoodCategory] = useState<FoodCategory>(stockItem.food.category);
+  const [foodGenericName, setFoodGenericName] = useState(stockItem.food.genericName ?? "");
   const [quantityText, setQuantityText] = useState("");
   const [unitSymbol, setUnitSymbol] = useState(defaultUnitSymbol);
   const [writeOffReason, setWriteOffReason] = useState<WriteOffReason>("eaten");
@@ -141,7 +148,18 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
       }
       correctedQuantity = toBaseQuantity(value, findDisplayUnit(food.baseUnit, correctionUnitSymbol));
     }
+    const foodChanges: { genericName?: string | null; category?: FoodCategory } = {};
+    if (foodCategory !== food.category) {
+      foodChanges.category = foodCategory;
+    }
+    if ((foodGenericName.trim() || null) !== food.genericName) {
+      foodChanges.genericName = foodGenericName.trim() || null;
+    }
     run(async () => {
+      if (Object.keys(foodChanges).length > 0) {
+        await updateFood(food.id, foodChanges);
+        await queryClient.invalidateQueries({ queryKey: ["households", householdId] });
+      }
       if (Object.keys(changes).length > 0) {
         await updateStockItem(stockItem.id, changes);
       }
@@ -156,8 +174,11 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
     inputError ?? (actionMutation.error ? describeActionError(actionMutation.error) : null);
 
   return (
-    <Dialog open onClose={onClose} fullWidth>
-      <DialogTitle>{food.name}</DialogTitle>
+    <BottomSheet open onClose={onClose}>
+      <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        <CategoryAvatar category={food.category} genericName={food.genericName} />
+        {food.name}
+      </DialogTitle>
       <DialogContent>
         <Typography variant="h6">{formatQuantity(stockItem.quantity, food.baseUnit)}</Typography>
         <Typography color="text.secondary">
@@ -323,6 +344,28 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
             <Typography variant="body2" color="text.secondary">
               {texts.stock.correctionHint}
             </Typography>
+            <Typography className="listSectionTitle" component="h3">
+              {texts.stock.editFood}
+            </Typography>
+            <TextField
+              select
+              label={texts.stock.category}
+              value={foodCategory}
+              onChange={(event) => setFoodCategory(event.target.value as FoodCategory)}
+            >
+              {foodCategories.map((category) => (
+                <MenuItem key={category} value={category}>
+                  {texts.foodCategories[category]}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              label={texts.stock.genericName}
+              value={foodGenericName}
+              onChange={(event) => setFoodGenericName(event.target.value)}
+              helperText={texts.stock.genericNameHint}
+              slotProps={{ htmlInput: { maxLength: 100 } }}
+            />
           </>
         )}
 
@@ -333,23 +376,27 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
         )}
 
         <Divider sx={{ my: 2 }} />
-        <Typography variant="subtitle1">{texts.stock.historyTitle}</Typography>
-        <List dense>
-          {movementsQuery.data?.map((movement) => (
-            <ListItem key={movement.id} disableGutters>
-              <ListItemText
-                primary={`${texts.movementReasons[movement.reason]}: ${movement.quantityChange > 0 ? "+" : "−"}${formatQuantity(
-                  Math.abs(movement.quantityChange),
-                  food.baseUnit,
-                )}`}
-                secondary={`${movement.userDisplayName ?? texts.stock.unknownUser}, ${formatTimestamp(movement.createdAt)}`}
-              />
+        <Button onClick={() => setIsHistoryOpen(!isHistoryOpen)} sx={{ px: 0 }}>
+          {isHistoryOpen ? "▾" : "▸"} {texts.stock.historyTitle}
+        </Button>
+        <Collapse in={isHistoryOpen}>
+          <List dense>
+            {movementsQuery.data?.map((movement) => (
+              <ListItem key={movement.id} disableGutters>
+                <ListItemText
+                  primary={`${texts.movementReasons[movement.reason]}: ${movement.quantityChange > 0 ? "+" : "−"}${formatQuantity(
+                    Math.abs(movement.quantityChange),
+                    food.baseUnit,
+                  )}`}
+                  secondary={`${movement.userDisplayName ?? texts.stock.unknownUser}, ${formatTimestamp(movement.createdAt)}`}
+                />
+              </ListItem>
+            ))}
+            <ListItem disableGutters>
+              <ListItemText secondary={texts.stock.addedOn(formatTimestamp(stockItem.createdAt))} />
             </ListItem>
-          ))}
-          <ListItem disableGutters>
-            <ListItemText secondary={texts.stock.addedOn(formatTimestamp(stockItem.createdAt))} />
-          </ListItem>
-        </List>
+          </List>
+        </Collapse>
       </DialogContent>
       <DialogActions>
         <Button onClick={mode === "overview" ? onClose : () => setMode("overview")}>
@@ -371,6 +418,6 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
           </Button>
         )}
       </DialogActions>
-    </Dialog>
+    </BottomSheet>
   );
 }
