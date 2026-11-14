@@ -1,7 +1,15 @@
-import { MenuItem, Stack, TextField } from "@mui/material";
+import {
+  Chip,
+  InputAdornment,
+  Stack,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from "@mui/material";
+import type { Ref } from "react";
 import type { MeasurementUnit } from "../api/types";
-import { texts } from "../translations/cs";
-import { displayUnits } from "./quantities";
+import { commonQuantities, displayUnits, formatQuantity, quantityText } from "./quantities";
 
 interface QuantityInputProps {
   label: string;
@@ -11,7 +19,10 @@ interface QuantityInputProps {
   onValueChange: (value: string) => void;
   onUnitSymbolChange: (unitSymbol: string) => void;
   error?: string | null;
+  helperText?: string | null;
   autoFocus?: boolean;
+  inputRef?: Ref<HTMLInputElement>;
+  showCommonQuantities?: boolean;
 }
 
 export function QuantityInput({
@@ -22,33 +33,67 @@ export function QuantityInput({
   onValueChange,
   onUnitSymbolChange,
   error,
+  helperText,
   autoFocus,
+  inputRef,
+  showCommonQuantities,
 }: QuantityInputProps) {
   const units = displayUnits[baseUnit];
+  const selectedSymbol = units.some((unit) => unit.symbol === unitSymbol) ? unitSymbol : units[0].symbol;
+  const unitAdornment =
+    units.length === 1 ? (
+      <Typography color="text.secondary">{units[0].symbol}</Typography>
+    ) : (
+      <ToggleButtonGroup
+        exclusive
+        size="small"
+        value={selectedSymbol}
+        onChange={(_, symbol: string | null) => symbol && onUnitSymbolChange(symbol)}
+        onMouseDown={(event) => event.preventDefault()}
+      >
+        {units.map((unit) => (
+          <ToggleButton
+            key={unit.symbol}
+            value={unit.symbol}
+            sx={{ px: 1.5, py: 0.25, textTransform: "none" }}
+          >
+            {unit.symbol}
+          </ToggleButton>
+        ))}
+      </ToggleButtonGroup>
+    );
   return (
-    <Stack direction="row" spacing={1} useFlexGap>
+    <>
       <TextField
         label={label}
         value={value}
         onChange={(event) => onValueChange(event.target.value)}
         error={Boolean(error)}
-        helperText={error}
+        helperText={error ?? helperText}
         autoFocus={autoFocus}
-        slotProps={{ htmlInput: { inputMode: "decimal", autoComplete: "off" } }}
+        inputRef={inputRef}
+        slotProps={{
+          htmlInput: { inputMode: "decimal", autoComplete: "off", enterKeyHint: "done" },
+          input: { endAdornment: <InputAdornment position="end">{unitAdornment}</InputAdornment> },
+        }}
       />
-      <TextField
-        select
-        label={texts.stock.unit}
-        value={units.some((unit) => unit.symbol === unitSymbol) ? unitSymbol : units[0].symbol}
-        onChange={(event) => onUnitSymbolChange(event.target.value)}
-        sx={{ width: 110, flexShrink: 0 }}
-      >
-        {units.map((unit) => (
-          <MenuItem key={unit.symbol} value={unit.symbol}>
-            {unit.symbol}
-          </MenuItem>
-        ))}
-      </TextField>
-    </Stack>
+      {showCommonQuantities && (
+        <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1, mt: 1 }}>
+          {commonQuantities[baseUnit].map((baseQuantity) => (
+            <Chip
+              key={baseQuantity}
+              size="small"
+              variant="outlined"
+              label={formatQuantity(baseQuantity, baseUnit)}
+              onClick={() => {
+                const { text, unitSymbol: symbol } = quantityText(baseQuantity, baseUnit);
+                onValueChange(text);
+                onUnitSymbolChange(symbol);
+              }}
+            />
+          ))}
+        </Stack>
+      )}
+    </>
   );
 }

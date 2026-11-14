@@ -5,6 +5,10 @@ export function searchFoods(householdId: number, search: string): Promise<Food[]
   return apiRequest<Food[]>(`/households/${householdId}/foods?${new URLSearchParams({ search })}`);
 }
 
+export function getLastAddedQuantity(foodId: number): Promise<{ quantity: number | null }> {
+  return apiRequest<{ quantity: number | null }>(`/foods/${foodId}/last-added-quantity`);
+}
+
 export function createFood(
   householdId: number,
   food: { name: string; genericName: string | null; category: FoodCategory; baseUnit: MeasurementUnit },

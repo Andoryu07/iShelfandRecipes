@@ -64,3 +64,17 @@ export function parseBaseQuantity(
   const baseQuantity = toBaseQuantity(value, findDisplayUnit(baseUnit, unitSymbol));
   return baseQuantity > 0 ? baseQuantity : null;
 }
+
+export function quantityText(
+  baseQuantity: number,
+  baseUnit: MeasurementUnit,
+): { text: string; unitSymbol: string } {
+  const unit = bestDisplayUnit(baseQuantity, baseUnit);
+  return { text: String(fromBaseQuantity(baseQuantity, unit)).replace(".", ","), unitSymbol: unit.symbol };
+}
+
+export const commonQuantities: Record<MeasurementUnit, number[]> = {
+  gram: [100, 250, 500, 1000],
+  milliliter: [250, 500, 1000, 1500],
+  piece: [1, 2, 4, 6, 10],
+};

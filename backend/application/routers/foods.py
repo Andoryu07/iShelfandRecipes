@@ -6,8 +6,8 @@ from sqlalchemy.orm import Session
 from application.database import getDatabaseSession
 from application.dependencies import getAccessibleFood, getHouseholdMembership
 from application.foods import buildFoodResponse, escapeLikePattern, foodIsInUse
-from application.models import Food, HouseholdMember
-from application.schemas.foods import CreateFoodRequest, FoodResponse, UpdateFoodRequest
+from application.models import Food, HouseholdMember, StockItem, StockMovement
+from application.schemas.foods import CreateFoodRequest, FoodResponse, LastAddedQuantityResponse, UpdateFoodRequest
 
 router = APIRouter(tags=["foods"])
 searchResultLimit = 50
@@ -82,3 +82,23 @@ def updateFood(
         session.rollback()
         raise duplicateFoodError()
     return buildFoodResponse(food)
+
+
+@router.get("/foods/{foodId}/last-added-quantity", response_model=LastAddedQuantityResponse)
+def getLastAddedQuantity(
+    food: Food = Depends(getAccessibleFood), session: Session = Depends(getDatabaseSession)
+) -> LastAddedQuantityResponse:
+    stockItem = session.scalar(
+        select(StockItem)
+        .where(StockItem.foodId == food.id)
+        .order_by(StockItem.createdAt.desc(), StockItem.id.desc())
+        .limit(1)
+    )
+    if stockItem is None:
+        return LastAddedQuantityResponse(quantity=None)
+    changes = session.scalar(
+        select(func.coalesce(func.sum(StockMovement.quantityChange), 0)).where(
+            StockMovement.stockItemId == stockItem.id
+        )
+    )
+    return LastAddedQuantityResponse(quantity=stockItem.quantity - changes)

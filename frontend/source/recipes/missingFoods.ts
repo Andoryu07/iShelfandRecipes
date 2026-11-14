@@ -4,7 +4,7 @@ import type {
   StorageLocation,
   StorageLocationKind,
 } from "../api/types";
-import { bestDisplayUnit, fromBaseQuantity } from "../stock/quantities";
+import { quantityText } from "../stock/quantities";
 
 export interface MissingFoodRow {
   ingredientId: number;
@@ -42,12 +42,12 @@ export function buildMissingFoodRows(
       const { baseUnit } = ingredient.food;
       const quantity =
         baseUnit === "piece" ? Math.ceil(ingredient.missingQuantity) : ingredient.missingQuantity;
-      const unit = bestDisplayUnit(quantity, baseUnit);
+      const { text, unitSymbol } = quantityText(quantity, baseUnit);
       return {
         ingredientId: ingredient.ingredientId,
         isSelected: true,
-        quantityText: String(fromBaseQuantity(quantity, unit)).replace(".", ","),
-        unitSymbol: unit.symbol,
+        quantityText: text,
+        unitSymbol,
         storageLocationId: defaultStorageLocationId(ingredient.food.category, storageLocations),
         expirationDate: "",
       };

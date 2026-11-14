@@ -226,3 +226,19 @@ def test_concurrentWriteOffsNeverGoBelowZero(client: TestClient) -> None:
     assert sorted(statusCodes) == [201] * 5 + [409] * 5
     movements = client.get(f"/stock-items/{stockItemId}/movements", headers=household.headers).json()
     assert len(movements) == 5
+
+
+def test_lastAddedQuantityIsTheOriginalAmountOfTheNewestItem(client: TestClient) -> None:
+    household = Household(client)
+    milkId = household.createFood("Mléko", baseUnit="milliliter")
+    url = f"/foods/{milkId}/last-added-quantity"
+    assert client.get(url, headers=household.headers).json() == {"quantity": None}
+
+    household.addStockItem(milkId, 500)
+    newestId = household.addStockItem(milkId, 1500).json()["id"]
+    household.writeOff(newestId, reason="eaten", quantity=400)
+    household.writeOff(newestId, reason="correction", newQuantity=1000)
+
+    assert client.get(url, headers=household.headers).json() == {"quantity": 1500}
+    strangerHeaders = registerAndAuthorize(client, "petr@example.com", "Petr")
+    assert client.get(url, headers=strangerHeaders).status_code == 404

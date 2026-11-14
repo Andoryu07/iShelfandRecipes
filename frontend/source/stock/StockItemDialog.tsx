@@ -15,7 +15,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { ApiError } from "../api/apiClient";
 import {
   cancelReservation,
@@ -178,6 +178,17 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
     });
   }
 
+  function submitCurrentMode(event: FormEvent) {
+    event.preventDefault();
+    if (mode === "writeOff") {
+      submitWriteOff();
+    } else if (mode === "edit") {
+      submitEdit();
+    } else if (mode === "reserve") {
+      submitReservation();
+    }
+  }
+
   const storageLocation = storageLocations.find((location) => location.id === stockItem.storageLocationId);
   const errorMessage =
     inputError ?? (actionMutation.error ? describeActionError(actionMutation.error) : null);
@@ -188,230 +199,232 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
         <CategoryAvatar category={food.category} genericName={food.genericName} icon={food.icon} />
         {food.name}
       </DialogTitle>
-      <DialogContent>
-        <Typography variant="h6">{formatQuantity(stockItem.quantity, food.baseUnit)}</Typography>
-        <Typography color="text.secondary">
-          {[
-            storageLocation ? displayStorageLocationName(storageLocation) : null,
-            stockItem.expirationDate
-              ? texts.stock.expiresOn(formatDate(stockItem.expirationDate))
-              : texts.stock.noExpirationDate,
-            texts.foodCategories[food.category],
-          ]
-            .filter(Boolean)
-            .join(" · ")}
-        </Typography>
-        {stockItem.reservedQuantity > 0 && (
+      <form onSubmit={submitCurrentMode} style={{ display: "contents" }}>
+        <DialogContent>
+          <Typography variant="h6">{formatQuantity(stockItem.quantity, food.baseUnit)}</Typography>
           <Typography color="text.secondary">
-            {texts.stock.reserved(formatQuantity(stockItem.reservedQuantity, food.baseUnit))} ·{" "}
-            {texts.stock.freeQuantity(formatQuantity(stockItem.availableQuantity, food.baseUnit))}
+            {[
+              storageLocation ? displayStorageLocationName(storageLocation) : null,
+              stockItem.expirationDate
+                ? texts.stock.expiresOn(formatDate(stockItem.expirationDate))
+                : texts.stock.noExpirationDate,
+              texts.foodCategories[food.category],
+            ]
+              .filter(Boolean)
+              .join(" · ")}
           </Typography>
-        )}
-        {stockItem.reservations.length > 0 && (
-          <List dense>
-            {stockItem.reservations.map((reservation) => (
-              <ListItem
-                key={reservation.id}
-                disableGutters
-                secondaryAction={
-                  reservation.userId === user?.id && (
-                    <Button
-                      size="small"
-                      disabled={actionMutation.isPending}
-                      onClick={() => run(() => cancelReservation(reservation.id))}
-                    >
-                      {texts.stock.cancelReservation}
-                    </Button>
-                  )
-                }
-              >
-                <ListItemText
-                  primary={texts.stock.reservationBy(
-                    reservation.userDisplayName,
-                    formatQuantity(reservation.quantity, food.baseUnit),
-                  )}
-                  secondary={reservation.note}
-                />
-              </ListItem>
-            ))}
-          </List>
-        )}
+          {stockItem.reservedQuantity > 0 && (
+            <Typography color="text.secondary">
+              {texts.stock.reserved(formatQuantity(stockItem.reservedQuantity, food.baseUnit))} ·{" "}
+              {texts.stock.freeQuantity(formatQuantity(stockItem.availableQuantity, food.baseUnit))}
+            </Typography>
+          )}
+          {stockItem.reservations.length > 0 && (
+            <List dense>
+              {stockItem.reservations.map((reservation) => (
+                <ListItem
+                  key={reservation.id}
+                  disableGutters
+                  secondaryAction={
+                    reservation.userId === user?.id && (
+                      <Button
+                        size="small"
+                        disabled={actionMutation.isPending}
+                        onClick={() => run(() => cancelReservation(reservation.id))}
+                      >
+                        {texts.stock.cancelReservation}
+                      </Button>
+                    )
+                  }
+                >
+                  <ListItemText
+                    primary={texts.stock.reservationBy(
+                      reservation.userDisplayName,
+                      formatQuantity(reservation.quantity, food.baseUnit),
+                    )}
+                    secondary={reservation.note}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          )}
 
-        {mode === "overview" && (
-          <Stack spacing={1} sx={{ mt: 2 }}>
-            <Button
-              variant="contained"
-              disabled={actionMutation.isPending || edibleQuantity <= 0}
-              onClick={() => run(() => writeOffStock(stockItem.id, "eaten", edibleQuantity))}
-            >
-              {edibleQuantity < stockItem.quantity && edibleQuantity > 0
-                ? `${texts.stock.eatenAll} (${formatQuantity(edibleQuantity, food.baseUnit)})`
-                : texts.stock.eatenAll}
-            </Button>
-            {edibleQuantity <= 0 && (
-              <Typography variant="body2" color="text.secondary">
-                {texts.stock.allReserved}
-              </Typography>
-            )}
-            <Button
-              variant="outlined"
-              color="warning"
-              disabled={actionMutation.isPending}
-              onClick={() => run(() => writeOffStock(stockItem.id, "spoiled", stockItem.quantity))}
-            >
-              {texts.stock.spoiledAll}
-            </Button>
-            <Stack direction="row" spacing={1} useFlexGap>
-              <Button sx={{ flex: 1 }} onClick={() => setMode("writeOff")}>
-                {texts.stock.writeOffPart}
+          {mode === "overview" && (
+            <Stack spacing={1} sx={{ mt: 2 }}>
+              <Button
+                variant="contained"
+                disabled={actionMutation.isPending || edibleQuantity <= 0}
+                onClick={() => run(() => writeOffStock(stockItem.id, "eaten", edibleQuantity))}
+              >
+                {edibleQuantity < stockItem.quantity && edibleQuantity > 0
+                  ? `${texts.stock.eatenAll} (${formatQuantity(edibleQuantity, food.baseUnit)})`
+                  : texts.stock.eatenAll}
               </Button>
-              <Button sx={{ flex: 1 }} onClick={() => setMode("edit")}>
-                {texts.stock.editTitle}
+              {edibleQuantity <= 0 && (
+                <Typography variant="body2" color="text.secondary">
+                  {texts.stock.allReserved}
+                </Typography>
+              )}
+              <Button
+                variant="outlined"
+                color="warning"
+                disabled={actionMutation.isPending}
+                onClick={() => run(() => writeOffStock(stockItem.id, "spoiled", stockItem.quantity))}
+              >
+                {texts.stock.spoiledAll}
+              </Button>
+              <Stack direction="row" spacing={1} useFlexGap>
+                <Button sx={{ flex: 1 }} onClick={() => setMode("writeOff")}>
+                  {texts.stock.writeOffPart}
+                </Button>
+                <Button sx={{ flex: 1 }} onClick={() => setMode("edit")}>
+                  {texts.stock.editTitle}
+                </Button>
+              </Stack>
+              <Button onClick={() => setMode("reserve")} disabled={stockItem.availableQuantity <= 0}>
+                {texts.stock.reserve}
               </Button>
             </Stack>
-            <Button onClick={() => setMode("reserve")} disabled={stockItem.availableQuantity <= 0}>
+          )}
+
+          {mode === "writeOff" && (
+            <>
+              <QuantityInput
+                label={texts.stock.quantity}
+                baseUnit={food.baseUnit}
+                value={quantityText}
+                unitSymbol={unitSymbol}
+                onValueChange={setQuantityText}
+                onUnitSymbolChange={setUnitSymbol}
+                autoFocus
+              />
+              <TextField
+                select
+                label={texts.stock.reason}
+                value={writeOffReason}
+                onChange={(event) => setWriteOffReason(event.target.value as WriteOffReason)}
+              >
+                {writeOffReasons.map((reason) => (
+                  <MenuItem key={reason} value={reason}>
+                    {texts.movementReasons[reason]}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </>
+          )}
+
+          {mode === "reserve" && (
+            <>
+              <QuantityInput
+                label={texts.stock.quantity}
+                baseUnit={food.baseUnit}
+                value={quantityText}
+                unitSymbol={unitSymbol}
+                onValueChange={setQuantityText}
+                onUnitSymbolChange={setUnitSymbol}
+                autoFocus
+              />
+              <TextField
+                label={texts.stock.reservationNote}
+                value={reservationNote}
+                onChange={(event) => setReservationNote(event.target.value)}
+                slotProps={{ htmlInput: { maxLength: 200 } }}
+              />
+            </>
+          )}
+
+          {mode === "edit" && (
+            <>
+              <StorageLocationChips
+                storageLocations={storageLocations}
+                value={storageLocationId}
+                onChange={setStorageLocationId}
+              />
+              <ExpirationDatePicker value={expirationDate} onChange={setExpirationDate} />
+              <QuantityInput
+                label={texts.stock.correctedQuantity}
+                baseUnit={food.baseUnit}
+                value={correctionText}
+                unitSymbol={correctionUnitSymbol}
+                onValueChange={setCorrectionText}
+                onUnitSymbolChange={setCorrectionUnitSymbol}
+              />
+              <Typography variant="body2" color="text.secondary">
+                {texts.stock.correctionHint}
+              </Typography>
+              <Typography className="listSectionTitle" component="h3">
+                {texts.stock.editFood}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                {texts.stock.category}
+              </Typography>
+              <CategoryChips value={foodCategory} onChange={setFoodCategory} />
+              <IconPicker
+                value={foodIcon}
+                automaticIcon={automaticFoodIcon(foodCategory, foodGenericName)}
+                icons={foodIcons}
+                onChange={setFoodIcon}
+              />
+              <TextField
+                label={texts.stock.genericName}
+                value={foodGenericName}
+                onChange={(event) => setFoodGenericName(event.target.value)}
+                helperText={texts.stock.genericNameHint}
+                slotProps={{ htmlInput: { maxLength: 100 } }}
+              />
+            </>
+          )}
+
+          {errorMessage && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              {errorMessage}
+            </Alert>
+          )}
+
+          <Divider sx={{ my: 2 }} />
+          <Button onClick={() => setIsHistoryOpen(!isHistoryOpen)} sx={{ px: 0 }}>
+            {isHistoryOpen ? "▾" : "▸"} {texts.stock.historyTitle}
+          </Button>
+          <Collapse in={isHistoryOpen}>
+            <List dense>
+              {movementsQuery.data?.map((movement) => (
+                <ListItem key={movement.id} disableGutters>
+                  <ListItemText
+                    primary={`${texts.movementReasons[movement.reason]}: ${movement.quantityChange > 0 ? "+" : "−"}${formatQuantity(
+                      Math.abs(movement.quantityChange),
+                      food.baseUnit,
+                    )}`}
+                    secondary={`${movement.userDisplayName ?? texts.stock.unknownUser}, ${formatTimestamp(movement.createdAt)}`}
+                  />
+                </ListItem>
+              ))}
+              <ListItem disableGutters>
+                <ListItemText secondary={texts.stock.addedOn(formatTimestamp(stockItem.createdAt))} />
+              </ListItem>
+            </List>
+          </Collapse>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={mode === "overview" ? onClose : () => setMode("overview")}>
+            {texts.common.cancel}
+          </Button>
+          {mode === "writeOff" && (
+            <Button type="submit" variant="contained" disabled={actionMutation.isPending}>
+              {texts.stock.writeOff}
+            </Button>
+          )}
+          {mode === "edit" && (
+            <Button type="submit" variant="contained" disabled={actionMutation.isPending}>
+              {texts.common.save}
+            </Button>
+          )}
+          {mode === "reserve" && (
+            <Button type="submit" variant="contained" disabled={actionMutation.isPending}>
               {texts.stock.reserve}
             </Button>
-          </Stack>
-        )}
-
-        {mode === "writeOff" && (
-          <>
-            <QuantityInput
-              label={texts.stock.quantity}
-              baseUnit={food.baseUnit}
-              value={quantityText}
-              unitSymbol={unitSymbol}
-              onValueChange={setQuantityText}
-              onUnitSymbolChange={setUnitSymbol}
-              autoFocus
-            />
-            <TextField
-              select
-              label={texts.stock.reason}
-              value={writeOffReason}
-              onChange={(event) => setWriteOffReason(event.target.value as WriteOffReason)}
-            >
-              {writeOffReasons.map((reason) => (
-                <MenuItem key={reason} value={reason}>
-                  {texts.movementReasons[reason]}
-                </MenuItem>
-              ))}
-            </TextField>
-          </>
-        )}
-
-        {mode === "reserve" && (
-          <>
-            <QuantityInput
-              label={texts.stock.quantity}
-              baseUnit={food.baseUnit}
-              value={quantityText}
-              unitSymbol={unitSymbol}
-              onValueChange={setQuantityText}
-              onUnitSymbolChange={setUnitSymbol}
-              autoFocus
-            />
-            <TextField
-              label={texts.stock.reservationNote}
-              value={reservationNote}
-              onChange={(event) => setReservationNote(event.target.value)}
-              slotProps={{ htmlInput: { maxLength: 200 } }}
-            />
-          </>
-        )}
-
-        {mode === "edit" && (
-          <>
-            <StorageLocationChips
-              storageLocations={storageLocations}
-              value={storageLocationId}
-              onChange={setStorageLocationId}
-            />
-            <ExpirationDatePicker value={expirationDate} onChange={setExpirationDate} />
-            <QuantityInput
-              label={texts.stock.correctedQuantity}
-              baseUnit={food.baseUnit}
-              value={correctionText}
-              unitSymbol={correctionUnitSymbol}
-              onValueChange={setCorrectionText}
-              onUnitSymbolChange={setCorrectionUnitSymbol}
-            />
-            <Typography variant="body2" color="text.secondary">
-              {texts.stock.correctionHint}
-            </Typography>
-            <Typography className="listSectionTitle" component="h3">
-              {texts.stock.editFood}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              {texts.stock.category}
-            </Typography>
-            <CategoryChips value={foodCategory} onChange={setFoodCategory} />
-            <IconPicker
-              value={foodIcon}
-              automaticIcon={automaticFoodIcon(foodCategory, foodGenericName)}
-              icons={foodIcons}
-              onChange={setFoodIcon}
-            />
-            <TextField
-              label={texts.stock.genericName}
-              value={foodGenericName}
-              onChange={(event) => setFoodGenericName(event.target.value)}
-              helperText={texts.stock.genericNameHint}
-              slotProps={{ htmlInput: { maxLength: 100 } }}
-            />
-          </>
-        )}
-
-        {errorMessage && (
-          <Alert severity="error" sx={{ mt: 2 }}>
-            {errorMessage}
-          </Alert>
-        )}
-
-        <Divider sx={{ my: 2 }} />
-        <Button onClick={() => setIsHistoryOpen(!isHistoryOpen)} sx={{ px: 0 }}>
-          {isHistoryOpen ? "▾" : "▸"} {texts.stock.historyTitle}
-        </Button>
-        <Collapse in={isHistoryOpen}>
-          <List dense>
-            {movementsQuery.data?.map((movement) => (
-              <ListItem key={movement.id} disableGutters>
-                <ListItemText
-                  primary={`${texts.movementReasons[movement.reason]}: ${movement.quantityChange > 0 ? "+" : "−"}${formatQuantity(
-                    Math.abs(movement.quantityChange),
-                    food.baseUnit,
-                  )}`}
-                  secondary={`${movement.userDisplayName ?? texts.stock.unknownUser}, ${formatTimestamp(movement.createdAt)}`}
-                />
-              </ListItem>
-            ))}
-            <ListItem disableGutters>
-              <ListItemText secondary={texts.stock.addedOn(formatTimestamp(stockItem.createdAt))} />
-            </ListItem>
-          </List>
-        </Collapse>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={mode === "overview" ? onClose : () => setMode("overview")}>
-          {texts.common.cancel}
-        </Button>
-        {mode === "writeOff" && (
-          <Button variant="contained" onClick={submitWriteOff} disabled={actionMutation.isPending}>
-            {texts.stock.writeOff}
-          </Button>
-        )}
-        {mode === "edit" && (
-          <Button variant="contained" onClick={submitEdit} disabled={actionMutation.isPending}>
-            {texts.common.save}
-          </Button>
-        )}
-        {mode === "reserve" && (
-          <Button variant="contained" onClick={submitReservation} disabled={actionMutation.isPending}>
-            {texts.stock.reserve}
-          </Button>
-        )}
-      </DialogActions>
+          )}
+        </DialogActions>
+      </form>
     </BottomSheet>
   );
 }

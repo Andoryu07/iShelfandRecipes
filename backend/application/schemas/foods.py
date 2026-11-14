@@ -3,7 +3,7 @@ from typing import Annotated
 from pydantic import BaseModel, StringConstraints
 
 from application.models.enumerations import FoodCategory, MeasurementUnit
-from application.schemas.common import FoodName, Icon
+from application.schemas.common import FoodName, Icon, QuantityValue
 
 
 OptionalName = Annotated[str, StringConstraints(strip_whitespace=True, max_length=100)]
@@ -32,6 +32,10 @@ class FoodResponse(BaseModel):
     category: FoodCategory
     baseUnit: MeasurementUnit
     icon: str | None
+
+
+class LastAddedQuantityResponse(BaseModel):
+    quantity: QuantityValue | None
 
 
 class NewFoodRequest(BaseModel):

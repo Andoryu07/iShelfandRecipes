@@ -8,9 +8,9 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, type FormEvent } from "react";
-import { createFood, createStockItem } from "../api/stockApi";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { createFood, createStockItem, getLastAddedQuantity } from "../api/stockApi";
 import type { Food, StorageLocation } from "../api/types";
 import { BottomSheet } from "../components/BottomSheet";
 import { StorageLocationChips } from "../components/StorageLocationChips";
@@ -25,7 +25,13 @@ import {
   newFoodRequest,
   type FoodChoice,
 } from "./FoodPicker";
-import { displayUnits, parseBaseQuantity } from "./quantities";
+import {
+  displayUnits,
+  formatQuantity,
+  parseBaseQuantity,
+  quantityText as toQuantityText,
+} from "./quantities";
+import { PrefillWarningDialog, isPrefillWarningHidden } from "./PrefillWarningDialog";
 import { QuantityInput } from "./QuantityInput";
 import { stockItemsQueryKey } from "./stockQueries";
 
@@ -47,14 +53,32 @@ export function AddStockItemDialog({
   const queryClient = useQueryClient();
   const [food, setFood] = useState<FoodChoice | null>(null);
   const [pickerKey, setPickerKey] = useState(0);
-  const [quantityText, setQuantityText] = useState("");
-  const [unitSymbol, setUnitSymbol] = useState("g");
+  const [typedQuantityText, setTypedQuantityText] = useState<string | null>(null);
+  const [typedUnitSymbol, setTypedUnitSymbol] = useState<string | null>(null);
   const [storageLocationId, setStorageLocationId] = useState(
     initialStorageLocationId ?? storageLocations[0]?.id ?? 0,
   );
   const [expirationDate, setExpirationDate] = useState("");
   const [quantityError, setQuantityError] = useState<string | null>(null);
+  const [pendingBaseQuantity, setPendingBaseQuantity] = useState<number | null>(null);
+  const quantityInputRef = useRef<HTMLInputElement>(null);
+  const existingFoodId = food && !isNewFood(food) ? food.id : null;
   const baseUnit = baseUnitOf(food);
+  const lastQuantityQuery = useQuery({
+    queryKey: ["foods", existingFoodId, "lastAddedQuantity"],
+    queryFn: () => getLastAddedQuantity(existingFoodId!),
+    enabled: existingFoodId !== null,
+    staleTime: 0,
+  });
+  const lastQuantity = existingFoodId !== null ? lastQuantityQuery.data?.quantity : null;
+  const prefill =
+    baseUnit && lastQuantity != null
+      ? { ...toQuantityText(lastQuantity, baseUnit), baseQuantity: lastQuantity }
+      : null;
+  const quantityText = typedQuantityText ?? prefill?.text ?? "";
+  const unitSymbol =
+    typedUnitSymbol ?? prefill?.unitSymbol ?? (baseUnit ? displayUnits[baseUnit][0].symbol : "g");
+  const isPrefilled = prefill !== null && typedQuantityText === null && typedUnitSymbol === null;
 
   const saveMutation = useMutation({
     mutationFn: async (baseQuantity: number) => {
@@ -76,12 +100,39 @@ export function AddStockItemDialog({
     },
   });
 
-  function changeFood(choice: FoodChoice | null) {
-    setFood(choice);
-    const unit = baseUnitOf(choice);
-    if (unit) {
-      setUnitSymbol(displayUnits[unit][0].symbol);
+  useEffect(() => {
+    if (existingFoodId === null) {
+      return;
     }
+    const focusTimer = window.setTimeout(() => quantityInputRef.current?.focus(), 50);
+    return () => window.clearTimeout(focusTimer);
+  }, [existingFoodId]);
+
+  function foodKey(choice: FoodChoice | null): string {
+    if (choice === null) {
+      return "";
+    }
+    return isNewFood(choice) ? `new:${choice.newFoodName}` : `food:${choice.id}`;
+  }
+
+  function changeFood(choice: FoodChoice | null) {
+    if (foodKey(choice) !== foodKey(food)) {
+      setTypedQuantityText(null);
+      setTypedUnitSymbol(null);
+    } else if (baseUnitOf(choice) !== baseUnit) {
+      setTypedUnitSymbol(null);
+    }
+    setFood(choice);
+  }
+
+  function changeQuantityText(text: string) {
+    setTypedQuantityText(text);
+    setTypedUnitSymbol((current) => current ?? unitSymbol);
+  }
+
+  function changeUnitSymbol(symbol: string) {
+    setTypedUnitSymbol(symbol);
+    setTypedQuantityText((current) => current ?? quantityText);
   }
 
   function pickRecentFood(recentFood: Food) {
@@ -100,6 +151,10 @@ export function AddStockItemDialog({
       return;
     }
     setQuantityError(null);
+    if (isPrefilled && !isPrefillWarningHidden()) {
+      setPendingBaseQuantity(baseQuantity);
+      return;
+    }
     saveMutation.mutate(baseQuantity);
   }
 
@@ -130,9 +185,12 @@ export function AddStockItemDialog({
               baseUnit={baseUnit}
               value={quantityText}
               unitSymbol={unitSymbol}
-              onValueChange={setQuantityText}
-              onUnitSymbolChange={setUnitSymbol}
+              onValueChange={changeQuantityText}
+              onUnitSymbolChange={changeUnitSymbol}
               error={quantityError}
+              helperText={isPrefilled ? texts.stock.prefilledFromLastTime : null}
+              inputRef={quantityInputRef}
+              showCommonQuantities
             />
           )}
           <StorageLocationChips
@@ -154,6 +212,19 @@ export function AddStockItemDialog({
           </Button>
         </DialogActions>
       </form>
+      <PrefillWarningDialog
+        quantity={
+          pendingBaseQuantity !== null && baseUnit ? formatQuantity(pendingBaseQuantity, baseUnit) : null
+        }
+        onConfirm={() => {
+          saveMutation.mutate(pendingBaseQuantity!);
+          setPendingBaseQuantity(null);
+        }}
+        onEdit={() => {
+          setPendingBaseQuantity(null);
+          quantityInputRef.current?.focus();
+        }}
+      />
     </BottomSheet>
   );
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { displayUnits, formatQuantity, parseDecimal, toBaseQuantity } from "./quantities";
+import { displayUnits, formatQuantity, parseDecimal, quantityText, toBaseQuantity } from "./quantities";
 
 describe("quantities", () => {
   it("parses Czech and English decimal input", () => {
@@ -24,5 +24,13 @@ describe("quantities", () => {
     expect(formatQuantity(330, "milliliter")).toBe("330 ml");
     expect(formatQuantity(3, "piece")).toBe("3 ks");
     expect(formatQuantity(0.5, "piece")).toBe("0,5 ks");
+  });
+});
+
+describe("quantity text", () => {
+  it("uses the larger unit and a decimal comma", () => {
+    expect(quantityText(1500, "gram")).toEqual({ text: "1,5", unitSymbol: "kg" });
+    expect(quantityText(250, "milliliter")).toEqual({ text: "250", unitSymbol: "ml" });
+    expect(quantityText(3, "piece")).toEqual({ text: "3", unitSymbol: "ks" });
   });
 });
