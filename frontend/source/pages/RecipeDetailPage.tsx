@@ -84,9 +84,8 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
   const recipe = recipeQuery.data;
   const currentServings = servings ?? recipe?.servings ?? 1;
   const availabilityQuery = useQuery({
-    queryKey: ["recipes", recipeId, "availability", currentServings],
-    queryFn: () => getRecipeAvailability(recipeId, currentServings),
-    enabled: recipe !== undefined,
+    queryKey: ["recipes", recipeId, "availability", servings ?? "default"],
+    queryFn: () => getRecipeAvailability(recipeId, servings),
     placeholderData: (previousData) => previousData,
   });
   const reserveMutation = useMutation({

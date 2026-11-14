@@ -1,6 +1,8 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
-import { onAuthenticationLost, refreshAccessToken, setAccessToken } from "../api/apiClient";
+import { onAuthenticationLost, refreshAccessTokenOnStartup, setAccessToken } from "../api/apiClient";
+import { listHouseholds } from "../api/householdsApi";
+import { householdsQueryKey } from "../households/useCurrentHousehold";
 import {
   getCurrentUser,
   logIn as logInRequest,
@@ -23,13 +25,17 @@ export function AuthenticationProvider({ children }: { children: ReactNode }) {
   }, [queryClient]);
 
   const loadCurrentUser = useCallback(async () => {
-    setUser(await getCurrentUser());
+    const [currentUser] = await Promise.all([
+      getCurrentUser(),
+      queryClient.prefetchQuery({ queryKey: householdsQueryKey, queryFn: listHouseholds }),
+    ]);
+    setUser(currentUser);
     setStatus("signedIn");
-  }, []);
+  }, [queryClient]);
 
   useEffect(() => {
     onAuthenticationLost(signOutLocally);
-    refreshAccessToken()
+    refreshAccessTokenOnStartup()
       .then((refreshed) => (refreshed ? loadCurrentUser() : signOutLocally()))
       .catch(signOutLocally);
     return () => onAuthenticationLost(null);

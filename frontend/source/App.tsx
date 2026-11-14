@@ -1,3 +1,4 @@
+import { lazy, Suspense, type ComponentType } from "react";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
 import { ApplicationLayout } from "./components/ApplicationLayout";
 import {
@@ -7,25 +8,32 @@ import {
   RequireSignedOut,
 } from "./components/RouteGuards";
 import { AuthenticationForm } from "./pages/AuthenticationForm";
-import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
-import { HouseholdPage } from "./pages/HouseholdPage";
-import { HouseholdSetupPage } from "./pages/HouseholdSetupPage";
+import { LoadingScreen } from "./components/LoadingScreen";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { OverviewPage } from "./pages/OverviewPage";
-import { RecipeDetailPage } from "./pages/RecipeDetailPage";
-import { RecipesPage } from "./pages/RecipesPage";
-import { PrivacyPolicyPage } from "./pages/PrivacyPolicyPage";
-import { ReceiptsPage } from "./pages/ReceiptsPage";
-import { ResetPasswordPage } from "./pages/ResetPasswordPage";
 import { StockPage } from "./pages/StockPage";
-import {
-  AboutPage,
-  AccountSettingsPage,
-  AppearancePage,
-  NotificationsSettingsPage,
-  PrivacySettingsPage,
-  ProfilePage,
-} from "./profile/ProfilePages";
+
+function lazyPage<Name extends string>(load: () => Promise<Record<Name, ComponentType>>, name: Name) {
+  return lazy(() => load().then((module) => ({ default: module[name] })));
+}
+
+const HouseholdPage = lazyPage(() => import("./pages/HouseholdPage"), "HouseholdPage");
+const HouseholdSetupPage = lazyPage(() => import("./pages/HouseholdSetupPage"), "HouseholdSetupPage");
+const RecipeDetailPage = lazyPage(() => import("./pages/RecipeDetailPage"), "RecipeDetailPage");
+const RecipesPage = lazyPage(() => import("./pages/RecipesPage"), "RecipesPage");
+const PrivacyPolicyPage = lazyPage(() => import("./pages/PrivacyPolicyPage"), "PrivacyPolicyPage");
+const ReceiptsPage = lazyPage(() => import("./pages/ReceiptsPage"), "ReceiptsPage");
+const ForgotPasswordPage = lazyPage(() => import("./pages/ForgotPasswordPage"), "ForgotPasswordPage");
+const ResetPasswordPage = lazyPage(() => import("./pages/ResetPasswordPage"), "ResetPasswordPage");
+const AboutPage = lazyPage(() => import("./profile/ProfilePages"), "AboutPage");
+const AccountSettingsPage = lazyPage(() => import("./profile/ProfilePages"), "AccountSettingsPage");
+const AppearancePage = lazyPage(() => import("./profile/ProfilePages"), "AppearancePage");
+const NotificationsSettingsPage = lazyPage(
+  () => import("./profile/ProfilePages"),
+  "NotificationsSettingsPage",
+);
+const PrivacySettingsPage = lazyPage(() => import("./profile/ProfilePages"), "PrivacySettingsPage");
+const ProfilePage = lazyPage(() => import("./profile/ProfilePages"), "ProfilePage");
 
 const router = createBrowserRouter([
   {
@@ -74,5 +82,9 @@ const router = createBrowserRouter([
 ]);
 
 export function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <Suspense fallback={<LoadingScreen />}>
+      <RouterProvider router={router} />
+    </Suspense>
+  );
 }

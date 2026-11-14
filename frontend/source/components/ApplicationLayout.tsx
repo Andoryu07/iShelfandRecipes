@@ -10,6 +10,7 @@ import {
   BottomNavigation,
   BottomNavigationAction,
   Box,
+  CircularProgress,
   Drawer,
   IconButton,
   List,
@@ -23,6 +24,7 @@ import {
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { Outlet, useLocation, useNavigate } from "react-router";
+import { Suspense } from "react";
 import { useAuthentication } from "../authentication/AuthenticationContext";
 import { texts } from "../translations/cs";
 
@@ -140,7 +142,9 @@ export function ApplicationLayout() {
           </Toolbar>
         </AppBar>
         <main className="page">
-          <Outlet />
+          <Suspense fallback={<PageLoading />}>
+            <Outlet />
+          </Suspense>
         </main>
       </Box>
       {!isWide && (
@@ -169,6 +173,14 @@ export function ApplicationLayout() {
           </BottomNavigation>
         </Paper>
       )}
+    </Box>
+  );
+}
+
+function PageLoading() {
+  return (
+    <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
+      <CircularProgress />
     </Box>
   );
 }

@@ -21,8 +21,12 @@ export function deleteRecipe(recipeId: number): Promise<void> {
   return apiRequest<void>(`/recipes/${recipeId}`, { method: "DELETE" });
 }
 
-export function getRecipeAvailability(recipeId: number, servings: number): Promise<RecipeAvailability> {
-  return apiRequest<RecipeAvailability>(`/recipes/${recipeId}/availability?servings=${servings}`);
+export function getRecipeAvailability(
+  recipeId: number,
+  servings: number | null,
+): Promise<RecipeAvailability> {
+  const query = servings === null ? "" : `?servings=${servings}`;
+  return apiRequest<RecipeAvailability>(`/recipes/${recipeId}/availability${query}`);
 }
 
 export function cookRecipe(recipeId: number, servings: number): Promise<unknown> {

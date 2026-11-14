@@ -95,6 +95,13 @@ export function refreshAccessToken(): Promise<boolean> {
   return pendingRefresh;
 }
 
+let startupRefresh: Promise<boolean> | null = null;
+
+export function refreshAccessTokenOnStartup(): Promise<boolean> {
+  startupRefresh ??= refreshAccessToken();
+  return startupRefresh;
+}
+
 export async function apiRequest<ResponseBody>(
   path: string,
   options: RequestOptions = {},
