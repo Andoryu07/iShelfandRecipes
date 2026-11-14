@@ -7,7 +7,7 @@ Production uses `docker-compose.production.yml`:
 | Service | What it does |
 | --- | --- |
 | `caddy` | Serves the built PWA, forwards `/api` to the backend and gets and renews the HTTPS certificate automatically (Let's Encrypt) |
-| `backend` | The API with two processes; database migrations run on start; `/docs` is turned off |
+| `backend` | The API (`BACKEND_WORKERS` processes, 1 by default); database migrations run on start; `/docs` is turned off |
 | `worker` | Daily jobs at 8:00 (push notifications, deleting accounts after the 14-day period) |
 | `database` | PostgreSQL, not reachable from the internet |
 | `backup` | A database backup every night at 3:00 into `backups/`, the last 14 days are kept |
@@ -48,7 +48,8 @@ Steps:
 3. In the project, open **Servers** and choose **Add server**:
    - Location: **Nuremberg** or **Falkenstein** (Germany).
    - Image: **Ubuntu 24.04**.
-   - Type: shared vCPU **CX23** (x86). If it cannot be ordered, **CAX11** (Arm) works too; all images used here run on both.
+   - Type: the cheapest shared vCPU server with at least 1 GB RAM and 20 GB disk is enough for testing (for example CX23 or CAX11 if they can be ordered, otherwise the 1 vCPU / 1 GB type). With 1 GB RAM, add the swap file in step 5. The server can be made bigger later in the console (server → **Rescale**) without losing data. All images used here run on x86 and Arm.
+   - Check whether the public IPv4 address is included in the price or charged extra; the app needs it.
    - Networking: public IPv4 and IPv6.
    - SSH keys: **Add SSH key** and paste the content of `id_ed25519.pub`. The key cannot be added later in the console.
    - Backups: **on** (daily copies of the whole disk, seven are kept, about 20 % of the server price).
@@ -121,7 +122,23 @@ systemctl restart ssh
 ssh ishelf@<server-ip>
 ```
 
-From now on always log in as `ishelf`. Turn on automatic security updates:
+From now on always log in as `ishelf`.
+
+On a server with 1 GB RAM, add 2 GB of swap so that building the app does not run out of memory:
+
+```
+sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
+```
+
+```
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+```
+
+```
+echo 'vm.swappiness=10' | sudo tee /etc/sysctl.d/99-swappiness.conf && sudo sysctl --system
+```
+
+Check it with `free -h` (the `Swap` line shows 2.0Gi). Turn on automatic security updates:
 
 ```
 sudo apt install -y unattended-upgrades
@@ -208,6 +225,7 @@ for `JWT_SECRET`. Fill in also:
 - `DOMAIN`: your domain without `https://`, for example `ishelf.cz`.
 - `GEMINI_API_KEY`: the key from Google AI Studio.
 - `VAPID_SUBJECT`: `mailto:` followed by your e-mail.
+- `BACKEND_WORKERS`: keep `1` on a 1 GB server; with 2 GB RAM or more you can use `2`.
 
 Generate the keys for push notifications and copy the two printed lines into `.env`:
 

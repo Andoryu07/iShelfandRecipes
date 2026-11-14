@@ -40,7 +40,7 @@ services:
     command:
       - sh
       - -c
-      - alembic upgrade head && uvicorn application.main:application --host 0.0.0.0 --port 8000 --workers 2 --proxy-headers --forwarded-allow-ips "*"
+      - alembic upgrade head && uvicorn application.main:application --host 0.0.0.0 --port 8000 --workers ${BACKEND_WORKERS:-1} --proxy-headers --forwarded-allow-ips "*"
     depends_on:
       database:
         condition: service_healthy
