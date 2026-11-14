@@ -15,7 +15,7 @@ The app is then available at http://localhost:5173 (the development server reloa
 
 ## Deployment
 
-Production runs with `docker-compose.production.yml` (Caddy with automatic HTTPS, backend, worker, PostgreSQL and nightly database backups). The step-by-step guide for an OVHcloud VPS and a `.cz` domain is in [docs/deployment.md](docs/deployment.md).
+Production runs with `docker-compose.production.yml` (Caddy with automatic HTTPS, backend, worker, PostgreSQL and nightly database backups). The step-by-step guide for a WEDOS virtual server and a `.cz` domain is in [docs/deployment.md](docs/deployment.md).
 
 ## Run tests
 
