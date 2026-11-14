@@ -19,11 +19,13 @@ import {
   ListItemText,
   Snackbar,
   Stack,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from "@mui/material";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRef, useState, type ChangeEvent } from "react";
-import { Link as RouterLink } from "react-router";
+import { Link as RouterLink, useSearchParams } from "react-router";
 import { giveReceiptConsent } from "../api/authenticationApi";
 import { listReceipts, scanReceipt } from "../api/receiptsApi";
 import type { ScannedReceipt } from "../api/types";
@@ -35,6 +37,7 @@ import { formatMoney } from "../receipts/money";
 import { ReceiptDetailDialog } from "../receipts/ReceiptDetailDialog";
 import { ReceiptReview } from "../receipts/ReceiptReview";
 import { resizeImage } from "../receipts/resizeImage";
+import { SpendingView } from "../spending/SpendingView";
 import { formatDate, texts } from "../translations/cs";
 
 export function ReceiptsPage() {
@@ -52,6 +55,8 @@ function Receipts({ householdId }: { householdId: number }) {
   const [selectedReceiptId, setSelectedReceiptId] = useState<number | null>(null);
   const [isSavedMessageOpen, setIsSavedMessageOpen] = useState(false);
   const storageLocations = useStorageLocations(householdId).data ?? [];
+  const [searchParameters, setSearchParameters] = useSearchParams();
+  const isSpendingView = searchParameters.get("view") === "spending";
   const receiptsQuery = useQuery({
     queryKey: ["households", householdId, "receipts"],
     queryFn: () => listReceipts(householdId),
@@ -105,8 +110,34 @@ function Receipts({ householdId }: { householdId: number }) {
     );
   }
 
+  const viewToggle = (
+    <ToggleButtonGroup
+      exclusive
+      fullWidth
+      size="small"
+      value={isSpendingView ? "spending" : "receipts"}
+      onChange={(_, value: string | null) =>
+        value && setSearchParameters(value === "spending" ? { view: "spending" } : {})
+      }
+      sx={{ mb: 1 }}
+    >
+      <ToggleButton value="receipts">{texts.spending.receiptsTab}</ToggleButton>
+      <ToggleButton value="spending">{texts.spending.spendingTab}</ToggleButton>
+    </ToggleButtonGroup>
+  );
+
+  if (isSpendingView) {
+    return (
+      <>
+        {viewToggle}
+        <SpendingView householdId={householdId} />
+      </>
+    );
+  }
+
   return (
     <>
+      {viewToggle}
       <input
         ref={cameraInput}
         type="file"

@@ -243,3 +243,14 @@ export interface RecipeRequest {
   instructions: string;
   ingredients: RecipeIngredientRequest[];
 }
+
+export interface Spending {
+  month: string;
+  monthTotal: number;
+  previousMonthTotal: number;
+  receiptCount: number;
+  discountsTotal: number;
+  months: { month: string; total: number; receiptCount: number }[];
+  stores: { storeName: string | null; total: number; receiptCount: number }[];
+  categories: { category: FoodCategory; total: number }[];
+}

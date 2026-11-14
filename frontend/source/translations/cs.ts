@@ -265,6 +265,34 @@ export const texts = {
     duplicateFood: "Každá potravina může být v receptu jen jednou.",
     predefined: "předpřipravený",
   },
+  spending: {
+    receiptsTab: "Účtenky",
+    spendingTab: "Útraty",
+    previousMonth: "Předchozí měsíc",
+    nextMonth: "Další měsíc",
+    spentThisMonth: "Utraceno",
+    receiptCount: (count: number) =>
+      `${count} ${count === 1 ? "účtenka" : count >= 2 && count <= 4 ? "účtenky" : "účtenek"}`,
+    changeAgainstPrevious: (percent: number) =>
+      percent === 0
+        ? "stejně jako minulý měsíc"
+        : percent < 0
+          ? `o ${-percent} % méně než minulý měsíc`
+          : `o ${percent} % více než minulý měsíc`,
+    discounts: (amount: string) => `ušetřeno na slevách ${amount}`,
+    trend: "Vývoj",
+    sixMonths: "6 měsíců",
+    year: "Rok",
+    monthsChart: "Útraty po měsících",
+    monthTooltip: (month: string, total: string, count: number) =>
+      `${month}: ${total} (${count} ${count === 1 ? "účtenka" : count >= 2 && count <= 4 ? "účtenky" : "účtenek"})`,
+    byStore: "Podle obchodů",
+    byCategory: "Podle kategorií",
+    unknownStore: "Neznámý obchod",
+    noReceipts: "V tomto měsíci nejsou žádné uložené účtenky.",
+    overviewTitle: (month: string) => `Útraty v ${month}`,
+    overviewEmpty: "Útraty se spočítají z uložených účtenek.",
+  },
   units: {
     gram: "gramy (g, kg)",
     milliliter: "mililitry (ml, l)",

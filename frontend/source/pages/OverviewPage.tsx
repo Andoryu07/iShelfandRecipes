@@ -18,11 +18,15 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import { listRecipes } from "../api/recipesApi";
+import { getSpending } from "../api/statisticsApi";
 import { listActiveReservations, listStockItems } from "../api/stockApi";
 import { useAuthentication } from "../authentication/AuthenticationContext";
 import { CategoryAvatar } from "../components/CategoryAvatar";
 import { useCurrentHousehold } from "../households/useCurrentHousehold";
 import { greetingFor, vocative } from "../overview/vocative";
+import { formatMoney } from "../receipts/money";
+import { changePercent, monthLocative, monthText } from "../spending/months";
+import { spendingQueryKey } from "../spending/SpendingView";
 import { ExpirationChip } from "../stock/ExpirationChip";
 import { formatQuantity } from "../stock/quantities";
 import { stockItemsQueryKey } from "../stock/stockQueries";
@@ -144,6 +148,8 @@ function Overview({ householdId }: { householdId: number }) {
         </>
       )}
 
+      <SpendingCard householdId={householdId} />
+
       <SectionHeader title={texts.overview.cookNowTitle} onShowAll={() => navigate("/recipes")} />
       {cookable.length === 0 ? (
         <Typography color="text.secondary">{texts.overview.cookNowNothing}</Typography>
@@ -166,6 +172,48 @@ function Overview({ householdId }: { householdId: number }) {
           ))}
         </Box>
       )}
+    </>
+  );
+}
+
+function SpendingCard({ householdId }: { householdId: number }) {
+  const navigate = useNavigate();
+  const month = monthText(new Date());
+  const spendingQuery = useQuery({
+    queryKey: spendingQueryKey(householdId, month, 6),
+    queryFn: () => getSpending(householdId, month, 6),
+  });
+  const spending = spendingQuery.data;
+  const change = spending ? changePercent(spending.monthTotal, spending.previousMonthTotal) : null;
+  return (
+    <>
+      <SectionHeader
+        title={texts.spending.overviewTitle(monthLocative(month))}
+        onShowAll={() => navigate("/receipts?view=spending")}
+      />
+      <Card>
+        <CardActionArea onClick={() => navigate("/receipts?view=spending")}>
+          <CardContent>
+            {spending && spending.receiptCount > 0 ? (
+              <>
+                <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                  {formatMoney(spending.monthTotal)}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {[
+                    texts.spending.receiptCount(spending.receiptCount),
+                    change !== null ? texts.spending.changeAgainstPrevious(change) : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </Typography>
+              </>
+            ) : (
+              <Typography color="text.secondary">{texts.spending.overviewEmpty}</Typography>
+            )}
+          </CardContent>
+        </CardActionArea>
+      </Card>
     </>
   );
 }
