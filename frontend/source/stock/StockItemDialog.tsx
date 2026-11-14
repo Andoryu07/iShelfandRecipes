@@ -1,6 +1,7 @@
 import {
   Alert,
   Button,
+  Chip,
   Collapse,
   DialogActions,
   DialogContent,
@@ -26,7 +27,7 @@ import {
   updateStockItem,
   writeOffStock,
 } from "../api/stockApi";
-import { foodCategories, type FoodCategory } from "../api/types";
+import type { FoodCategory } from "../api/types";
 import { BottomSheet } from "../components/BottomSheet";
 import { CategoryAvatar } from "../components/CategoryAvatar";
 import { useAuthentication } from "../authentication/AuthenticationContext";
@@ -41,6 +42,8 @@ import {
   parseDecimal,
   toBaseQuantity,
 } from "./quantities";
+import { CategoryChips } from "./FoodPicker";
+import { ExpirationDatePicker } from "./ExpirationDatePicker";
 import { QuantityInput } from "./QuantityInput";
 import { stockItemsQueryKey, stockMovementsQueryKey } from "./stockQueries";
 
@@ -314,25 +317,20 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
 
         {mode === "edit" && (
           <>
-            <TextField
-              select
-              label={texts.stock.storageLocation}
-              value={storageLocationId}
-              onChange={(event) => setStorageLocationId(Number(event.target.value))}
-            >
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 2, mb: 1 }}>
+              {texts.stock.storageLocation}
+            </Typography>
+            <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
               {storageLocations.map((location) => (
-                <MenuItem key={location.id} value={location.id}>
-                  {displayStorageLocationName(location)}
-                </MenuItem>
+                <Chip
+                  key={location.id}
+                  label={displayStorageLocationName(location)}
+                  color={location.id === storageLocationId ? "primary" : "default"}
+                  onClick={() => setStorageLocationId(location.id)}
+                />
               ))}
-            </TextField>
-            <TextField
-              type="date"
-              label={texts.stock.expirationDate}
-              value={expirationDate}
-              onChange={(event) => setExpirationDate(event.target.value)}
-              slotProps={{ inputLabel: { shrink: true } }}
-            />
+            </Stack>
+            <ExpirationDatePicker value={expirationDate} onChange={setExpirationDate} />
             <QuantityInput
               label={texts.stock.correctedQuantity}
               baseUnit={food.baseUnit}
@@ -347,18 +345,10 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
             <Typography className="listSectionTitle" component="h3">
               {texts.stock.editFood}
             </Typography>
-            <TextField
-              select
-              label={texts.stock.category}
-              value={foodCategory}
-              onChange={(event) => setFoodCategory(event.target.value as FoodCategory)}
-            >
-              {foodCategories.map((category) => (
-                <MenuItem key={category} value={category}>
-                  {texts.foodCategories[category]}
-                </MenuItem>
-              ))}
-            </TextField>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              {texts.stock.category}
+            </Typography>
+            <CategoryChips value={foodCategory} onChange={setFoodCategory} />
             <TextField
               label={texts.stock.genericName}
               value={foodGenericName}

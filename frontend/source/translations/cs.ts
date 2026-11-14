@@ -95,6 +95,7 @@ export const texts = {
     allStorageLocations: "Vše",
     soonSection: "Brzy projde",
     recentFoods: "Naposledy:",
+    inOneDay: "+1 den",
     inThreeDays: "+3 dny",
     inOneWeek: "+1 týden",
     inOneMonth: "+1 měsíc",

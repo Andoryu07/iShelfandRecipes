@@ -6,7 +6,6 @@ import {
   DialogContent,
   DialogTitle,
   Stack,
-  TextField,
   Typography,
 } from "@mui/material";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -15,8 +14,8 @@ import { createFood, createStockItem } from "../api/stockApi";
 import type { Food, StorageLocation } from "../api/types";
 import { BottomSheet } from "../components/BottomSheet";
 import { describeError } from "../errorMessages";
-import { displayStorageLocationName, formatDate, texts } from "../translations/cs";
-import { localDateText } from "./expiration";
+import { displayStorageLocationName, texts } from "../translations/cs";
+import { ExpirationDatePicker } from "./ExpirationDatePicker";
 import {
   baseUnitOf,
   FoodPicker,
@@ -37,18 +36,6 @@ interface AddStockItemDialogProps {
   onClose: () => void;
 }
 
-const dateShortcuts = [
-  { label: texts.stock.inThreeDays, days: 3 },
-  { label: texts.stock.inOneWeek, days: 7 },
-  { label: texts.stock.inOneMonth, days: 30 },
-];
-
-function dateAfterDays(days: number): string {
-  const date = new Date();
-  date.setDate(date.getDate() + days);
-  return localDateText(date);
-}
-
 export function AddStockItemDialog({
   householdId,
   storageLocations,
@@ -65,7 +52,6 @@ export function AddStockItemDialog({
     initialStorageLocationId ?? storageLocations[0]?.id ?? 0,
   );
   const [expirationDate, setExpirationDate] = useState("");
-  const [isPickingDate, setIsPickingDate] = useState(false);
   const [quantityError, setQuantityError] = useState<string | null>(null);
   const baseUnit = baseUnitOf(food);
 
@@ -116,8 +102,6 @@ export function AddStockItemDialog({
     saveMutation.mutate(baseQuantity);
   }
 
-  const matchingShortcut = dateShortcuts.find((shortcut) => dateAfterDays(shortcut.days) === expirationDate);
-
   return (
     <BottomSheet open onClose={onClose}>
       <form onSubmit={handleSubmit}>
@@ -163,49 +147,7 @@ export function AddStockItemDialog({
               />
             ))}
           </Stack>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 2, mb: 1 }}>
-            {texts.stock.expirationDate}
-          </Typography>
-          <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
-            <Chip
-              label={texts.stock.noExpirationDate}
-              color={!expirationDate && !isPickingDate ? "primary" : "default"}
-              onClick={() => {
-                setExpirationDate("");
-                setIsPickingDate(false);
-              }}
-            />
-            {dateShortcuts.map((shortcut) => (
-              <Chip
-                key={shortcut.days}
-                label={shortcut.label}
-                color={matchingShortcut === shortcut && !isPickingDate ? "primary" : "default"}
-                onClick={() => {
-                  setExpirationDate(dateAfterDays(shortcut.days));
-                  setIsPickingDate(false);
-                }}
-              />
-            ))}
-            <Chip
-              label={texts.stock.pickDate}
-              color={isPickingDate ? "primary" : "default"}
-              onClick={() => setIsPickingDate(true)}
-            />
-          </Stack>
-          {isPickingDate && (
-            <TextField
-              type="date"
-              label={texts.stock.expirationDate}
-              value={expirationDate}
-              onChange={(event) => setExpirationDate(event.target.value)}
-              slotProps={{ inputLabel: { shrink: true } }}
-            />
-          )}
-          {expirationDate && !isPickingDate && (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              {texts.stock.expiresOn(formatDate(expirationDate))}
-            </Typography>
-          )}
+          <ExpirationDatePicker value={expirationDate} onChange={setExpirationDate} />
           {saveMutation.error && (
             <Alert severity="error" sx={{ mt: 2 }}>
               {describeError(saveMutation.error, { 409: texts.stock.foodAlreadyExists })}

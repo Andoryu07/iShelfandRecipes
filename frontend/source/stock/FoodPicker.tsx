@@ -90,23 +90,35 @@ export function FoodPicker({
   );
 }
 
+export function CategoryChips({
+  value,
+  onChange,
+}: {
+  value: FoodCategory;
+  onChange: (category: FoodCategory) => void;
+}) {
+  return (
+    <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
+      {foodCategories.map((category) => (
+        <Chip
+          key={category}
+          size="small"
+          label={`${categoryEmoji[category]} ${texts.foodCategories[category]}`}
+          color={value === category ? "primary" : "default"}
+          onClick={() => onChange(category)}
+        />
+      ))}
+    </Stack>
+  );
+}
+
 export function NewFoodFields({ value, onChange }: { value: NewFood; onChange: (value: NewFood) => void }) {
   return (
     <>
       <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5, mb: 1 }}>
         {texts.stock.newFoodHint}
       </Typography>
-      <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
-        {foodCategories.map((category) => (
-          <Chip
-            key={category}
-            size="small"
-            label={`${categoryEmoji[category]} ${texts.foodCategories[category]}`}
-            color={value.category === category ? "primary" : "default"}
-            onClick={() => onChange({ ...value, category })}
-          />
-        ))}
-      </Stack>
+      <CategoryChips value={value.category} onChange={(category) => onChange({ ...value, category })} />
       <TextField
         label={texts.stock.genericName}
         value={value.genericName}
