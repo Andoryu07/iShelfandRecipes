@@ -34,7 +34,7 @@ def passwordResetEmail(recipient: str, resetUrl: str) -> Email:
         [
             "někdo požádal o obnovu hesla k tvému účtu v aplikaci iShelf.",
             "Odkaz platí 1 hodinu a dá se použít jen jednou.",
-            "Pokud o obnovu nevíš, tento e-mail ignoruj, heslo zůstane stejné.",
+            "Pokud o obnově nevíš, tento e-mail ignoruj, heslo zůstane stejné.",
         ],
         ("Nastavit nové heslo", resetUrl),
     )
