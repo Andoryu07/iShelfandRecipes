@@ -271,6 +271,12 @@ def test_priceEstimateUsesTheLatestReceiptPrice(client: TestClient) -> None:
         3,
     )
     assert kitchen.availability(pancakes, servings=8)["estimatedPrice"] == 39.85
+    summary = next(
+        recipe
+        for recipe in client.get(f"/households/{kitchen.householdId}/recipes", headers=kitchen.anna).json()
+        if recipe["id"] == pancakes
+    )
+    assert summary["estimatedPrice"] == 19.93
 
 
 def test_priceFallsBackToTheSameKindOnlyForGenericIngredients(client: TestClient) -> None:

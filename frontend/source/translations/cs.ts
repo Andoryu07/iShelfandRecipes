@@ -207,6 +207,10 @@ export const texts = {
     empty: "Zatím žádné recepty. Přidej první tlačítkem +.",
     nothingFound: "Žádný recept neodpovídá hledání.",
     haveEverything: "Máš vše",
+    filterCookNow: "Můžu uvařit hned",
+    filterQuick: "Do 30 min",
+    filterOwn: "Moje",
+    moreActions: "Další akce",
     missingCount: (count: number) => `Chybí ${count}`,
     minutes: (minutes: number) =>
       minutes >= 60
@@ -219,6 +223,8 @@ export const texts = {
     missingLine: (name: string, missing: string, required: string) =>
       `${name}: chybí ${missing} z ${required}`,
     missingShort: (missing: string) => `chybí ${missing}`,
+    missingWhole: (name: string, missing: string) => `${name}: chybí ${missing}`,
+    moreMissing: (count: number) => `a další (${count})`,
     reservedByOthersHint: (quantity: string) => `jiní mají rezervováno ${quantity}`,
     ingredientsTitle: "Suroviny",
     optionalTitle: "Podle chuti",
@@ -231,6 +237,7 @@ export const texts = {
       `odhad z ${priced} z ${total} surovin podle dřívějších účtenek`,
     priceUnknown: "Odhad ceny zatím není, nejdřív naskenuj účtenky s těmito surovinami.",
     reserveIngredients: "Rezervovat suroviny",
+    reserveShort: "Rezervovat",
     cooked: "Uvařeno",
     cookTitle: "Odečíst suroviny ze zásob?",
     cookIntroduction: (servings: number) =>

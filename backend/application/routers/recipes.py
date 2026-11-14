@@ -123,18 +123,22 @@ def listRecipes(
     recipes = list(session.scalars(query))
     ingredients = loadIngredients(session, [recipe.id for recipe in recipes])
     calculator = AvailabilityCalculator(session, membership.householdId, membership.userId)
-    return [
-        RecipeSummaryResponse(
-            id=recipe.id,
-            name=recipe.name,
-            servings=recipe.servings,
-            preparationMinutes=recipe.preparationMinutes,
-            isPredefined=recipe.isPredefined,
-            missingCount=calculator.calculate(recipe, ingredients[recipe.id]).missingCount,
-            createdAt=recipe.createdAt,
+    summaries = []
+    for recipe in recipes:
+        availability = calculator.calculate(recipe, ingredients[recipe.id], includePrices=True)
+        summaries.append(
+            RecipeSummaryResponse(
+                id=recipe.id,
+                name=recipe.name,
+                servings=recipe.servings,
+                preparationMinutes=recipe.preparationMinutes,
+                isPredefined=recipe.isPredefined,
+                missingCount=availability.missingCount,
+                estimatedPrice=availability.estimatedPrice,
+                createdAt=recipe.createdAt,
+            )
         )
-        for recipe in recipes
-    ]
+    return summaries
 
 
 @router.post("/households/{householdId}/recipes", response_model=RecipeResponse, status_code=status.HTTP_201_CREATED)

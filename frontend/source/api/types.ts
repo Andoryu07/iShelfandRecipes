@@ -182,6 +182,7 @@ export interface RecipeSummary {
   preparationMinutes: number | null;
   isPredefined: boolean;
   missingCount: number;
+  estimatedPrice?: number | null;
   createdAt: string;
 }
 

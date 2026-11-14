@@ -56,6 +56,7 @@ class RecipeSummaryResponse(BaseModel):
     preparationMinutes: int | None
     isPredefined: bool
     missingCount: int
+    estimatedPrice: QuantityValue | None = None
     createdAt: datetime
 
 

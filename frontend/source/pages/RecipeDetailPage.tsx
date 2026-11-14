@@ -1,3 +1,5 @@
+import CancelRoundedIcon from "@mui/icons-material/CancelRounded";
+import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import ReportProblemRoundedIcon from "@mui/icons-material/ReportProblemRounded";
 import {
@@ -13,7 +15,10 @@ import {
   IconButton,
   List,
   ListItem,
+  ListItemIcon,
   ListItemText,
+  Menu,
+  MenuItem,
   Snackbar,
   Stack,
   Typography,
@@ -50,6 +55,8 @@ function ingredientLabel(ingredient: IngredientAvailability): string {
     : ingredient.food.name;
 }
 
+const collapsedMissingCount = 5;
+
 export function RecipeDetailPage() {
   const recipeId = Number(useParams().recipeId);
   const { household } = useCurrentHousehold();
@@ -61,6 +68,8 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
   const queryClient = useQueryClient();
   const [servings, setServings] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
+  const [isMissingExpanded, setIsMissingExpanded] = useState(false);
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] = useState(false);
   const [isReservedMessageOpen, setIsReservedMessageOpen] = useState(false);
   const [isCookConfirmationOpen, setIsCookConfirmationOpen] = useState(false);
@@ -121,9 +130,36 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
 
   return (
     <>
-      <Typography variant="h5" component="h2" sx={{ mt: 1 }}>
-        {recipe.name}
-      </Typography>
+      <Stack direction="row" sx={{ alignItems: "center", mt: 1 }}>
+        <Typography variant="h5" component="h2" sx={{ flex: 1 }}>
+          {recipe.name}
+        </Typography>
+        <IconButton
+          aria-label={texts.recipes.moreActions}
+          onClick={(event) => setMenuAnchor(event.currentTarget)}
+        >
+          <MoreVertRoundedIcon />
+        </IconButton>
+      </Stack>
+      <Menu anchorEl={menuAnchor} open={menuAnchor !== null} onClose={() => setMenuAnchor(null)}>
+        <MenuItem
+          onClick={() => {
+            setMenuAnchor(null);
+            setIsEditing(true);
+          }}
+        >
+          {texts.recipes.edit}
+        </MenuItem>
+        <MenuItem
+          sx={{ color: "error.main" }}
+          onClick={() => {
+            setMenuAnchor(null);
+            setIsDeleteConfirmationOpen(true);
+          }}
+        >
+          {texts.recipes.delete}
+        </MenuItem>
+      </Menu>
       {recipe.preparationMinutes && (
         <Typography color="text.secondary">{texts.recipes.minutes(recipe.preparationMinutes)}</Typography>
       )}
@@ -166,14 +202,19 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
                 {missing.length ? texts.recipes.missingTitle : texts.recipes.missingNothing}
               </Typography>
             </Stack>
-            {missing.map((ingredient) => (
-              <Box key={ingredient.ingredientId} sx={{ mt: 1 }}>
+            {(isMissingExpanded ? missing : missing.slice(0, collapsedMissingCount)).map((ingredient) => (
+              <Box key={ingredient.ingredientId} sx={{ mt: 0.75 }}>
                 <Typography sx={{ fontWeight: 600 }}>
-                  {texts.recipes.missingLine(
-                    ingredientLabel(ingredient),
-                    quantityOf(ingredient, ingredient.missingQuantity),
-                    quantityOf(ingredient, ingredient.requiredQuantity),
-                  )}
+                  {ingredient.missingQuantity < ingredient.requiredQuantity
+                    ? texts.recipes.missingLine(
+                        ingredient.food.name,
+                        quantityOf(ingredient, ingredient.missingQuantity),
+                        quantityOf(ingredient, ingredient.requiredQuantity),
+                      )
+                    : texts.recipes.missingWhole(
+                        ingredient.food.name,
+                        quantityOf(ingredient, ingredient.missingQuantity),
+                      )}
                 </Typography>
                 {ingredient.reservedByOthers > 0 && (
                   <Typography variant="body2" color="text.secondary">
@@ -182,6 +223,11 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
                 )}
               </Box>
             ))}
+            {!isMissingExpanded && missing.length > collapsedMissingCount && (
+              <Button sx={{ mt: 1, px: 0 }} onClick={() => setIsMissingExpanded(true)}>
+                {texts.recipes.moreMissing(missing.length - collapsedMissingCount)}
+              </Button>
+            )}
           </CardContent>
         </Card>
       )}
@@ -197,19 +243,6 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
         </IconButton>
       </Stack>
 
-      <Stack direction="row" spacing={1} useFlexGap sx={{ mt: 1, flexWrap: "wrap" }}>
-        <Button
-          variant="contained"
-          onClick={() => reserveMutation.mutate()}
-          disabled={reserveMutation.isPending}
-        >
-          {texts.recipes.reserveIngredients}
-        </Button>
-        <Button variant="outlined" onClick={() => setIsCookConfirmationOpen(true)}>
-          {texts.recipes.cooked}
-        </Button>
-        <Button onClick={() => setIsEditing(true)}>{texts.recipes.edit}</Button>
-      </Stack>
       {reserveMutation.error && <Alert severity="error">{describeError(reserveMutation.error)}</Alert>}
 
       <section className="section">
@@ -219,6 +252,13 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
         <List dense>
           {required.map((ingredient) => (
             <ListItem key={ingredient.ingredientId} disableGutters>
+              <ListItemIcon sx={{ minWidth: 36 }}>
+                {ingredient.missingQuantity > 0 ? (
+                  <CancelRoundedIcon color="warning" />
+                ) : (
+                  <CheckCircleRoundedIcon color="success" />
+                )}
+              </ListItemIcon>
               <ListItemText
                 primary={`${ingredientLabel(ingredient)} · ${quantityOf(ingredient, ingredient.requiredQuantity)}`}
                 secondary={[
@@ -258,9 +298,40 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
         </section>
       )}
 
-      <Button color="error" className="section" onClick={() => setIsDeleteConfirmationOpen(true)}>
-        {texts.recipes.delete}
-      </Button>
+      <Box
+        sx={{
+          position: "sticky",
+          bottom: { xs: "calc(var(--bottom-navigation-height) + var(--safe-area-bottom) + 8px)", md: 16 },
+          mt: 3,
+          p: 1.5,
+          display: "flex",
+          gap: 1,
+          borderRadius: "16px",
+          border: 1,
+          borderColor: "divider",
+          bgcolor: "background.paper",
+          boxShadow: 3,
+          zIndex: 2,
+        }}
+      >
+        <Button
+          variant="outlined"
+          size="large"
+          sx={{ flex: 1 }}
+          onClick={() => reserveMutation.mutate()}
+          disabled={reserveMutation.isPending}
+        >
+          {texts.recipes.reserveShort}
+        </Button>
+        <Button
+          variant="contained"
+          size="large"
+          sx={{ flex: 1 }}
+          onClick={() => setIsCookConfirmationOpen(true)}
+        >
+          {texts.recipes.cooked}
+        </Button>
+      </Box>
 
       {isEditing && (
         <RecipeEditorDialog
