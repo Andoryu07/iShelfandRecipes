@@ -38,7 +38,9 @@ import { ConfirmationDialog } from "../components/ConfirmationDialog";
 import { LoadingScreen } from "../components/LoadingScreen";
 import { describeError } from "../errorMessages";
 import { useCurrentHousehold } from "../households/useCurrentHousehold";
+import { AddMissingFoodsSheet } from "../recipes/AddMissingFoodsSheet";
 import { RecipeEditorDialog } from "../recipes/RecipeEditorDialog";
+import { useStorageLocations } from "../households/useStorageLocations";
 import { formatMoney } from "../receipts/money";
 import { formatQuantity } from "../stock/quantities";
 import { stockItemsQueryKey } from "../stock/stockQueries";
@@ -74,6 +76,8 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
   const [isReservedMessageOpen, setIsReservedMessageOpen] = useState(false);
   const [isCookConfirmationOpen, setIsCookConfirmationOpen] = useState(false);
   const [isCookedMessageOpen, setIsCookedMessageOpen] = useState(false);
+  const [isAddingMissing, setIsAddingMissing] = useState(false);
+  const storageLocations = useStorageLocations(householdId).data ?? [];
   const recipeQuery = useQuery({ queryKey: ["recipes", recipeId], queryFn: () => getRecipe(recipeId) });
   const recipe = recipeQuery.data;
   const currentServings = servings ?? recipe?.servings ?? 1;
@@ -127,6 +131,7 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
   );
   const required = ingredients.filter((ingredient) => !ingredient.isOptional);
   const optional = ingredients.filter((ingredient) => ingredient.isOptional);
+  const available = required.filter((ingredient) => ingredient.availableQuantity > 0);
 
   return (
     <>
@@ -326,10 +331,11 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
         <Button
           variant="contained"
           size="large"
-          sx={{ flex: 1 }}
+          color={missing.length ? "warning" : "primary"}
+          sx={{ flex: 1.4, whiteSpace: "nowrap" }}
           onClick={() => setIsCookConfirmationOpen(true)}
         >
-          {texts.recipes.cooked}
+          {missing.length ? texts.recipes.cookedWithMissing(missing.length) : texts.recipes.cooked}
         </Button>
       </Box>
 
@@ -351,11 +357,28 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
         onClose={() => setIsDeleteConfirmationOpen(false)}
       />
       <Dialog open={isCookConfirmationOpen} onClose={() => setIsCookConfirmationOpen(false)} fullWidth>
-        <DialogTitle>{texts.recipes.cookTitle}</DialogTitle>
+        <DialogTitle>{missing.length ? texts.recipes.cookMissingTitle : texts.recipes.cookTitle}</DialogTitle>
         <DialogContent>
-          <Typography>{texts.recipes.cookIntroduction(currentServings)}</Typography>
+          {missing.length > 0 && (
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              {texts.recipes.cookMissingWarning}
+              <List dense disablePadding>
+                {missing.map((ingredient) => (
+                  <ListItem key={ingredient.ingredientId} disableGutters>
+                    <ListItemText
+                      primary={texts.recipes.cookLine(
+                        ingredient.food.name,
+                        texts.recipes.missingShort(quantityOf(ingredient, ingredient.missingQuantity)),
+                      )}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            </Alert>
+          )}
+          {available.length > 0 && <Typography>{texts.recipes.cookIntroduction(currentServings)}</Typography>}
           <List dense>
-            {required.map((ingredient) => (
+            {available.map((ingredient) => (
               <ListItem key={ingredient.ingredientId} disableGutters>
                 <ListItemText
                   primary={texts.recipes.cookLine(
@@ -365,25 +388,65 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
                       Math.min(ingredient.requiredQuantity, ingredient.availableQuantity),
                     ),
                   )}
-                  secondary={
-                    ingredient.missingQuantity > 0
-                      ? texts.recipes.cookMissing(quantityOf(ingredient, ingredient.missingQuantity))
-                      : null
-                  }
-                  slotProps={{ secondary: { color: "warning.dark" } }}
                 />
               </ListItem>
             ))}
           </List>
           {cookMutation.error && <Alert severity="error">{describeError(cookMutation.error)}</Alert>}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setIsCookConfirmationOpen(false)}>{texts.common.cancel}</Button>
-          <Button variant="contained" onClick={() => cookMutation.mutate()} disabled={cookMutation.isPending}>
-            {texts.recipes.cookConfirm}
-          </Button>
-        </DialogActions>
+        {missing.length ? (
+          <Stack spacing={1} sx={{ px: 3, pb: 2 }}>
+            <Button
+              variant="contained"
+              color="warning"
+              size="large"
+              onClick={() => cookMutation.mutate()}
+              disabled={cookMutation.isPending}
+            >
+              {texts.recipes.cookAnyway}
+            </Button>
+            <Button
+              variant="outlined"
+              size="large"
+              onClick={() => {
+                setIsCookConfirmationOpen(false);
+                setIsAddingMissing(true);
+              }}
+            >
+              {texts.recipes.addMissing}
+            </Button>
+            <Button onClick={() => setIsCookConfirmationOpen(false)}>{texts.common.cancel}</Button>
+          </Stack>
+        ) : (
+          <DialogActions>
+            <Button onClick={() => setIsCookConfirmationOpen(false)}>{texts.common.cancel}</Button>
+            <Button
+              variant="contained"
+              onClick={() => cookMutation.mutate()}
+              disabled={cookMutation.isPending}
+            >
+              {texts.recipes.cookConfirm}
+            </Button>
+          </DialogActions>
+        )}
       </Dialog>
+      {isAddingMissing && (
+        <AddMissingFoodsSheet
+          householdId={householdId}
+          ingredients={ingredients}
+          storageLocations={storageLocations}
+          onClose={() => setIsAddingMissing(false)}
+          onAdded={async () => {
+            await Promise.all([
+              queryClient.invalidateQueries({ queryKey: ["recipes", recipeId] }),
+              queryClient.invalidateQueries({ queryKey: ["households", householdId, "recipes"] }),
+              queryClient.invalidateQueries({ queryKey: stockItemsQueryKey(householdId) }),
+            ]);
+            setIsAddingMissing(false);
+            setIsCookConfirmationOpen(true);
+          }}
+        />
+      )}
       <Snackbar
         open={isCookedMessageOpen}
         autoHideDuration={3000}
