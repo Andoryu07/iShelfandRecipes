@@ -13,6 +13,7 @@ def buildFoodResponse(food: Food) -> FoodResponse:
         genericName=food.genericName,
         category=FoodCategory(food.category) if food.category else FoodCategory.other,
         baseUnit=food.baseUnit,
+        icon=food.icon,
     )
 
 

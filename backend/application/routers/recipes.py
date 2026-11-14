@@ -58,6 +58,7 @@ def buildRecipeResponse(recipe: Recipe, ingredients: list[tuple[RecipeIngredient
         servings=recipe.servings,
         preparationMinutes=recipe.preparationMinutes,
         isPredefined=recipe.isPredefined,
+        icon=recipe.icon,
         missingCount=missingCount,
         createdAt=recipe.createdAt,
         instructions=recipe.instructions,
@@ -133,6 +134,7 @@ def listRecipes(
                 servings=recipe.servings,
                 preparationMinutes=recipe.preparationMinutes,
                 isPredefined=recipe.isPredefined,
+                icon=recipe.icon,
                 missingCount=availability.missingCount,
                 estimatedPrice=availability.estimatedPrice,
                 createdAt=recipe.createdAt,
@@ -153,6 +155,7 @@ def createRecipe(
         servings=request.servings,
         preparationMinutes=request.preparationMinutes,
         instructions=request.instructions,
+        icon=request.icon,
     )
     session.add(recipe)
     session.flush()
@@ -185,6 +188,8 @@ def updateRecipe(
         recipe.preparationMinutes = request.preparationMinutes
     if request.instructions is not None:
         recipe.instructions = request.instructions
+    if "icon" in request.model_fields_set:
+        recipe.icon = request.icon
     if request.ingredients is not None:
         replaceIngredients(session, recipe, request.ingredients)
     session.commit()

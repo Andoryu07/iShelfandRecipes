@@ -14,4 +14,6 @@ FoodName = Annotated[RequiredName, AfterValidator(capitalizeFirstLetter)]
 
 PositiveQuantity = Annotated[Decimal, Field(gt=0, max_digits=12, decimal_places=3)]
 NonNegativeQuantity = Annotated[Decimal, Field(ge=0, max_digits=12, decimal_places=3)]
+Icon = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=16, pattern=r"^[^\x00-\x7F]+$")]
+
 QuantityValue = Annotated[Decimal, PlainSerializer(float, return_type=float, when_used="json")]

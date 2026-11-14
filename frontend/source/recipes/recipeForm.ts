@@ -17,6 +17,7 @@ export interface RecipeFormValues {
   servingsText: string;
   preparationMinutesText: string;
   instructions: string;
+  icon: string | null;
   ingredients: IngredientRow[];
 }
 
@@ -40,6 +41,7 @@ export function formValuesFromRecipe(recipe: Recipe | null): RecipeFormValues {
       servingsText: "4",
       preparationMinutesText: "",
       instructions: "",
+      icon: null,
       ingredients: [emptyIngredientRow()],
     };
   }
@@ -48,6 +50,7 @@ export function formValuesFromRecipe(recipe: Recipe | null): RecipeFormValues {
     servingsText: String(recipe.servings),
     preparationMinutesText: recipe.preparationMinutes ? String(recipe.preparationMinutes) : "",
     instructions: recipe.instructions,
+    icon: recipe.icon ?? null,
     ingredients: recipe.ingredients.map((ingredient) => {
       const unit = bestDisplayUnit(ingredient.quantity, ingredient.food.baseUnit);
       return {
@@ -106,6 +109,7 @@ export function buildRecipeRequest(values: RecipeFormValues): {
       servings,
       preparationMinutes,
       instructions: values.instructions,
+      icon: values.icon,
       ingredients,
     },
     error: null,

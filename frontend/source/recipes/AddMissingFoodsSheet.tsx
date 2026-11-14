@@ -3,7 +3,6 @@ import {
   Box,
   Button,
   Checkbox,
-  Chip,
   Collapse,
   DialogActions,
   DialogContent,
@@ -16,6 +15,7 @@ import { useState } from "react";
 import { createStockItem } from "../api/stockApi";
 import type { IngredientAvailability, StorageLocation } from "../api/types";
 import { BottomSheet } from "../components/BottomSheet";
+import { StorageLocationChips } from "../components/StorageLocationChips";
 import { CategoryAvatar } from "../components/CategoryAvatar";
 import { describeError } from "../errorMessages";
 import { ExpirationDatePicker } from "../stock/ExpirationDatePicker";
@@ -115,7 +115,12 @@ export function AddMissingFoodsSheet({
                     onChange={(event) => updateRow({ ...row, isSelected: event.target.checked })}
                     slotProps={{ input: { "aria-label": food.name } }}
                   />
-                  <CategoryAvatar category={food.category} genericName={food.genericName} size={32} />
+                  <CategoryAvatar
+                    category={food.category}
+                    genericName={food.genericName}
+                    icon={food.icon}
+                    size={32}
+                  />
                   <Box
                     role="button"
                     tabIndex={0}
@@ -148,19 +153,11 @@ export function AddMissingFoodsSheet({
                       onUnitSymbolChange={(unitSymbol) => updateRow({ ...row, unitSymbol })}
                       error={isInvalid ? texts.stock.invalidQuantity : null}
                     />
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 2, mb: 1 }}>
-                      {texts.stock.storageLocation}
-                    </Typography>
-                    <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
-                      {storageLocations.map((location) => (
-                        <Chip
-                          key={location.id}
-                          label={displayStorageLocationName(location)}
-                          color={location.id === row.storageLocationId ? "primary" : "default"}
-                          onClick={() => updateRow({ ...row, storageLocationId: location.id })}
-                        />
-                      ))}
-                    </Stack>
+                    <StorageLocationChips
+                      storageLocations={storageLocations}
+                      value={row.storageLocationId}
+                      onChange={(storageLocationId) => updateRow({ ...row, storageLocationId })}
+                    />
                     <ExpirationDatePicker
                       value={row.expirationDate}
                       onChange={(expirationDate) => updateRow({ ...row, expirationDate })}

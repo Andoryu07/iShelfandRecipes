@@ -20,6 +20,7 @@ import { listRecipes } from "../api/recipesApi";
 import type { RecipeSummary } from "../api/types";
 import { describeError } from "../errorMessages";
 import { useCurrentHousehold } from "../households/useCurrentHousehold";
+import { recipeIcon } from "../components/icons";
 import { formatMoney } from "../receipts/money";
 import { RecipeEditorDialog } from "../recipes/RecipeEditorDialog";
 import { texts } from "../translations/cs";
@@ -112,7 +113,7 @@ function RecipeList({ householdId }: { householdId: number }) {
                 variant="rounded"
                 sx={{ width: 64, height: 64, fontSize: 32, bgcolor: "action.hover", borderRadius: 3 }}
               >
-                {recipe.isPredefined ? "🍲" : "🍽️"}
+                {recipeIcon(recipe)}
               </Avatar>
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Typography sx={{ fontWeight: 650 }} noWrap>

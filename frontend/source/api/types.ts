@@ -35,6 +35,7 @@ export interface StorageLocation {
   householdId: number;
   name: string;
   kind: StorageLocationKind;
+  icon?: string | null;
 }
 
 export type MeasurementUnit = "gram" | "milliliter" | "piece";
@@ -65,6 +66,7 @@ export interface Food {
   genericName: string | null;
   category: FoodCategory;
   baseUnit: MeasurementUnit;
+  icon?: string | null;
 }
 
 export interface StockItem {
@@ -181,6 +183,7 @@ export interface RecipeSummary {
   servings: number;
   preparationMinutes: number | null;
   isPredefined: boolean;
+  icon?: string | null;
   missingCount: number;
   estimatedPrice?: number | null;
   createdAt: string;
@@ -241,6 +244,7 @@ export interface RecipeRequest {
   servings: number;
   preparationMinutes: number | null;
   instructions: string;
+  icon: string | null;
   ingredients: RecipeIngredientRequest[];
 }
 

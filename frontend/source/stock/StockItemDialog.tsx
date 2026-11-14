@@ -1,7 +1,6 @@
 import {
   Alert,
   Button,
-  Chip,
   Collapse,
   DialogActions,
   DialogContent,
@@ -29,7 +28,10 @@ import {
 } from "../api/stockApi";
 import type { FoodCategory } from "../api/types";
 import { BottomSheet } from "../components/BottomSheet";
-import { CategoryAvatar } from "../components/CategoryAvatar";
+import { StorageLocationChips } from "../components/StorageLocationChips";
+import { automaticFoodIcon, CategoryAvatar } from "../components/CategoryAvatar";
+import { IconPicker } from "../components/IconPicker";
+import { foodIcons } from "../components/icons";
 import { useAuthentication } from "../authentication/AuthenticationContext";
 import type { StockItem, StorageLocation } from "../api/types";
 import { describeError } from "../errorMessages";
@@ -67,6 +69,7 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [foodCategory, setFoodCategory] = useState<FoodCategory>(stockItem.food.category);
   const [foodGenericName, setFoodGenericName] = useState(stockItem.food.genericName ?? "");
+  const [foodIcon, setFoodIcon] = useState(stockItem.food.icon ?? null);
   const [quantityText, setQuantityText] = useState("");
   const [unitSymbol, setUnitSymbol] = useState(defaultUnitSymbol);
   const [writeOffReason, setWriteOffReason] = useState<WriteOffReason>("eaten");
@@ -151,7 +154,10 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
       }
       correctedQuantity = toBaseQuantity(value, findDisplayUnit(food.baseUnit, correctionUnitSymbol));
     }
-    const foodChanges: { genericName?: string | null; category?: FoodCategory } = {};
+    const foodChanges: { genericName?: string | null; category?: FoodCategory; icon?: string | null } = {};
+    if (foodIcon !== (food.icon ?? null)) {
+      foodChanges.icon = foodIcon;
+    }
     if (foodCategory !== food.category) {
       foodChanges.category = foodCategory;
     }
@@ -179,7 +185,7 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
   return (
     <BottomSheet open onClose={onClose}>
       <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-        <CategoryAvatar category={food.category} genericName={food.genericName} />
+        <CategoryAvatar category={food.category} genericName={food.genericName} icon={food.icon} />
         {food.name}
       </DialogTitle>
       <DialogContent>
@@ -317,19 +323,11 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
 
         {mode === "edit" && (
           <>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 2, mb: 1 }}>
-              {texts.stock.storageLocation}
-            </Typography>
-            <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
-              {storageLocations.map((location) => (
-                <Chip
-                  key={location.id}
-                  label={displayStorageLocationName(location)}
-                  color={location.id === storageLocationId ? "primary" : "default"}
-                  onClick={() => setStorageLocationId(location.id)}
-                />
-              ))}
-            </Stack>
+            <StorageLocationChips
+              storageLocations={storageLocations}
+              value={storageLocationId}
+              onChange={setStorageLocationId}
+            />
             <ExpirationDatePicker value={expirationDate} onChange={setExpirationDate} />
             <QuantityInput
               label={texts.stock.correctedQuantity}
@@ -349,6 +347,12 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
               {texts.stock.category}
             </Typography>
             <CategoryChips value={foodCategory} onChange={setFoodCategory} />
+            <IconPicker
+              value={foodIcon}
+              automaticIcon={automaticFoodIcon(foodCategory, foodGenericName)}
+              icons={foodIcons}
+              onChange={setFoodIcon}
+            />
             <TextField
               label={texts.stock.genericName}
               value={foodGenericName}

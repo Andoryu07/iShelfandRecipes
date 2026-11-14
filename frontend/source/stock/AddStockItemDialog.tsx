@@ -13,8 +13,9 @@ import { useState, type FormEvent } from "react";
 import { createFood, createStockItem } from "../api/stockApi";
 import type { Food, StorageLocation } from "../api/types";
 import { BottomSheet } from "../components/BottomSheet";
+import { StorageLocationChips } from "../components/StorageLocationChips";
 import { describeError } from "../errorMessages";
-import { displayStorageLocationName, texts } from "../translations/cs";
+import { texts } from "../translations/cs";
 import { ExpirationDatePicker } from "./ExpirationDatePicker";
 import {
   baseUnitOf,
@@ -134,19 +135,11 @@ export function AddStockItemDialog({
               error={quantityError}
             />
           )}
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 2, mb: 1 }}>
-            {texts.stock.storageLocation}
-          </Typography>
-          <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
-            {storageLocations.map((storageLocation) => (
-              <Chip
-                key={storageLocation.id}
-                label={displayStorageLocationName(storageLocation)}
-                color={storageLocation.id === storageLocationId ? "primary" : "default"}
-                onClick={() => setStorageLocationId(storageLocation.id)}
-              />
-            ))}
-          </Stack>
+          <StorageLocationChips
+            storageLocations={storageLocations}
+            value={storageLocationId}
+            onChange={setStorageLocationId}
+          />
           <ExpirationDatePicker value={expirationDate} onChange={setExpirationDate} />
           {saveMutation.error && (
             <Alert severity="error" sx={{ mt: 2 }}>

@@ -23,6 +23,7 @@ export function BottomSheet({ open, onClose, children }: BottomSheetProps) {
       anchor="bottom"
       open={open}
       onClose={onClose}
+      sx={{ zIndex: "modal" }}
       slotProps={{
         paper: {
           role: "dialog",

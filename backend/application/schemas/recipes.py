@@ -3,7 +3,7 @@ from typing import Annotated, Self
 
 from pydantic import BaseModel, Field, model_validator
 
-from application.schemas.common import PositiveQuantity, QuantityValue, RequiredName
+from application.schemas.common import Icon, PositiveQuantity, QuantityValue, RequiredName
 from application.schemas.foods import FoodResponse, NewFoodRequest
 
 Servings = Annotated[int, Field(ge=1, le=100)]
@@ -30,6 +30,7 @@ class CreateRecipeRequest(BaseModel):
     servings: Servings
     preparationMinutes: PreparationMinutes | None = None
     instructions: Instructions = ""
+    icon: Icon | None = None
     ingredients: list[RecipeIngredientRequest] = Field(max_length=100)
 
 
@@ -38,6 +39,7 @@ class UpdateRecipeRequest(BaseModel):
     servings: Servings | None = None
     preparationMinutes: PreparationMinutes | None = None
     instructions: Instructions | None = None
+    icon: Icon | None = None
     ingredients: list[RecipeIngredientRequest] | None = Field(default=None, max_length=100)
 
 
@@ -55,6 +57,7 @@ class RecipeSummaryResponse(BaseModel):
     servings: int
     preparationMinutes: int | None
     isPredefined: bool
+    icon: str | None
     missingCount: int
     estimatedPrice: QuantityValue | None = None
     createdAt: datetime

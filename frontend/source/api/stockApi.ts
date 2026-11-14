@@ -88,7 +88,7 @@ export function cancelReservation(reservationId: number): Promise<Reservation> {
 
 export function updateFood(
   foodId: number,
-  changes: { name?: string; genericName?: string | null; category?: FoodCategory },
+  changes: { name?: string; genericName?: string | null; category?: FoodCategory; icon?: string | null },
 ): Promise<Food> {
   return apiRequest<Food>(`/foods/${foodId}`, { method: "PATCH", body: changes });
 }

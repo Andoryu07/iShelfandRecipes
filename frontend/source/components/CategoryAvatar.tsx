@@ -41,11 +41,16 @@ const kindEmoji: Record<string, string> = {
 interface CategoryAvatarProps {
   category: FoodCategory;
   genericName?: string | null;
+  icon?: string | null;
   size?: number;
 }
 
-export function CategoryAvatar({ category, genericName, size = 40 }: CategoryAvatarProps) {
-  const emoji = (genericName && kindEmoji[genericName.trim().toLowerCase()]) || categoryEmoji[category];
+export function automaticFoodIcon(category: FoodCategory, genericName?: string | null): string {
+  return (genericName && kindEmoji[genericName.trim().toLowerCase()]) || categoryEmoji[category];
+}
+
+export function CategoryAvatar({ category, genericName, icon, size = 40 }: CategoryAvatarProps) {
+  const emoji = icon || automaticFoodIcon(category, genericName);
   return (
     <Avatar
       sx={{

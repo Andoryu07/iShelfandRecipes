@@ -15,9 +15,16 @@ import {
 } from "@mui/material";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { createStorageLocation, deleteStorageLocation, renameStorageLocation } from "../api/householdsApi";
+import {
+  changeStorageLocationIcon,
+  createStorageLocation,
+  deleteStorageLocation,
+  renameStorageLocation,
+} from "../api/householdsApi";
 import { ApiError } from "../api/apiClient";
-import type { StorageLocation, StorageLocationKind } from "../api/types";
+import type { StorageLocation } from "../api/types";
+import { IconPickerSheet } from "../components/IconPicker";
+import { storageLocationIcon, storageLocationIcons } from "../components/icons";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
 import { TextInputDialog } from "../components/TextInputDialog";
 import { describeError } from "../errorMessages";
@@ -33,19 +40,13 @@ function describeDeletionError(error: unknown): string {
   return describeError(error);
 }
 
-const storageLocationEmoji: Record<StorageLocationKind, string> = {
-  fridge: "🧊",
-  freezer: "❄️",
-  pantry: "🥫",
-  custom: "📦",
-};
-
 export function StorageLocationsSection({ householdId }: { householdId: number }) {
   const queryClient = useQueryClient();
   const queryKey = storageLocationsQueryKey(householdId);
   const [isCreating, setIsCreating] = useState(false);
   const [storageLocationToRename, setStorageLocationToRename] = useState<StorageLocation | null>(null);
   const [storageLocationToDelete, setStorageLocationToDelete] = useState<StorageLocation | null>(null);
+  const [storageLocationForIcon, setStorageLocationForIcon] = useState<StorageLocation | null>(null);
 
   const storageLocationsQuery = useStorageLocations(householdId);
   const onSuccess = () => queryClient.invalidateQueries({ queryKey });
@@ -59,10 +60,16 @@ export function StorageLocationsSection({ householdId }: { householdId: number }
     onSuccess,
   });
   const deleteMutation = useMutation({ mutationFn: deleteStorageLocation, onSuccess });
+  const iconMutation = useMutation({
+    mutationFn: ({ storageLocationId, icon }: { storageLocationId: number; icon: string | null }) =>
+      changeStorageLocationIcon(storageLocationId, icon),
+    onSuccess,
+  });
   const errorMessage =
     (storageLocationsQuery.error && describeError(storageLocationsQuery.error)) ||
     (createMutation.error && describeError(createMutation.error)) ||
     (renameMutation.error && describeError(renameMutation.error)) ||
+    (iconMutation.error && describeError(iconMutation.error)) ||
     (deleteMutation.error && describeDeletionError(deleteMutation.error));
 
   return (
@@ -96,7 +103,13 @@ export function StorageLocationsSection({ householdId }: { householdId: number }
               }
             >
               <ListItemAvatar>
-                <Avatar sx={{ bgcolor: "action.hover" }}>{storageLocationEmoji[storageLocation.kind]}</Avatar>
+                <IconButton
+                  aria-label={texts.icons.changeStorageLocationIcon}
+                  onClick={() => setStorageLocationForIcon(storageLocation)}
+                  sx={{ p: 0 }}
+                >
+                  <Avatar sx={{ bgcolor: "action.hover" }}>{storageLocationIcon(storageLocation)}</Avatar>
+                </IconButton>
               </ListItemAvatar>
               <ListItemText
                 primary={displayStorageLocationName(storageLocation)}
@@ -139,6 +152,21 @@ export function StorageLocationsSection({ householdId }: { householdId: number }
           onClose={() => setStorageLocationToRename(null)}
         />
       )}
+      <IconPickerSheet
+        open={storageLocationForIcon !== null}
+        value={storageLocationForIcon?.icon ?? null}
+        automaticIcon={
+          storageLocationForIcon ? storageLocationIcon({ ...storageLocationForIcon, icon: null }) : ""
+        }
+        icons={storageLocationIcons}
+        onClose={() => setStorageLocationForIcon(null)}
+        onChange={(icon) => {
+          if (storageLocationForIcon) {
+            iconMutation.mutate({ storageLocationId: storageLocationForIcon.id, icon });
+          }
+          setStorageLocationForIcon(null);
+        }}
+      />
       <ConfirmationDialog
         message={
           storageLocationToDelete

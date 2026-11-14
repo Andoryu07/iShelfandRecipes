@@ -4,6 +4,7 @@ import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import ReportProblemRoundedIcon from "@mui/icons-material/ReportProblemRounded";
 import {
   Alert,
+  Avatar,
   Box,
   Button,
   Card,
@@ -35,6 +36,7 @@ import {
 } from "../api/recipesApi";
 import type { IngredientAvailability } from "../api/types";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
+import { recipeIcon } from "../components/icons";
 import { LoadingScreen } from "../components/LoadingScreen";
 import { describeError } from "../errorMessages";
 import { useCurrentHousehold } from "../households/useCurrentHousehold";
@@ -135,7 +137,13 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
 
   return (
     <>
-      <Stack direction="row" sx={{ alignItems: "center", mt: 1 }}>
+      <Stack direction="row" sx={{ alignItems: "center", mt: 1, gap: 1.5 }}>
+        <Avatar
+          variant="rounded"
+          sx={{ width: 48, height: 48, fontSize: 26, bgcolor: "action.hover", borderRadius: 3 }}
+        >
+          {recipeIcon(recipe)}
+        </Avatar>
         <Typography variant="h5" component="h2" sx={{ flex: 1 }}>
           {recipe.name}
         </Typography>

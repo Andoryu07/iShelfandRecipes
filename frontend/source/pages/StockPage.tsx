@@ -29,6 +29,7 @@ import { useCurrentHousehold } from "../households/useCurrentHousehold";
 import { useStorageLocations } from "../households/useStorageLocations";
 import { AddStockItemDialog } from "../stock/AddStockItemDialog";
 import { CategoryAvatar } from "../components/CategoryAvatar";
+import { storageLocationIcon } from "../components/icons";
 import { ExpirationChip } from "../stock/ExpirationChip";
 import { formatQuantity } from "../stock/quantities";
 import { StockItemDialog } from "../stock/StockItemDialog";
@@ -100,7 +101,7 @@ function StockList({ householdId }: { householdId: number }) {
         {storageLocations.map((storageLocation) => (
           <Chip
             key={storageLocation.id}
-            label={displayStorageLocationName(storageLocation)}
+            label={`${storageLocationIcon(storageLocation)} ${displayStorageLocationName(storageLocation)}`}
             color={selectedStorageLocationId === storageLocation.id ? "primary" : "default"}
             onClick={() => setSelectedStorageLocationId(storageLocation.id)}
           />
@@ -229,7 +230,7 @@ function StockGroupRow({
         sx={{ py: 1 }}
       >
         <ListItemAvatar>
-          <CategoryAvatar category={food.category} genericName={food.genericName} />
+          <CategoryAvatar category={food.category} genericName={food.genericName} icon={food.icon} />
         </ListItemAvatar>
         <ListItemText
           primary={hasSeveralItems ? `${food.name}  ×${group.items.length}` : food.name}

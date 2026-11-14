@@ -47,6 +47,16 @@ export function renameStorageLocation(storageLocationId: number, name: string): 
   });
 }
 
+export function changeStorageLocationIcon(
+  storageLocationId: number,
+  icon: string | null,
+): Promise<StorageLocation> {
+  return apiRequest<StorageLocation>(`/storage-locations/${storageLocationId}`, {
+    method: "PATCH",
+    body: { icon },
+  });
+}
+
 export function deleteStorageLocation(storageLocationId: number): Promise<void> {
   return apiRequest<void>(`/storage-locations/${storageLocationId}`, { method: "DELETE" });
 }

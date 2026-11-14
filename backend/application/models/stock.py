@@ -24,6 +24,7 @@ class StorageLocation(Base):
     kind: Mapped[StorageLocationKind] = mapped_column(
         databaseEnum(StorageLocationKind, "storage_location_kind")
     )
+    icon: Mapped[str | None]
 
 
 class Food(Base):
@@ -40,6 +41,7 @@ class Food(Base):
     baseUnit: Mapped[MeasurementUnit] = mapped_column(
         "base_unit", measurementUnitType
     )
+    icon: Mapped[str | None]
 
 
 class StockItem(Base):

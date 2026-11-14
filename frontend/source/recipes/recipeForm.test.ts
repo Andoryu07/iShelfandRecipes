@@ -18,6 +18,7 @@ describe("recipe form", () => {
       servings: 4,
       preparationMinutes: 30,
       isPredefined: false,
+      icon: "🥞",
       missingCount: 0,
       createdAt: "2026-11-12T10:00:00Z",
       instructions: "Usmaž.",
@@ -34,6 +35,7 @@ describe("recipe form", () => {
         servings: 4,
         preparationMinutes: 30,
         instructions: "Usmaž.",
+        icon: "🥞",
         ingredients: [
           { foodId: 3, newFood: null, quantity: 1500, acceptsAnyOfKind: false, isOptional: false },
         ],

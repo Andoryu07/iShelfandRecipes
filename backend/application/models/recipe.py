@@ -20,6 +20,7 @@ class Recipe(Base):
     servings: Mapped[int]
     preparationMinutes: Mapped[int | None] = mapped_column("preparation_minutes")
     isPredefined: Mapped[bool] = mapped_column("is_predefined", default=False, server_default=false())
+    icon: Mapped[str | None]
     createdAt: Mapped[datetime] = mapped_column(
         "created_at", DateTime(timezone=True), server_default=func.now()
     )

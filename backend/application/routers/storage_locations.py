@@ -19,6 +19,7 @@ def buildStorageLocationResponse(storageLocation: StorageLocation) -> StorageLoc
         id=storageLocation.id,
         householdId=storageLocation.householdId,
         name=storageLocation.name,
+        icon=storageLocation.icon,
         kind=storageLocation.kind,
     )
 
@@ -70,7 +71,9 @@ def createStorageLocation(
     membership: HouseholdMember = Depends(getHouseholdMembership),
     session: Session = Depends(getDatabaseSession),
 ) -> StorageLocationResponse:
-    storageLocation = StorageLocation(householdId=membership.householdId, name=request.name, kind=request.kind)
+    storageLocation = StorageLocation(
+        householdId=membership.householdId, name=request.name, kind=request.kind, icon=request.icon
+    )
     session.add(storageLocation)
     session.commit()
     return buildStorageLocationResponse(storageLocation)
@@ -84,6 +87,8 @@ def updateStorageLocation(
 ) -> StorageLocationResponse:
     if request.name is not None:
         storageLocation.name = request.name
+    if "icon" in request.model_fields_set:
+        storageLocation.icon = request.icon
     if request.kind is not None:
         storageLocation.kind = request.kind
     session.commit()

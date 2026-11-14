@@ -44,6 +44,7 @@ def createFood(
         genericName=request.genericName or None,
         category=request.category.value,
         baseUnit=request.baseUnit,
+        icon=request.icon,
     )
     session.add(food)
     try:
@@ -71,6 +72,8 @@ def updateFood(
         food.name = request.name
     if "genericName" in request.model_fields_set:
         food.genericName = request.genericName or None
+    if "icon" in request.model_fields_set:
+        food.icon = request.icon
     if request.category is not None:
         food.category = request.category.value
     try:

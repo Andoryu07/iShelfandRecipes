@@ -20,6 +20,8 @@ import { useState } from "react";
 import { createRecipe, updateRecipe } from "../api/recipesApi";
 import type { Recipe } from "../api/types";
 import { describeError } from "../errorMessages";
+import { IconPicker } from "../components/IconPicker";
+import { foodIcons, recipeIcon } from "../components/icons";
 import { baseUnitOf, FoodPicker, isNewFood, NewFoodFields, type FoodChoice } from "../stock/FoodPicker";
 import { displayUnits } from "../stock/quantities";
 import { QuantityInput } from "../stock/QuantityInput";
@@ -91,6 +93,12 @@ export function RecipeEditorDialog({ householdId, recipe, onClose, onSaved }: Re
           onChange={(event) => setValues({ ...values, name: event.target.value })}
           slotProps={{ htmlInput: { maxLength: 100 } }}
           required
+        />
+        <IconPicker
+          value={values.icon}
+          automaticIcon={recipeIcon({ icon: null, isPredefined: recipe?.isPredefined ?? false })}
+          icons={foodIcons}
+          onChange={(icon) => setValues({ ...values, icon })}
         />
         <Stack direction="row" spacing={1} useFlexGap>
           <TextField

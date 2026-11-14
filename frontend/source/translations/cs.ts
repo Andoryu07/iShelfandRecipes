@@ -298,6 +298,14 @@ export const texts = {
     overviewTitle: (month: string) => `Útraty v ${month}`,
     overviewEmpty: "Útraty se spočítají z uložených účtenek.",
   },
+  icons: {
+    title: "Vyber ikonu",
+    change: "Změnit",
+    ownIcon: "Vlastní ikona",
+    automaticIcon: "Automatická ikona",
+    automaticHint: "První ikona se vybírá automaticky podle druhu nebo kategorie.",
+    changeStorageLocationIcon: "Změnit ikonu",
+  },
   units: {
     gram: "gramy (g, kg)",
     milliliter: "mililitry (ml, l)",
