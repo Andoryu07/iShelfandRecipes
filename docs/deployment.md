@@ -42,7 +42,11 @@ Order (already done):
 - Operating system: **Ubuntu Server 24.04**.
 - Additional services: only **IPv4 address**. Backups, firewall and the other extras are not needed: the app backs up its database every night and the firewall is set up on the server for free (step 5).
 
-After the order is paid and set up, WEDOS sends the login details. Write down the server's **IPv4 address** and the **root password**; both are also in the WEDOS customer administration at the server.
+After the order is paid and set up, WEDOS sends an e-mail that the server is ready, and the login details. Write down the server's **IPv4 address** and the **root password**.
+
+The set-up e-mail can arrive with unfilled placeholders such as `{server: ip}` instead of the addresses. The IPv4 address is then in the WEDOS customer administration: **Serverové služby → VPS SSD/HDD →** your server **→ Technické parametry**. If the root password is missing too, ask WEDOS support to resend the set-up e-mail; do not change the password before you have it, WEDOS cannot recover a changed one.
+
+The server also gets an IPv6 range (shown as an address ending in `X`, for example `2a02:2b88:2:1::7e10:X / 64`). It cannot be used before a specific address is enabled in the administration and configured on the server, so this guide uses only IPv4; IPv6 can be added later.
 
 ## 4. DNS
 
@@ -172,9 +176,37 @@ Check with `free -h`: the line `Swap` shows 2.0Gi.
 
 ## 6. Docker
 
-Install Docker Engine from Docker's own repository exactly as described in the official guide (section "Install using the apt repository"): https://docs.docker.com/engine/install/ubuntu/
+These commands follow Docker's official guide "Install Docker Engine on Ubuntu", section "Install using the apt repository" (https://docs.docker.com/engine/install/ubuntu/). They add Docker's own package source and install Docker from it; run them as `ishelf` from any directory (the home directory is fine). If the official guide differs, follow the guide.
 
-Then allow your user to run Docker without `sudo` (https://docs.docker.com/engine/install/linux-postinstall/):
+```
+sudo apt-get install -y ca-certificates curl
+```
+
+```
+sudo install -m 0755 -d /etc/apt/keyrings
+```
+
+```
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+```
+
+```
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+```
+
+```
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+```
+
+```
+sudo apt-get update
+```
+
+```
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+```
+
+Allow your user to run Docker without `sudo` (https://docs.docker.com/engine/install/linux-postinstall/):
 
 ```
 sudo usermod -aG docker ishelf
@@ -261,13 +293,13 @@ Use new keys on the server, not the ones from your computer. If the VAPID keys e
 deploy/deploy.sh
 ```
 
-The first build takes a few minutes. Then check:
+The first build takes about five minutes on one CPU. The output ends with a list of the removed build cache and the running services. Then check:
 
 ```
 docker compose -f docker-compose.production.yml ps
 ```
 
-All services should be `running`. Watch Caddy getting the certificate:
+All five services should be `Up` (the database also `healthy`). Watch Caddy getting the certificates; the log should end with `certificate obtained successfully` for the domain and for `www`:
 
 ```
 docker compose -f docker-compose.production.yml logs caddy
@@ -320,7 +352,11 @@ scp ishelf@<server-ip>:~/iShelfandRecipes/backups/*.dump .
    ```
 
 5. Reload the app: the food or household is back.
-6. Delete the test backup: `rm backups/ishelf-test.dump`
+6. Delete the test backup (backup files belong to `root` because the backup container writes them, so `sudo` is needed):
+
+   ```
+   sudo rm backups/ishelf-test.dump
+   ```
 
 ## 11. Monitoring
 
