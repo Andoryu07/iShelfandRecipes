@@ -24,6 +24,10 @@ export function baseUnitOf(choice: FoodChoice | null): MeasurementUnit | null {
   return choice?.baseUnit ?? null;
 }
 
+function labelOf(choice: FoodChoice): string {
+  return isNewFood(choice) ? choice.newFoodName : choice.name;
+}
+
 const measurementUnits: MeasurementUnit[] = ["gram", "milliliter", "piece"];
 
 interface FoodPickerProps {
@@ -43,7 +47,7 @@ export function FoodPicker({
   autoFocus,
   required,
 }: FoodPickerProps) {
-  const [input, setInput] = useState(value ? (isNewFood(value) ? value.newFoodName : value.name) : "");
+  const [input, setInput] = useState(value ? labelOf(value) : "");
   const searchText = useDeferredValue(input.trim());
   const foodsQuery = useQuery({
     queryKey: ["households", householdId, "foods", searchText],
@@ -61,6 +65,20 @@ export function FoodPicker({
   };
   const options: FoodChoice[] = searchText && !exactMatch ? [...foundFoods, newFoodOption] : foundFoods;
 
+  function chooseTypedFood() {
+    if (!searchText) {
+      if (value) {
+        onChange(null);
+      }
+      return;
+    }
+    if (value && labelOf(value).toLowerCase() === searchText.toLowerCase()) {
+      return;
+    }
+    const sameName = foundFoods.find((food) => food.name.toLowerCase() === searchText.toLowerCase());
+    onChange(sameName ?? newFoodOption);
+  }
+
   return (
     <Autocomplete
       options={options}
@@ -68,8 +86,10 @@ export function FoodPicker({
       inputValue={input}
       onInputChange={(_, text) => setInput(text)}
       onChange={(_, choice) => onChange(choice)}
+      onBlur={chooseTypedFood}
+      clearOnBlur={false}
       filterOptions={(currentOptions) => currentOptions}
-      getOptionLabel={(option) => (isNewFood(option) ? option.newFoodName : option.name)}
+      getOptionLabel={labelOf}
       getOptionKey={(option) => (isNewFood(option) ? "new" : option.id)}
       isOptionEqualToValue={(option, selected) =>
         isNewFood(option) || isNewFood(selected) ? option === selected : option.id === selected.id
