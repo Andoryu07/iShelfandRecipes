@@ -193,7 +193,9 @@ docker compose run --rm backend python -m application.jobs.run_daily_jobs --forc
 
 | Endpoint | Purpose | Status |
 | --- | --- | --- |
-| `GET /households/{householdId}/statistics/spending?groupBy=month\|store` | Spending totals by month or by store | planned |
+| `GET /households/{householdId}/statistics/spending?month=2026-11&months=6` | Totals for the selected month and the months before it, by store and by food category | done |
+
+Totals are what was paid (`total_amount` of saved receipts, so whole-purchase discounts are included); category totals add up the positive item prices and discounts are reported separately. Stock added by hand has no price and is not counted.
 
 ### App store release
 
