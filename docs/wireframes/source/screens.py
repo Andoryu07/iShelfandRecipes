@@ -249,21 +249,36 @@ def householdAndProfile() -> list[Screen]:
     right.text(WIDTH / 2, 118, "A", size=24, anchor="middle")
     right.text(WIDTH / 2, 166, "Anna", size=16, weight="bold", anchor="middle")
     right.text(WIDTH / 2, 184, "anna@example.com", size=11, color=MUTED, anchor="middle")
-    right.text(16, 226, "VZHLED", size=11, color=MUTED, weight="bold")
-    x = 16
-    for label, active in [("Světlý", False), ("Tmavý", False), ("Podle systému", True)]:
-        x += right.chip(x, 236, label, active) + 6
-    right.text(16, 296, "UPOZORNĚNÍ", size=11, color=MUTED, weight="bold")
-    right.text(16, 324, "Blížící se trvanlivost (8:00)")
-    right.rect(WIDTH - 60, 310, 44, 22, fill=INK, radius=11)
-    right.circle(WIDTH - 27, 321, 8, fill="#fff", stroke="#fff")
-    right.text(16, 370, "SOUKROMÍ", size=11, color=MUTED, weight="bold")
-    for index, label in enumerate(["Zásady ochrany soukromí", "Odvolat souhlas se skenováním"]):
-        right.text(16, 398 + index * 34, label)
-        right.text(WIDTH - 16, 398 + index * 34, "›", anchor="end")
-    right.button(16, 480, WIDTH - 32, "Odhlásit se", primary=False)
-    right.text(16, 550, "Smazat účet", color="#a33", weight="bold")
-    return [left, right]
+    menu = [
+        ("👤", "Účet", "jméno, e-mail, heslo, smazání účtu"),
+        ("🎨", "Vzhled", "světlý, tmavý, podle systému"),
+        ("🔔", "Upozornění", "trvanlivost, čas upozornění"),
+        ("🔒", "Soukromí a data", "zásady, souhlas se skenováním"),
+        ("ℹ", "O aplikaci", "verze, kontakt"),
+    ]
+    for index, (icon, label, detail) in enumerate(menu):
+        y = 212 + index * 58
+        right.icon(34, y + 24, icon)
+        right.text(60, y + 21, label, weight="bold")
+        right.text(60, y + 38, detail, size=11, color=MUTED)
+        right.text(WIDTH - 16, y + 28, "›", size=18, anchor="end")
+        right.line(16, y + 52, WIDTH - 16, y + 52, color="#ddd")
+    right.button(16, 520, WIDTH - 32, "Odhlásit se", primary=False)
+    right.note(16, 590, "každá položka otevře vlastní podstránku (08c)")
+
+    detail = Screen("08c Podstránka Vzhled", offsetX=820)
+    detail.topBar("Vzhled", back=True, profile=False)
+    detail.text(16, 84, "MOTIV", size=11, color=MUTED, weight="bold")
+    for index, (label, selected) in enumerate([("Světlý", False), ("Tmavý", False), ("Podle systému", True)]):
+        y = 96 + index * 48
+        detail.circle(30, y + 20, 9, fill=INK if selected else "#fff", stroke=INK)
+        detail.text(52, y + 25, label)
+        detail.line(16, y + 44, WIDTH - 16, y + 44, color="#ddd")
+    detail.note(16, 270, "volba se uloží v zařízení")
+    detail.text(16, 320, "Podobně: Účet (jméno, e-mail, později změna", size=11, color=MUTED)
+    detail.text(16, 336, "a obnova hesla, smazání účtu), Upozornění,", size=11, color=MUTED)
+    detail.text(16, 352, "Soukromí a data, O aplikaci.", size=11, color=MUTED)
+    return [left, right, detail]
 
 
 def flow() -> Screen:
@@ -304,6 +319,6 @@ save("04-add-food.svg", [addFoodSheet()])
 save("05-receipts.svg", receipts(), width=800)
 save("06-recipes.svg", [recipes()])
 save("07-recipe-detail.svg", [recipeDetail()])
-save("08-household-and-profile.svg", householdAndProfile(), width=800)
+save("08-household-and-profile.svg", householdAndProfile(), width=1200)
 save("09-flow.svg", [flow()], width=420)
 print("ok")

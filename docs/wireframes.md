@@ -61,7 +61,7 @@ Missing ingredients stay the most visible part, in a framed box at the top. Serv
 
 ![Domácnost a profil](wireframes/08-household-and-profile.svg)
 
-The household tab keeps the invite code, members and storage locations. Everything personal moves to the profile: theme, notifications, privacy policy, withdrawing the receipt consent, signing out and deleting the account.
+The household tab keeps the invite code, members and storage locations. Everything personal moves to the profile, which is a menu of sections, each with its own page, so it can grow with new features: Účet (name, e-mail, later password change and reset, deleting the account), Vzhled (theme), Upozornění, Soukromí a data (privacy policy, receipt consent) and O aplikaci (version, contact), plus signing out.
 
 ## 09 Flow
 
