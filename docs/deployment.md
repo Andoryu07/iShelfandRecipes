@@ -1,6 +1,6 @@
 # Deployment
 
-This guide puts iShelf and Recipes on an OVHcloud VPS in a European datacentre (EU, as the privacy policy says) with its own `.cz` domain and HTTPS. Every command is meant to be copied as it is; replace only the values in angle brackets, for example `<server-ip>`.
+This guide puts iShelf and Recipes on a WEDOS virtual server in the Czech Republic (EU, as the privacy policy says) with its own `.cz` domain and HTTPS. Every command is meant to be copied as it is; replace only the values in angle brackets, for example `<server-ip>`.
 
 Production uses `docker-compose.production.yml`:
 
@@ -12,13 +12,12 @@ Production uses `docker-compose.production.yml`:
 | `database` | PostgreSQL, not reachable from the internet |
 | `backup` | A database backup every night at 3:00 into `backups/`, the last 14 days are kept |
 
-Costs: OVHcloud VPS-1 (2 vCores, 4 GB RAM, 40 GB NVMe, daily backup included) from 3.81 EUR a month without VAT, about 4.61 EUR (roughly 115 CZK) with Czech VAT; the domain about 200 CZK for the first year. The financial plan counts with 200 CZK a month for the server.
+Costs: WEDOS VPS SSD with 1 module (1 CPU, 2 GB RAM, 15 GB SSD) and an IPv4 address, 147 CZK a month without VAT; with 21 % VAT about 178 CZK a month on yearly billing or about 196 CZK on monthly billing (+10 %). No paid extras (backups, firewall) are needed. The domain costs about 200 CZK for the first year. The financial plan counts with 200 CZK a month for the server.
 
 ## 1. Domain
 
 1. Check that the name is free in the official registry search of CZ.NIC: https://www.nic.cz/whois/ (type the name with `.cz`, without `www`).
-2. Register it with any accredited registrar; CZ.NIC explains the process and links the list of registrars: https://www.nic.cz/page/313/
-3. Keep the registrar's DNS administration open; you will add a record in step 4.
+2. Register it with an accredited registrar. The simplest is to buy it at WEDOS too, in the same customer account as the server, because then the DNS records are set in the same administration (step 4). Any other registrar works as well; CZ.NIC explains the process: https://www.nic.cz/page/313/
 
 ## 2. SSH key (on your Windows computer)
 
@@ -28,93 +27,98 @@ Open PowerShell and run:
 ssh-keygen -t ed25519 -C "ishelf-server"
 ```
 
-Press Enter to keep the default location and choose a passphrase. The public key is in `C:\Users\<you>\.ssh\id_ed25519.pub`; you will paste its content into the OVHcloud order. Never share the file without `.pub`.
+Press Enter to keep the default location and choose a passphrase. The public key is in `C:\Users\<you>\.ssh\id_ed25519.pub`; you will copy it to the server in step 5. Never share the file without `.pub`.
 
-## 3. OVHcloud VPS
+## 3. WEDOS virtual server
 
 Official pages:
 
-- VPS offer and prices: https://www.ovhcloud.com/en/vps/vps-czech-republic/
-- Getting started with a VPS: https://docs.ovhcloud.com/en/guides/bare-metal-cloud/virtual-private-servers/starting-with-a-vps
-- SSH connections: https://docs.ovhcloud.com/en/guides/bare-metal-cloud/dedicated-servers/ssh-introduction
-- European datacentres: https://www.ovhcloud.com/en/datacenter/europe/
+- VPS SSD offer and prices: https://wedos.cz/en/vps-ssd/
+- Increasing the parameters later (more modules): https://kb.vedos.cz/en/vps-ssd-parametry/
 
-Steps:
+Order (already done):
 
-1. Open the VPS offer, choose **VPS-1** (2 vCores, 4 GB RAM, 40 GB SSD NVMe, daily backup of the previous 24 hours) and click **Configure**.
-2. Choose these options:
-   - Location: a datacentre **in the EU**, for example **Frankfurt (Germany)**, **Strasbourg** or **Gravelines (France)** or **Warsaw (Poland)**. Not London (the United Kingdom is not in the EU) and nothing outside Europe.
-   - Image: **Ubuntu 24.04**.
-   - SSH key: paste the content of `id_ed25519.pub` if the order offers it.
-   - Commitment: the lowest price usually needs a 12-month commitment; the summary shows the monthly price for each option, pick what suits you.
-   - Leave paid extras off; the daily backup is already included.
-3. Finish the order and the account verification. OVHcloud then sends a delivery e-mail with the server's **IP address**, the user name (`ubuntu`) and a link to a temporary password.
-4. Write down the IPv4 address (and the IPv6 address if the e-mail or the control panel shows one).
+- Configuration: **15 GB HDD 100% SSD, RAID 10, 2 GB RAM, 1 proc.** (1 module).
+- Operating system: **Ubuntu Server 24.04**.
+- Additional services: only **IPv4 address**. Backups, firewall and the other extras are not needed: the app backs up its database every night and the firewall is set up on the server for free (step 5).
+
+After the order is paid and set up, WEDOS sends the login details. Write down the server's **IPv4 address** and the **root password**; both are also in the WEDOS customer administration at the server.
 
 ## 4. DNS
 
-In the registrar's DNS administration add:
+The domain has to point to the server's IPv4 address; HTTPS only works after that. You need the domain from step 1 and the IP address from step 3.
 
-| Type | Name | Value |
-| --- | --- | --- |
-| A | `@` (the domain itself) | `<server-ipv4>` |
-| AAAA | `@` | `<server-ipv6>` |
+**Domain at WEDOS** (WEDOS guides: https://kb.wedos.com/cs/dns/wedos-dns/wedos-dns-zaznamy-domeny/ and https://kb.vedos.cz/dns-a-aaaa/):
 
-It can take from a few minutes to a few hours before the domain points to the server. Check it in PowerShell with `nslookup <domain>`. HTTPS will only work after that.
+1. Sign in to the WEDOS customer administration and open **DNS**.
+2. Select the domain and choose **DNS záznamy** in the left menu.
+3. If there already is an A record with an empty name (for example pointing to WEDOS web hosting), edit it instead of adding a second one; two A records for the same name would send visitors randomly to either address.
+4. Add a new record (or edit the existing one):
+
+   | Field | Value |
+   | --- | --- |
+   | Name | leave empty (the domain itself, do not type `@`) |
+   | TTL | 300 |
+   | Type | A |
+   | Data | `<server-ipv4>` |
+
+5. Save. WEDOS applies DNS changes within about an hour.
+
+**Domain at another registrar:** add the same record in its DNS administration (there the empty name is often written as `@`). DNS records at WEDOS have no effect if the domain uses another provider's name servers, and the other way round, so edit the records where the domain's DNS is actually run.
+
+Check it in PowerShell on your computer:
+
+```
+nslookup <domain>
+```
+
+When the answer shows the server's IP address, the domain points to the server.
 
 ## 5. First login and securing the server
 
-Log in as the default user from the delivery e-mail (from PowerShell):
+Log in as root with the password from WEDOS (from PowerShell):
 
 ```
-ssh ubuntu@<server-ip>
+ssh root@<server-ip>
 ```
 
-If you did not add an SSH key in the order, log in with the temporary password; Ubuntu asks you to change it and then closes the connection, so log in again with the new password. Root login is turned off on OVHcloud servers by default; `ubuntu` uses `sudo`.
-
-Update the system and create your own user (choose a password when asked):
+Answer `yes` to the question about the server's fingerprint. Update the system and create your own user (choose a password when asked):
 
 ```
-sudo apt update && sudo apt upgrade -y
-```
-
-```
-sudo adduser ishelf
+apt update && apt upgrade -y
 ```
 
 ```
-sudo usermod -aG sudo ishelf
+adduser ishelf
 ```
 
-Give the new user your SSH key. If you added the key in the order, copy it:
-
 ```
-sudo rsync --archive --chown=ishelf:ishelf ~/.ssh /home/ishelf
+usermod -aG sudo ishelf
 ```
 
-If you did not, run this in PowerShell on your computer instead (it asks for the password of `ishelf`):
+Copy your SSH key to the new user. Run this in a **second PowerShell window on your computer** (it asks for the password of `ishelf`):
 
 ```
 type $env:USERPROFILE\.ssh\id_ed25519.pub | ssh ishelf@<server-ip> "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys"
 ```
 
-**Before the next step**, open a second PowerShell window and check that the key login works without a password:
+Check in that second window that the key login works without the server password (only the passphrase of your key):
 
 ```
 ssh ishelf@<server-ip>
 ```
 
-Then turn off password logins and root logins:
+Only when it works, turn off password logins and root logins (in the first window, still as root):
 
 ```
-printf 'PermitRootLogin no\nPasswordAuthentication no\n' | sudo tee /etc/ssh/sshd_config.d/99-ishelf.conf
+printf 'PermitRootLogin no\nPasswordAuthentication no\n' > /etc/ssh/sshd_config.d/99-ishelf.conf
 ```
 
 ```
-sudo systemctl restart ssh
+systemctl restart ssh
 ```
 
-From now on always log in as `ishelf`.
+From now on always log in as `ishelf` and use `sudo` for administration.
 
 Turn on the firewall: only SSH, HTTP and HTTPS stay open.
 
@@ -151,6 +155,18 @@ sudo dpkg-reconfigure --priority=low unattended-upgrades
 ```
 
 Answer **Yes**.
+
+Add 2 GB of swap, so building the app on the server cannot run out of memory with 2 GB RAM:
+
+```
+sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
+```
+
+```
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+```
+
+Check with `free -h`: the line `Swap` shows 2.0Gi.
 
 ## 6. Docker
 
@@ -227,7 +243,7 @@ for `JWT_SECRET`. Fill in also:
 - `DOMAIN`: your domain without `https://`, for example `ishelf.cz`.
 - `GEMINI_API_KEY`: the key from Google AI Studio.
 - `VAPID_SUBJECT`: `mailto:` followed by your e-mail.
-- `BACKEND_WORKERS`: keep `1` on a 1 GB server; with 2 GB RAM or more you can use `2`.
+- `BACKEND_WORKERS`: keep `1` on this server (2 GB RAM); it is plenty for testing. With more memory you can use `2`.
 
 Generate the keys for push notifications and copy the two printed lines into `.env`:
 
@@ -267,8 +283,10 @@ Register, create a household, scan a receipt and switch on notifications in the 
 
 There are two kinds of backups:
 
-- **OVHcloud backup** of the whole server: one daily copy of the previous 24 hours, included in VPS-1, managed in the OVHcloud Control Panel (the VPS → **Backup**).
-- **Database backups** every night at 3:00 in `~/iShelfandRecipes/backups` (`ishelf-YYYY-MM-DD.dump`), the last 14 days are kept. Because the OVHcloud backup keeps only one day, copy these files to your computer regularly (below).
+The server has no paid WEDOS backups, so the app's own backups are the only ones:
+
+- **Database backups** every night at 3:00 in `~/iShelfandRecipes/backups` (`ishelf-YYYY-MM-DD.dump`), the last 14 days are kept.
+- **Your copy:** because these files live on the same server, copy them to your computer **once a week** (below). If the server is ever lost, the app can be set up again from this guide and the database restored from your copy.
 
 List them:
 
@@ -276,7 +294,7 @@ List them:
 ls -lh ~/iShelfandRecipes/backups
 ```
 
-Copy them to your computer from time to time (run in PowerShell on your computer):
+Copy them to your computer once a week (run in PowerShell on your computer, in the folder where you keep them):
 
 ```
 scp ishelf@<server-ip>:~/iShelfandRecipes/backups/*.dump .
@@ -318,6 +336,8 @@ docker compose -f docker-compose.production.yml logs --tail 100 -f backend
 
 Logs are limited to 30 MB per service so they cannot fill the disk.
 
+WEDOS server status, payments and the root password reset are in the WEDOS customer administration.
+
 ## 12. New versions
 
 After new commits on `main`, log in and run:
@@ -326,11 +346,13 @@ After new commits on `main`, log in and run:
 cd ~/iShelfandRecipes && deploy/deploy.sh
 ```
 
-It pulls the code, rebuilds the images, restarts what changed (migrations run on start) and removes old images.
+It pulls the code, rebuilds the images, restarts what changed (migrations run on start) and removes old images and the build cache, so the 15 GB disk does not fill up. Check the free space now and then with `df -h /`.
 
 ## Troubleshooting
 
 - **The browser says the connection is not secure or the site does not load:** the domain does not point to the server yet (step 4) or ports 80 and 443 are closed (check `sudo ufw status`, step 5). See `docker compose -f docker-compose.production.yml logs caddy`. Caddy tries again on its own.
+- **The build stops with "Killed" or the server becomes very slow:** check that the swap is on (`free -h`, step 5).
+- **No space left on the disk:** run `docker system prune -f` and delete old backups you have already copied to your computer.
 - **A service keeps restarting:** see its log, for example `docker compose -f docker-compose.production.yml logs backend`, and send it to Claude.
 - **Receipts cannot be read:** check `GEMINI_API_KEY` in `.env` and run `deploy/deploy.sh` again.
 - **Notifications do not arrive:** check the VAPID keys in `.env` and run the daily jobs by hand:
