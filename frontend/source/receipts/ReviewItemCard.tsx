@@ -1,5 +1,6 @@
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import {
+  Box,
   Button,
   Card,
   CardContent,
@@ -38,6 +39,7 @@ export function ReviewItemCard({
 }: ReviewItemCardProps) {
   const baseUnit = baseUnitOf(item.food);
   const [isEditingNewFood, setIsEditingNewFood] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(item.name === "");
 
   function changeFood(food: FoodChoice | null) {
     const newBaseUnit = baseUnitOf(food);
@@ -51,13 +53,52 @@ export function ReviewItemCard({
     });
   }
 
+  if (!isExpanded && !error) {
+    const summary = [
+      item.addToStock && item.quantityText ? `${item.quantityText} ${item.unitSymbol}` : null,
+      item.addToStock
+        ? isNewFood(item.food)
+          ? texts.receipts.newFoodShort
+          : null
+        : texts.receipts.notToStock,
+      item.remembered ? texts.receipts.rememberedHint : null,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+    return (
+      <Box sx={{ display: "flex", alignItems: "center", pr: 2, borderBottom: 1, borderColor: "divider" }}>
+        <Checkbox
+          checked={item.addToStock}
+          disabled={item.food === null}
+          onChange={(event) => onChange({ ...item, addToStock: event.target.checked })}
+          slotProps={{ input: { "aria-label": texts.receipts.addToStock } }}
+        />
+        <Box onClick={() => setIsExpanded(true)} sx={{ flex: 1, minWidth: 0, py: 1.25, cursor: "pointer" }}>
+          <Typography sx={{ fontWeight: 600 }} noWrap>
+            {item.name || item.originalText}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" noWrap>
+            {summary || item.originalText}
+          </Typography>
+        </Box>
+        <Typography sx={{ fontWeight: 600, ml: 1, whiteSpace: "nowrap" }} onClick={() => setIsExpanded(true)}>
+          {item.priceText}
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
-    <Card variant="outlined" sx={{ mt: 2, borderColor: error ? "error.main" : undefined }}>
+    <Card variant="outlined" sx={{ m: 1, borderColor: error ? "error.main" : undefined }}>
       <CardContent>
         <Stack direction="row" sx={{ alignItems: "center", gap: 1 }}>
           <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>
             {texts.receipts.originalText(item.originalText)}
+            {item.remembered ? ` · ${texts.receipts.rememberedHint}` : ""}
           </Typography>
+          <Button size="small" onClick={() => setIsExpanded(false)}>
+            {texts.receipts.collapse}
+          </Button>
           <IconButton size="small" aria-label={texts.receipts.removeItem} onClick={onRemove}>
             <DeleteOutlineRoundedIcon fontSize="small" />
           </IconButton>

@@ -2,17 +2,21 @@ import PhotoCameraRoundedIcon from "@mui/icons-material/PhotoCameraRounded";
 import UploadFileRoundedIcon from "@mui/icons-material/UploadFileRounded";
 import {
   Alert,
+  Avatar,
   Button,
+  Card,
+  CardActionArea,
   CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Link,
   List,
+  ListItemAvatar,
   ListItemButton,
   ListItemText,
-  Link,
   Snackbar,
   Stack,
   Typography,
@@ -118,29 +122,28 @@ function Receipts({ householdId }: { householdId: number }) {
         hidden
         onChange={handleFileSelected}
       />
-      <Button
-        variant="contained"
-        size="large"
-        fullWidth
-        startIcon={
-          scanMutation.isPending ? <CircularProgress size={20} color="inherit" /> : <PhotoCameraRoundedIcon />
-        }
-        onClick={() => startScan("camera")}
-        disabled={scanMutation.isPending}
-        sx={{ mt: 2 }}
+      <Card
+        sx={{ mt: 1, borderStyle: "dashed", borderWidth: 2, bgcolor: "action.hover", textAlign: "center" }}
       >
-        {scanMutation.isPending ? texts.receipts.scanning : texts.receipts.scan}
-      </Button>
-      <Button
-        variant="outlined"
-        fullWidth
-        startIcon={<UploadFileRoundedIcon />}
-        onClick={() => startScan("file")}
-        disabled={scanMutation.isPending}
-        sx={{ mt: 1 }}
-      >
-        {texts.receipts.uploadFile}
-      </Button>
+        <CardActionArea onClick={() => startScan("camera")} disabled={scanMutation.isPending} sx={{ py: 3 }}>
+          {scanMutation.isPending ? (
+            <CircularProgress />
+          ) : (
+            <PhotoCameraRoundedIcon color="primary" sx={{ fontSize: 44 }} />
+          )}
+          <Typography variant="h6" sx={{ mt: 1 }}>
+            {scanMutation.isPending ? texts.receipts.scanning : texts.receipts.scan}
+          </Typography>
+        </CardActionArea>
+        <Button
+          startIcon={<UploadFileRoundedIcon />}
+          onClick={() => startScan("file")}
+          disabled={scanMutation.isPending}
+          sx={{ mb: 1.5 }}
+        >
+          {texts.receipts.uploadFile}
+        </Button>
+      </Card>
       {scanMutation.error && (
         <Alert severity="error" sx={{ mt: 2 }}>
           {describeError(scanMutation.error, {
@@ -161,6 +164,9 @@ function Receipts({ householdId }: { householdId: number }) {
       <List>
         {receiptsQuery.data?.map((receipt) => (
           <ListItemButton key={receipt.id} divider onClick={() => setSelectedReceiptId(receipt.id)}>
+            <ListItemAvatar>
+              <Avatar sx={{ bgcolor: "action.hover" }}>🧾</Avatar>
+            </ListItemAvatar>
             <ListItemText
               primary={`${receipt.storeName ?? "?"} · ${formatDate(receipt.purchasedOn)}`}
               secondary={[

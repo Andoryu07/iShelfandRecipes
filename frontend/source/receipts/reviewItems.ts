@@ -23,6 +23,7 @@ export interface ReviewItem {
   addToStock: boolean;
   storageLocationId: number | null;
   expirationDate: string;
+  remembered: boolean;
   initial: { name: string; foodKey: string; quantityText: string; unitSymbol: string; priceText: string };
 }
 
@@ -76,6 +77,7 @@ export function createReviewItem(scanned: ScannedReceiptItem, storageLocationId:
     addToStock: scanned.isFood && scanned.price > 0 && food !== null,
     storageLocationId,
     expirationDate: "",
+    remembered: scanned.rememberedFromEarlierReceipt ?? false,
     initial: { name: scanned.name, foodKey: foodKey(food), priceText, ...quantity },
   };
 }

@@ -1,5 +1,5 @@
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import { Alert, Button, MenuItem, Stack, TextField, Typography } from "@mui/material";
+import { Alert, Box, Button, Card, Chip, Stack, TextField, Typography } from "@mui/material";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { saveReceipt } from "../api/receiptsApi";
@@ -116,35 +116,33 @@ export function ReceiptReview({
           slotProps={{ htmlInput: { inputMode: "decimal" } }}
         />
       </Stack>
-      <Alert severity={sumMatches ? "success" : "warning"} sx={{ mt: 1 }}>
-        {sumMatches
-          ? texts.receipts.sumMatches
-          : texts.receipts.sumDiffers(formatMoney(Math.abs(difference ?? itemsSum)))}
-      </Alert>
-      <TextField
-        select
-        label={texts.receipts.defaultStorageLocation}
-        value={defaultStorageLocationId ?? ""}
-        onChange={(event) => changeDefaultStorageLocation(Number(event.target.value))}
-      >
+      <Typography variant="body2" color="text.secondary" sx={{ mt: 2, mb: 1 }}>
+        {texts.receipts.defaultStorageLocation}
+      </Typography>
+      <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
         {storageLocations.map((storageLocation) => (
-          <MenuItem key={storageLocation.id} value={storageLocation.id}>
-            {displayStorageLocationName(storageLocation)}
-          </MenuItem>
+          <Chip
+            key={storageLocation.id}
+            label={displayStorageLocationName(storageLocation)}
+            color={storageLocation.id === defaultStorageLocationId ? "primary" : "default"}
+            onClick={() => changeDefaultStorageLocation(storageLocation.id)}
+          />
         ))}
-      </TextField>
+      </Stack>
 
-      {items.map((item) => (
-        <ReviewItemCard
-          key={item.key}
-          householdId={householdId}
-          item={item}
-          storageLocations={storageLocations}
-          error={errors[item.key]}
-          onChange={updateItem}
-          onRemove={() => setItems((current) => current.filter((other) => other.key !== item.key))}
-        />
-      ))}
+      <Card sx={{ mt: 2 }}>
+        {items.map((item) => (
+          <ReviewItemCard
+            key={item.key}
+            householdId={householdId}
+            item={item}
+            storageLocations={storageLocations}
+            error={errors[item.key]}
+            onChange={updateItem}
+            onRemove={() => setItems((current) => current.filter((other) => other.key !== item.key))}
+          />
+        ))}
+      </Card>
       <Button
         startIcon={<AddRoundedIcon />}
         sx={{ mt: 1 }}
@@ -163,19 +161,43 @@ export function ReceiptReview({
           {describeError(saveMutation.error)}
         </Alert>
       )}
-      <Stack direction="row" spacing={1} sx={{ mt: 3 }}>
-        <Button color="error" onClick={() => setIsDiscardConfirmationOpen(true)}>
-          {texts.receipts.discard}
-        </Button>
-        <Button
-          variant="contained"
-          sx={{ flex: 1 }}
-          onClick={submit}
-          disabled={saveMutation.isPending || total === null || items.length === 0}
+      <Box
+        sx={{
+          position: "sticky",
+          bottom: { xs: "calc(var(--bottom-navigation-height) + var(--safe-area-bottom) + 8px)", md: 16 },
+          mt: 3,
+          p: 1.5,
+          borderRadius: "16px",
+          border: 1,
+          borderColor: "divider",
+          bgcolor: "background.paper",
+          boxShadow: 3,
+          zIndex: 2,
+        }}
+      >
+        <Typography
+          variant="body2"
+          sx={{ fontWeight: 600, mb: 1, color: sumMatches ? "success.main" : "warning.main" }}
         >
-          {texts.receipts.save}
-        </Button>
-      </Stack>
+          {sumMatches
+            ? texts.receipts.sumMatchesShort(formatMoney(itemsSum))
+            : texts.receipts.sumDiffers(formatMoney(Math.abs(difference ?? itemsSum)))}
+        </Typography>
+        <Stack direction="row" spacing={1} useFlexGap>
+          <Button color="error" onClick={() => setIsDiscardConfirmationOpen(true)}>
+            {texts.receipts.discard}
+          </Button>
+          <Button
+            variant="contained"
+            size="large"
+            sx={{ flex: 1 }}
+            onClick={submit}
+            disabled={saveMutation.isPending || total === null || items.length === 0}
+          >
+            {texts.receipts.saveWithCount(items.filter((item) => item.addToStock).length)}
+          </Button>
+        </Stack>
+      </Box>
       <ConfirmationDialog
         message={isDiscardConfirmationOpen ? texts.receipts.discardConfirmation : null}
         confirmLabel={texts.receipts.discard}

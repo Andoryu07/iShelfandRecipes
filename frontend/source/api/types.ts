@@ -99,6 +99,7 @@ export interface ScannedReceiptItem {
   price: number;
   discount: number;
   suggestedFood: Food | null;
+  rememberedFromEarlierReceipt?: boolean;
 }
 
 export interface ScannedReceipt {
