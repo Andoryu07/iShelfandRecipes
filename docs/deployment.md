@@ -1,6 +1,6 @@
 # Deployment
 
-This guide puts iShelf and Recipes on a Hetzner Cloud server in Germany (EU, as the privacy policy says) with its own `.cz` domain and HTTPS. Every command is meant to be copied as it is; replace only the values in angle brackets, for example `<server-ip>`.
+This guide puts iShelf and Recipes on an OVHcloud VPS in a European datacentre (EU, as the privacy policy says) with its own `.cz` domain and HTTPS. Every command is meant to be copied as it is; replace only the values in angle brackets, for example `<server-ip>`.
 
 Production uses `docker-compose.production.yml`:
 
@@ -12,7 +12,7 @@ Production uses `docker-compose.production.yml`:
 | `database` | PostgreSQL, not reachable from the internet |
 | `backup` | A database backup every night at 3:00 into `backups/`, the last 14 days are kept |
 
-Planned costs (financial plan): server with backups about 200 CZK a month, domain about 200 CZK for the first year.
+Costs: OVHcloud VPS-1 (2 vCores, 4 GB RAM, 40 GB NVMe, daily backup included) from 3.81 EUR a month without VAT, about 4.61 EUR (roughly 115 CZK) with Czech VAT; the domain about 200 CZK for the first year. The financial plan counts with 200 CZK a month for the server.
 
 ## 1. Domain
 
@@ -28,46 +28,28 @@ Open PowerShell and run:
 ssh-keygen -t ed25519 -C "ishelf-server"
 ```
 
-Press Enter to keep the default location and choose a passphrase. The public key is in `C:\Users\<you>\.ssh\id_ed25519.pub`; you will paste its content into Hetzner. Never share the file without `.pub`.
+Press Enter to keep the default location and choose a passphrase. The public key is in `C:\Users\<you>\.ssh\id_ed25519.pub`; you will paste its content into the OVHcloud order. Never share the file without `.pub`.
 
-## 3. Hetzner server
+## 3. OVHcloud VPS
 
 Official pages:
 
-- Hetzner Cloud (offer, prices, sign up): https://www.hetzner.com/cloud
-- Hetzner Console (after signing in): https://console.hetzner.com/projects
-- Creating a server: https://docs.hetzner.com/cloud/servers/getting-started/creating-a-server/
-- Enabling backups: https://docs.hetzner.com/cloud/servers/getting-started/enabling-backups/
-- Creating a firewall: https://docs.hetzner.com/cloud/firewalls/getting-started/creating-a-firewall/
-- Logging in with an SSH key: https://community.hetzner.com/tutorials/add-ssh-key-to-your-hetzner-cloud/
+- VPS offer and prices: https://www.ovhcloud.com/en/vps/vps-czech-republic/
+- Getting started with a VPS: https://docs.ovhcloud.com/en/guides/bare-metal-cloud/virtual-private-servers/starting-with-a-vps
+- SSH connections: https://docs.ovhcloud.com/en/guides/bare-metal-cloud/dedicated-servers/ssh-introduction
+- European datacentres: https://www.ovhcloud.com/en/datacenter/europe/
 
 Steps:
 
-1. Create an account on https://www.hetzner.com/cloud and sign in to https://console.hetzner.com/projects.
-2. Create a project, for example `ishelf`.
-3. In the project, open **Servers** and choose **Add server**:
-   - Location: **Nuremberg** or **Falkenstein** (Germany).
+1. Open the VPS offer, choose **VPS-1** (2 vCores, 4 GB RAM, 40 GB SSD NVMe, daily backup of the previous 24 hours) and click **Configure**.
+2. Choose these options:
+   - Location: a datacentre **in the EU**, for example **Frankfurt (Germany)**, **Strasbourg** or **Gravelines (France)** or **Warsaw (Poland)**. Not London (the United Kingdom is not in the EU) and nothing outside Europe.
    - Image: **Ubuntu 24.04**.
-   - Type: the cheapest shared vCPU server with at least 1 GB RAM and 20 GB disk is enough for testing (for example CX23 or CAX11 if they can be ordered, otherwise the 1 vCPU / 1 GB type). With 1 GB RAM, add the swap file in step 5. The server can be made bigger later in the console (server → **Rescale**) without losing data. All images used here run on x86 and Arm.
-   - Check whether the public IPv4 address is included in the price or charged extra; the app needs it.
-   - Networking: public IPv4 and IPv6.
-   - SSH keys: **Add SSH key** and paste the content of `id_ed25519.pub`. The key cannot be added later in the console.
-   - Backups: **on** (daily copies of the whole disk, seven are kept, about 20 % of the server price).
-   - Name: `ishelf`.
-   - Check the price shown at the bottom, then **Create & Buy now**.
-4. Open **Firewalls**, create a firewall named `ishelf-web` with these inbound rules and apply it to the server:
-
-   | Protocol | Port | Source |
-   | --- | --- | --- |
-   | TCP | 22 | Any IPv4, Any IPv6 |
-   | TCP | 80 | Any IPv4, Any IPv6 |
-   | TCP | 443 | Any IPv4, Any IPv6 |
-   | UDP | 443 | Any IPv4, Any IPv6 |
-   | ICMP | | Any IPv4, Any IPv6 |
-
-   Everything else stays closed. The firewall runs outside the server, so it also covers the ports Docker opens.
-
-5. Write down the server's IPv4 and IPv6 address.
+   - SSH key: paste the content of `id_ed25519.pub` if the order offers it.
+   - Commitment: the lowest price usually needs a 12-month commitment; the summary shows the monthly price for each option, pick what suits you.
+   - Leave paid extras off; the daily backup is already included.
+3. Finish the order and the account verification. OVHcloud then sends a delivery e-mail with the server's **IP address**, the user name (`ubuntu`) and a link to a temporary password.
+4. Write down the IPv4 address (and the IPv6 address if the e-mail or the control panel shows one).
 
 ## 4. DNS
 
@@ -82,63 +64,83 @@ It can take from a few minutes to a few hours before the domain points to the se
 
 ## 5. First login and securing the server
 
-Log in as root (from PowerShell):
+Log in as the default user from the delivery e-mail (from PowerShell):
 
 ```
-ssh root@<server-ip>
+ssh ubuntu@<server-ip>
 ```
 
-Update the system, create your own user and allow it to use `sudo` (choose a password when asked):
+If you did not add an SSH key in the order, log in with the temporary password; Ubuntu asks you to change it and then closes the connection, so log in again with the new password. Root login is turned off on OVHcloud servers by default; `ubuntu` uses `sudo`.
+
+Update the system and create your own user (choose a password when asked):
 
 ```
-apt update && apt upgrade -y
-```
-
-```
-adduser ishelf
-```
-
-```
-usermod -aG sudo ishelf
+sudo apt update && sudo apt upgrade -y
 ```
 
 ```
-rsync --archive --chown=ishelf:ishelf ~/.ssh /home/ishelf
-```
-
-Turn off password logins and root logins:
-
-```
-printf 'PermitRootLogin no\nPasswordAuthentication no\n' > /etc/ssh/sshd_config.d/99-ishelf.conf
+sudo adduser ishelf
 ```
 
 ```
-systemctl restart ssh
+sudo usermod -aG sudo ishelf
 ```
 
-**Before you close this window**, open a second PowerShell window and check that the new user can log in:
+Give the new user your SSH key. If you added the key in the order, copy it:
+
+```
+sudo rsync --archive --chown=ishelf:ishelf ~/.ssh /home/ishelf
+```
+
+If you did not, run this in PowerShell on your computer instead (it asks for the password of `ishelf`):
+
+```
+type $env:USERPROFILE\.ssh\id_ed25519.pub | ssh ishelf@<server-ip> "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys"
+```
+
+**Before the next step**, open a second PowerShell window and check that the key login works without a password:
 
 ```
 ssh ishelf@<server-ip>
 ```
 
+Then turn off password logins and root logins:
+
+```
+printf 'PermitRootLogin no\nPasswordAuthentication no\n' | sudo tee /etc/ssh/sshd_config.d/99-ishelf.conf
+```
+
+```
+sudo systemctl restart ssh
+```
+
 From now on always log in as `ishelf`.
 
-On a server with 1 GB RAM, add 2 GB of swap so that building the app does not run out of memory:
+Turn on the firewall: only SSH, HTTP and HTTPS stay open.
 
 ```
-sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
-```
-
-```
-echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+sudo ufw allow OpenSSH
 ```
 
 ```
-echo 'vm.swappiness=10' | sudo tee /etc/sysctl.d/99-swappiness.conf && sudo sysctl --system
+sudo ufw allow 80/tcp
 ```
 
-Check it with `free -h` (the `Swap` line shows 2.0Gi). Turn on automatic security updates:
+```
+sudo ufw allow 443/tcp
+```
+
+```
+sudo ufw allow 443/udp
+```
+
+```
+sudo ufw enable
+```
+
+Answer `y`. Check with `sudo ufw status`. Ports that Docker publishes bypass `ufw`; in production only Caddy publishes ports (80 and 443), the database and the backend are reachable only inside Docker.
+
+Turn on automatic security updates:
 
 ```
 sudo apt install -y unattended-upgrades
@@ -168,13 +170,13 @@ docker run --rm hello-world
 
 ## 7. Code
 
-If the repository is public:
+The repository is public:
 
 ```
 git clone https://github.com/Andoryu07/iShelfandRecipes.git
 ```
 
-If it is private, create a read-only deploy key on the server and add it to the repository (GitHub guide: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/managing-deploy-keys):
+If it ever becomes private, create a read-only deploy key on the server and add it to the repository (GitHub guide: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/managing-deploy-keys):
 
 ```
 ssh-keygen -t ed25519 -C "ishelf-server-deploy" -f ~/.ssh/github_deploy -N ""
@@ -265,8 +267,8 @@ Register, create a household, scan a receipt and switch on notifications in the 
 
 There are two kinds of backups:
 
-- **Hetzner backups** of the whole server (daily, seven kept) are stored outside the server. Restore one in the console: server → **Backups**.
-- **Database backups** every night at 3:00 in `~/iShelfandRecipes/backups` (`ishelf-YYYY-MM-DD.dump`), the last 14 days are kept.
+- **OVHcloud backup** of the whole server: one daily copy of the previous 24 hours, included in VPS-1, managed in the OVHcloud Control Panel (the VPS → **Backup**).
+- **Database backups** every night at 3:00 in `~/iShelfandRecipes/backups` (`ishelf-YYYY-MM-DD.dump`), the last 14 days are kept. Because the OVHcloud backup keeps only one day, copy these files to your computer regularly (below).
 
 List them:
 
@@ -328,7 +330,7 @@ It pulls the code, rebuilds the images, restarts what changed (migrations run on
 
 ## Troubleshooting
 
-- **The browser says the connection is not secure or the site does not load:** the domain does not point to the server yet (step 4) or ports 80 and 443 are closed (step 3). See `docker compose -f docker-compose.production.yml logs caddy`. Caddy tries again on its own.
+- **The browser says the connection is not secure or the site does not load:** the domain does not point to the server yet (step 4) or ports 80 and 443 are closed (check `sudo ufw status`, step 5). See `docker compose -f docker-compose.production.yml logs caddy`. Caddy tries again on its own.
 - **A service keeps restarting:** see its log, for example `docker compose -f docker-compose.production.yml logs backend`, and send it to Claude.
 - **Receipts cannot be read:** check `GEMINI_API_KEY` in `.env` and run `deploy/deploy.sh` again.
 - **Notifications do not arrive:** check the VAPID keys in `.env` and run the daily jobs by hand:
