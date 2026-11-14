@@ -1,5 +1,5 @@
 :root {
-  --page-maximum-width: 640px;
+  --page-maximum-width: 720px;
   --page-side-padding: 16px;
   --bottom-navigation-height: 64px;
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
@@ -53,4 +53,19 @@ body {
   font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
   font-size: 1.75rem;
   letter-spacing: 0.15em;
+}
+
+@media (min-width: 900px) {
+  .page {
+    padding-bottom: 32px;
+  }
+}
+
+.listSectionTitle {
+  margin: 20px 0 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--mui-palette-text-secondary);
 }

@@ -75,10 +75,7 @@ export function NotificationsSection() {
   }
 
   return (
-    <section className="section">
-      <Typography variant="h6" component="h2">
-        {texts.notifications.title}
-      </Typography>
+    <section>
       {isSupported ? (
         <>
           <FormControlLabel

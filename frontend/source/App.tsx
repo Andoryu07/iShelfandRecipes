@@ -10,11 +10,20 @@ import { AuthenticationForm } from "./pages/AuthenticationForm";
 import { HouseholdPage } from "./pages/HouseholdPage";
 import { HouseholdSetupPage } from "./pages/HouseholdSetupPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
+import { OverviewPage } from "./pages/OverviewPage";
 import { RecipeDetailPage } from "./pages/RecipeDetailPage";
 import { RecipesPage } from "./pages/RecipesPage";
 import { PrivacyPolicyPage } from "./pages/PrivacyPolicyPage";
 import { ReceiptsPage } from "./pages/ReceiptsPage";
 import { StockPage } from "./pages/StockPage";
+import {
+  AboutPage,
+  AccountSettingsPage,
+  AppearancePage,
+  NotificationsSettingsPage,
+  PrivacySettingsPage,
+  ProfilePage,
+} from "./profile/ProfilePages";
 
 const router = createBrowserRouter([
   {
@@ -37,12 +46,19 @@ const router = createBrowserRouter([
           {
             element: <ApplicationLayout />,
             children: [
-              { path: "/", element: <Navigate to="/stock" replace /> },
+              { path: "/", element: <Navigate to="/overview" replace /> },
+              { path: "/overview", element: <OverviewPage /> },
               { path: "/stock", element: <StockPage /> },
               { path: "/receipts", element: <ReceiptsPage /> },
               { path: "/recipes", element: <RecipesPage /> },
               { path: "/recipes/:recipeId", element: <RecipeDetailPage /> },
               { path: "/household", element: <HouseholdPage /> },
+              { path: "/profile", element: <ProfilePage /> },
+              { path: "/profile/account", element: <AccountSettingsPage /> },
+              { path: "/profile/appearance", element: <AppearancePage /> },
+              { path: "/profile/notifications", element: <NotificationsSettingsPage /> },
+              { path: "/profile/privacy", element: <PrivacySettingsPage /> },
+              { path: "/profile/about", element: <AboutPage /> },
             ],
           },
         ],

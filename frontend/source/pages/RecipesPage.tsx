@@ -38,9 +38,6 @@ function RecipeList({ householdId }: { householdId: number }) {
 
   return (
     <>
-      <Typography variant="h5" component="h1">
-        {texts.navigation.recipes}
-      </Typography>
       <TextField
         placeholder={texts.recipes.searchPlaceholder}
         value={search}

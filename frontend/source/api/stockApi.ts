@@ -15,6 +15,7 @@ export function createFood(
 export interface StockItemFilters {
   storageLocationId?: number;
   search?: string;
+  expiringWithinDays?: number;
 }
 
 export function listStockItems(householdId: number, filters: StockItemFilters): Promise<StockItem[]> {
@@ -24,6 +25,9 @@ export function listStockItems(householdId: number, filters: StockItemFilters): 
   }
   if (filters.search) {
     parameters.set("search", filters.search);
+  }
+  if (filters.expiringWithinDays !== undefined) {
+    parameters.set("expiringWithinDays", String(filters.expiringWithinDays));
   }
   return apiRequest<StockItem[]>(`/households/${householdId}/stock-items?${parameters}`);
 }
@@ -72,6 +76,10 @@ export function createReservation(
     method: "POST",
     body: reservation,
   });
+}
+
+export function listActiveReservations(householdId: number): Promise<Reservation[]> {
+  return apiRequest<Reservation[]>(`/households/${householdId}/reservations?status=active`);
 }
 
 export function cancelReservation(reservationId: number): Promise<Reservation> {

@@ -103,9 +103,6 @@ function Receipts({ householdId }: { householdId: number }) {
 
   return (
     <>
-      <Typography variant="h5" component="h1">
-        {texts.navigation.receipts}
-      </Typography>
       <input
         ref={cameraInput}
         type="file"

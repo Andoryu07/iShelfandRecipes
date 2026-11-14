@@ -1,4 +1,3 @@
-import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import ReportProblemRoundedIcon from "@mui/icons-material/ReportProblemRounded";
 import {
@@ -122,10 +121,7 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
 
   return (
     <>
-      <Button startIcon={<ArrowBackRoundedIcon />} onClick={() => navigate("/recipes")}>
-        {texts.recipes.back}
-      </Button>
-      <Typography variant="h5" component="h1" sx={{ mt: 1 }}>
+      <Typography variant="h5" component="h2" sx={{ mt: 1 }}>
         {recipe.name}
       </Typography>
       {recipe.preparationMinutes && (

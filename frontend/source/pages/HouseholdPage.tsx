@@ -6,10 +6,8 @@ import { listMembers, removeMember } from "../api/householdsApi";
 import type { Household, User } from "../api/types";
 import { useAuthentication } from "../authentication/AuthenticationContext";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
-import { AccountSection } from "../households/AccountSection";
 import { InviteCodeCard } from "../households/InviteCodeCard";
 import { MembersSection, membersQueryKey } from "../households/MembersSection";
-import { NotificationsSection } from "../households/NotificationsSection";
 import { StorageLocationsSection } from "../households/StorageLocationsSection";
 import { householdsQueryKey, useCurrentHousehold } from "../households/useCurrentHousehold";
 import { texts } from "../translations/cs";
@@ -21,7 +19,6 @@ export function HouseholdPage() {
 }
 
 function HouseholdDetails({ household, user }: { household: Household; user: User }) {
-  const { logOut } = useAuthentication();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [isLeaveConfirmationOpen, setIsLeaveConfirmationOpen] = useState(false);
@@ -40,14 +37,12 @@ function HouseholdDetails({ household, user }: { household: Household; user: Use
   const isLastMember = membersQuery.data?.length === 1;
   return (
     <>
-      <Typography variant="h5" component="h1">
+      <Typography variant="h5" component="h2">
         {household.name}
       </Typography>
       <InviteCodeCard household={household} />
       <MembersSection household={household} currentUserId={user.id} />
       <StorageLocationsSection householdId={household.id} />
-      <NotificationsSection />
-      <AccountSection />
       <Stack className="section" spacing={1} sx={{ alignItems: "flex-start" }}>
         <Button
           color="error"
@@ -56,7 +51,6 @@ function HouseholdDetails({ household, user }: { household: Household; user: Use
         >
           {texts.household.leaveHousehold}
         </Button>
-        <Button onClick={logOut}>{texts.authentication.logOut}</Button>
       </Stack>
       <ConfirmationDialog
         message={

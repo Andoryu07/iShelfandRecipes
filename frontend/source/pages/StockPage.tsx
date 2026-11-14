@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { useDeferredValue, useState } from "react";
+import { useSearchParams } from "react-router";
 import { listStockItems } from "../api/stockApi";
 import type { StockItem, StorageLocation } from "../api/types";
 import { describeError } from "../errorMessages";
@@ -55,8 +56,10 @@ export function StockPage() {
 function StockList({ householdId }: { householdId: number }) {
   const [search, setSearch] = useState("");
   const [selectedStorageLocationId, setSelectedStorageLocationId] = useState<number | undefined>(undefined);
-  const [isAdding, setIsAdding] = useState(false);
+  const [searchParameters, setSearchParameters] = useSearchParams();
+  const [isAdding, setIsAdding] = useState(searchParameters.get("add") === "1");
   const [selectedStockItem, setSelectedStockItem] = useState<StockItem | null>(null);
+  const requestedStockItemId = Number(searchParameters.get("item")) || null;
   const deferredSearch = useDeferredValue(search.trim());
   const storageLocations = useStorageLocations(householdId).data ?? [];
   const filters = { storageLocationId: selectedStorageLocationId, search: deferredSearch };
@@ -65,6 +68,17 @@ function StockList({ householdId }: { householdId: number }) {
     queryFn: () => listStockItems(householdId, filters),
     placeholderData: (previousData) => previousData,
   });
+  const openedStockItem =
+    selectedStockItem ??
+    (requestedStockItemId
+      ? (stockQuery.data?.find((stockItem) => stockItem.id === requestedStockItemId) ?? null)
+      : null);
+
+  function clearRequestedDialogs() {
+    if (searchParameters.size > 0) {
+      setSearchParameters({}, { replace: true });
+    }
+  }
   const storageLocationsById = new Map<number, StorageLocation>(
     storageLocations.map((storageLocation) => [storageLocation.id, storageLocation]),
   );
@@ -73,9 +87,6 @@ function StockList({ householdId }: { householdId: number }) {
 
   return (
     <>
-      <Typography variant="h5" component="h1">
-        {texts.navigation.stock}
-      </Typography>
       <TextField
         placeholder={texts.stock.searchPlaceholder}
         value={search}
@@ -173,15 +184,21 @@ function StockList({ householdId }: { householdId: number }) {
           householdId={householdId}
           storageLocations={storageLocations}
           initialStorageLocationId={selectedStorageLocationId}
-          onClose={() => setIsAdding(false)}
+          onClose={() => {
+            setIsAdding(false);
+            clearRequestedDialogs();
+          }}
         />
       )}
-      {selectedStockItem && (
+      {openedStockItem && (
         <StockItemDialog
           householdId={householdId}
-          stockItem={selectedStockItem}
+          stockItem={openedStockItem}
           storageLocations={storageLocations}
-          onClose={() => setSelectedStockItem(null)}
+          onClose={() => {
+            setSelectedStockItem(null);
+            clearRequestedDialogs();
+          }}
         />
       )}
     </>
