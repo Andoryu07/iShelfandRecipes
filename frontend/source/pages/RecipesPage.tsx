@@ -23,14 +23,20 @@ import type { RecipeSummary } from "../api/types";
 import { describeError } from "../errorMessages";
 import { useCurrentHousehold } from "../households/useCurrentHousehold";
 import { recipeIcon } from "../components/icons";
+import { FavouriteButton } from "../recipes/FavouriteButton";
 import { HouseholdCookingHistorySheet } from "../recipes/HouseholdCookingHistorySheet";
 import { formatMoney } from "../receipts/money";
 import { RecipeEditorDialog } from "../recipes/RecipeEditorDialog";
 import { texts } from "../translations/cs";
 
-type RecipeFilter = "cookNow" | "quick" | "own";
+type RecipeFilter = "favourites" | "cookNow" | "quick" | "own";
 
 const filters: { value: RecipeFilter; label: string; matches: (recipe: RecipeSummary) => boolean }[] = [
+  {
+    value: "favourites",
+    label: texts.recipes.filterFavourites,
+    matches: (recipe) => recipe.isFavourite === true,
+  },
   { value: "cookNow", label: texts.recipes.filterCookNow, matches: (recipe) => recipe.missingCount === 0 },
   {
     value: "quick",
@@ -122,7 +128,7 @@ function RecipeList({ householdId }: { householdId: number }) {
       )}
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 1.5 }}>
         {recipes.map((recipe) => (
-          <Card key={recipe.id}>
+          <Card key={recipe.id} sx={{ position: "relative" }}>
             <CardActionArea
               onClick={() => navigate(`/recipes/${recipe.id}`)}
               sx={{ display: "flex", p: 1.5, gap: 1.5 }}
@@ -133,7 +139,7 @@ function RecipeList({ householdId }: { householdId: number }) {
               >
                 {recipeIcon(recipe)}
               </Avatar>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Box sx={{ flex: 1, minWidth: 0, pr: 4 }}>
                 <Typography sx={{ fontWeight: 650 }} noWrap>
                   {recipe.name}
                 </Typography>
@@ -158,6 +164,13 @@ function RecipeList({ householdId }: { householdId: number }) {
                 />
               </Box>
             </CardActionArea>
+            <Box sx={{ position: "absolute", top: 4, right: 4 }}>
+              <FavouriteButton
+                householdId={householdId}
+                recipeId={recipe.id}
+                isFavourite={recipe.isFavourite === true}
+              />
+            </Box>
           </Card>
         ))}
       </Box>

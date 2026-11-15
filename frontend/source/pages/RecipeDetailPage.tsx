@@ -42,6 +42,7 @@ import { describeError } from "../errorMessages";
 import { useCurrentHousehold } from "../households/useCurrentHousehold";
 import { AddMissingFoodsSheet } from "../recipes/AddMissingFoodsSheet";
 import { CookingHistory } from "../recipes/CookingHistory";
+import { FavouriteButton } from "../recipes/FavouriteButton";
 import { RecipeEditorDialog } from "../recipes/RecipeEditorDialog";
 import { useStorageLocations } from "../households/useStorageLocations";
 import { formatMoney } from "../receipts/money";
@@ -147,6 +148,11 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
         <Typography variant="h5" component="h2" sx={{ flex: 1 }}>
           {recipe.name}
         </Typography>
+        <FavouriteButton
+          householdId={householdId}
+          recipeId={recipeId}
+          isFavourite={recipe.isFavourite === true}
+        />
         <IconButton
           aria-label={texts.recipes.moreActions}
           onClick={(event) => setMenuAnchor(event.currentTarget)}

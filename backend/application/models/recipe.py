@@ -57,3 +57,15 @@ class RecipeCooking(Base):
     createdAt: Mapped[datetime] = mapped_column(
         "created_at", DateTime(timezone=True), server_default=func.now()
     )
+
+
+class FavouriteRecipe(Base):
+    __tablename__ = "favourite_recipes"
+
+    userId: Mapped[int] = mapped_column("user_id", ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    recipeId: Mapped[int] = mapped_column(
+        "recipe_id", ForeignKey("recipes.id", ondelete="CASCADE"), primary_key=True, index=True
+    )
+    createdAt: Mapped[datetime] = mapped_column(
+        "created_at", DateTime(timezone=True), server_default=func.now()
+    )

@@ -377,3 +377,36 @@ def test_cookingScalesServingsAndDeductsOptionalIngredientsWhenPresent(client: T
     assert response["servings"] == 2
     assert stockQuantities(kitchen) == {milkItem: 800, saltItem: 1}
     assert client.post(f"/recipes/{recipeId}/cook", json={}, headers=registerAndAuthorize(client, "x@example.com", "X")).status_code == 404
+
+
+def test_favouritesArePersonalAndListedFirst(client: TestClient) -> None:
+    kitchen = Kitchen(client)
+    milk = kitchen.food("Mléko", "Mléko")
+    petr = registerAndAuthorize(client, "petr@example.com", "Petr")
+    joinHousehold(client, petr, kitchen.inviteCode)
+    ids = {
+        name: kitchen.recipe([{"foodId": milk, "quantity": 100}], name=name).json()["id"]
+        for name in ["Bábovka", "Palačinky", "Žemlovka"]
+    }
+    listUrl = f"/households/{kitchen.householdId}/recipes"
+
+    assert client.put(f"/recipes/{ids['Žemlovka']}/favourite", headers=kitchen.anna).status_code == 204
+    assert client.put(f"/recipes/{ids['Žemlovka']}/favourite", headers=kitchen.anna).status_code == 204
+    client.put(f"/recipes/{ids['Palačinky']}/favourite", headers=kitchen.anna)
+
+    annaList = client.get(listUrl, headers=kitchen.anna).json()
+    assert [(recipe["name"], recipe["isFavourite"]) for recipe in annaList] == [
+        ("Palačinky", True),
+        ("Žemlovka", True),
+        ("Bábovka", False),
+    ]
+    assert [recipe["isFavourite"] for recipe in client.get(listUrl, headers=petr).json()] == [False, False, False]
+    assert client.get(f"/recipes/{ids['Žemlovka']}", headers=kitchen.anna).json()["isFavourite"] is True
+    assert client.get(f"/recipes/{ids['Žemlovka']}", headers=petr).json()["isFavourite"] is False
+
+    assert client.delete(f"/recipes/{ids['Palačinky']}/favourite", headers=kitchen.anna).status_code == 204
+    names = [recipe["name"] for recipe in client.get(listUrl, headers=kitchen.anna).json()]
+    assert names == ["Žemlovka", "Bábovka", "Palačinky"]
+    stranger = registerAndAuthorize(client, "x@example.com", "X")
+    assert client.put(f"/recipes/{ids['Bábovka']}/favourite", headers=stranger).status_code == 404
+    assert client.delete(f"/recipes/{ids['Žemlovka']}", headers=kitchen.anna).status_code == 204

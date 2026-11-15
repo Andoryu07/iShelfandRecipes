@@ -57,6 +57,7 @@ class RecipeSummaryResponse(BaseModel):
     servings: int
     preparationMinutes: int | None
     isPredefined: bool
+    isFavourite: bool = False
     icon: str | None
     missingCount: int
     estimatedPrice: QuantityValue | None = None

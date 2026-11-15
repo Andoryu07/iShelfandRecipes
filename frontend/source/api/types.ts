@@ -217,6 +217,7 @@ export interface RecipeSummary {
   servings: number;
   preparationMinutes: number | null;
   isPredefined: boolean;
+  isFavourite?: boolean;
   icon?: string | null;
   missingCount: number;
   estimatedPrice?: number | null;

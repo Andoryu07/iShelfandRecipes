@@ -1,14 +1,24 @@
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from application.database import getDatabaseSession
 from application.dependencies import getCurrentUser, getHouseholdMembership, notFoundError
 from application.foods import FoodNotFoundError, FoodResolver, buildFoodResponse
 from application.households import findMembership
-from application.models import Food, HouseholdMember, Recipe, RecipeCooking, RecipeIngredient, Reservation, User
+from application.models import (
+    FavouriteRecipe,
+    Food,
+    HouseholdMember,
+    Recipe,
+    RecipeCooking,
+    RecipeIngredient,
+    Reservation,
+    User,
+)
 from application.recipes.availability import AvailabilityCalculator, scaledQuantity
 from application.recipes.cooking import Cook, lockHouseholdStock
 from application.schemas.recipes import (
@@ -53,13 +63,16 @@ def loadIngredients(session: Session, recipeIds: list[int]) -> dict[int, list[tu
     return grouped
 
 
-def buildRecipeResponse(recipe: Recipe, ingredients: list[tuple[RecipeIngredient, Food]], missingCount: int) -> RecipeResponse:
+def buildRecipeResponse(
+    recipe: Recipe, ingredients: list[tuple[RecipeIngredient, Food]], missingCount: int, isFavourite: bool
+) -> RecipeResponse:
     return RecipeResponse(
         id=recipe.id,
         name=recipe.name,
         servings=recipe.servings,
         preparationMinutes=recipe.preparationMinutes,
         isPredefined=recipe.isPredefined,
+        isFavourite=isFavourite,
         icon=recipe.icon,
         missingCount=missingCount,
         createdAt=recipe.createdAt,
@@ -80,7 +93,12 @@ def buildRecipeResponse(recipe: Recipe, ingredients: list[tuple[RecipeIngredient
 def recipeResponse(session: Session, recipe: Recipe, userId: int) -> RecipeResponse:
     ingredients = loadIngredients(session, [recipe.id])[recipe.id]
     availability = AvailabilityCalculator(session, recipe.householdId, userId).calculate(recipe, ingredients)
-    return buildRecipeResponse(recipe, ingredients, availability.missingCount)
+    isFavourite = isFavouriteOf(session, recipe.id, userId)
+    return buildRecipeResponse(recipe, ingredients, availability.missingCount, isFavourite)
+
+
+def isFavouriteOf(session: Session, recipeId: int, userId: int) -> bool:
+    return session.get(FavouriteRecipe, (userId, recipeId)) is not None
 
 
 def replaceIngredients(session: Session, recipe: Recipe, requests: list[RecipeIngredientRequest]) -> None:
@@ -123,7 +141,10 @@ def listRecipes(
     query = select(Recipe).where(Recipe.householdId == membership.householdId).order_by(func.lower(Recipe.name))
     if search and search.strip():
         query = query.where(func.unaccent(Recipe.name).ilike(func.unaccent(f"%{search.strip()}%")))
-    recipes = list(session.scalars(query))
+    favouriteIds = set(
+        session.scalars(select(FavouriteRecipe.recipeId).where(FavouriteRecipe.userId == membership.userId))
+    )
+    recipes = sorted(session.scalars(query), key=lambda recipe: recipe.id not in favouriteIds)
     ingredients = loadIngredients(session, [recipe.id for recipe in recipes])
     calculator = AvailabilityCalculator(session, membership.householdId, membership.userId)
     summaries = []
@@ -136,6 +157,7 @@ def listRecipes(
                 servings=recipe.servings,
                 preparationMinutes=recipe.preparationMinutes,
                 isPredefined=recipe.isPredefined,
+                isFavourite=recipe.id in favouriteIds,
                 icon=recipe.icon,
                 missingCount=availability.missingCount,
                 estimatedPrice=availability.estimatedPrice,
@@ -335,3 +357,29 @@ def listHouseholdCookings(
         )
         for cooking, recipe, displayName in rows
     ]
+
+
+@router.put("/recipes/{recipeId}/favourite", status_code=status.HTTP_204_NO_CONTENT)
+def addFavouriteRecipe(
+    recipe: Recipe = Depends(getAccessibleRecipe),
+    user: User = Depends(getCurrentUser),
+    session: Session = Depends(getDatabaseSession),
+) -> Response:
+    session.execute(
+        insert(FavouriteRecipe).values(userId=user.id, recipeId=recipe.id).on_conflict_do_nothing()
+    )
+    session.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.delete("/recipes/{recipeId}/favourite", status_code=status.HTTP_204_NO_CONTENT)
+def removeFavouriteRecipe(
+    recipe: Recipe = Depends(getAccessibleRecipe),
+    user: User = Depends(getCurrentUser),
+    session: Session = Depends(getDatabaseSession),
+) -> Response:
+    session.execute(
+        delete(FavouriteRecipe).where(FavouriteRecipe.userId == user.id, FavouriteRecipe.recipeId == recipe.id)
+    )
+    session.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

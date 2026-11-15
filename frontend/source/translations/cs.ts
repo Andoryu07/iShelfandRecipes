@@ -269,6 +269,9 @@ export const texts = {
     priceUnknown: "Odhad ceny zatím není, nejdřív naskenuj účtenky s těmito surovinami.",
     reserveIngredients: "Rezervovat suroviny",
     reserveShort: "Rezervovat",
+    addFavourite: "Přidat do oblíbených",
+    removeFavourite: "Odebrat z oblíbených",
+    filterFavourites: "Oblíbené",
     cooked: "Uvařeno",
     cookTitle: "Odečíst suroviny ze zásob?",
     cookIntroduction: (servings: number) =>

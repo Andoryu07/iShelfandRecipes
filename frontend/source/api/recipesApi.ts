@@ -36,6 +36,14 @@ export function getRecipeAvailability(
   return apiRequest<RecipeAvailability>(`/recipes/${recipeId}/availability${query}`);
 }
 
+export function addFavouriteRecipe(recipeId: number): Promise<void> {
+  return apiRequest<void>(`/recipes/${recipeId}/favourite`, { method: "PUT" });
+}
+
+export function removeFavouriteRecipe(recipeId: number): Promise<void> {
+  return apiRequest<void>(`/recipes/${recipeId}/favourite`, { method: "DELETE" });
+}
+
 export function listRecipeCookings(recipeId: number): Promise<RecipeCooking[]> {
   return apiRequest<RecipeCooking[]>(`/recipes/${recipeId}/cookings`);
 }
