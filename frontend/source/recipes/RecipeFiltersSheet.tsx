@@ -1,4 +1,14 @@
-import { Button, Chip, DialogActions, DialogContent, DialogTitle, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Chip,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Slider,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { useState } from "react";
 import { dishTypes } from "../api/types";
 import { BottomSheet } from "../components/BottomSheet";
@@ -12,7 +22,11 @@ import {
 } from "./recipeFilters";
 
 const sorts: RecipeSort[] = ["name", "missing", "time", "price"];
-const missingLimits = [null, 0, 1, 2, 3, 4];
+const anyMissingStep = 5;
+const missingMarks = [0, 1, 2, 3, 4, anyMissingStep].map((step) => ({
+  value: step,
+  label: step === anyMissingStep ? "5+" : String(step),
+}));
 
 interface RecipeFiltersSheetProps {
   householdId: number;
@@ -58,22 +72,28 @@ export function RecipeFiltersSheet({
       <DialogTitle>{texts.recipes.filtersTitle}</DialogTitle>
       <DialogContent>
         <SectionTitle>{texts.recipes.maxMissingTitle}</SectionTitle>
-        <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
-          {missingLimits.map((limit) => (
-            <Chip
-              key={String(limit)}
-              label={
-                limit === null
-                  ? texts.recipes.maxMissingAny
-                  : limit === 0
-                    ? texts.recipes.maxMissingNone
-                    : limit
-              }
-              color={value.maxMissing === limit ? "primary" : "default"}
-              onClick={() => onChange({ ...value, maxMissing: limit })}
-            />
-          ))}
-        </Stack>
+        <Typography sx={{ fontWeight: 600 }}>
+          {value.maxMissing === null
+            ? texts.recipes.maxMissingAny
+            : value.maxMissing === 0
+              ? texts.recipes.maxMissingNone
+              : texts.recipes.maxMissingChip(value.maxMissing)}
+        </Typography>
+        <Box sx={{ px: 1.5 }}>
+          <Slider
+            aria-label={texts.recipes.maxMissingTitle}
+            min={0}
+            max={anyMissingStep}
+            step={1}
+            marks={missingMarks}
+            value={value.maxMissing ?? anyMissingStep}
+            onChange={(_, step) => {
+              const limit = Array.isArray(step) ? step[0] : step;
+              onChange({ ...value, maxMissing: limit >= anyMissingStep ? null : limit });
+            }}
+            getAriaValueText={(step) => (step >= anyMissingStep ? texts.recipes.maxMissingAny : String(step))}
+          />
+        </Box>
 
         <SectionTitle>{texts.recipes.dishTypeTitle}</SectionTitle>
         <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
