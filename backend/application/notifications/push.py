@@ -41,6 +41,10 @@ class WebPushSender:
             return True
 
 
+def getPushSender() -> PushSender:
+    return WebPushSender()
+
+
 def sendToSubscriptions(
     session: Session, sender: PushSender, subscriptions: list[PushSubscription], payload: dict
 ) -> int:

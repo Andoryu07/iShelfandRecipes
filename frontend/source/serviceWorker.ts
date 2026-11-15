@@ -30,7 +30,19 @@ interface ExpirationPayload {
 }
 
 self.addEventListener("push", (event) => {
-  const payload = event.data?.json() as ExpirationPayload | undefined;
+  const payload = event.data?.json() as ExpirationPayload | { type: "test" } | undefined;
+  if (payload?.type === "test") {
+    event.waitUntil(
+      self.registration.showNotification(texts.notifications.testTitle, {
+        body: texts.notifications.testBody,
+        icon: "/icons/icon-192.png",
+        badge: "/icons/icon-192.png",
+        tag: "test",
+        data: { url: "/profile/notifications" },
+      }),
+    );
+    return;
+  }
   if (payload?.type !== "expiration") {
     return;
   }

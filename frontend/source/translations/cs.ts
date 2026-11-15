@@ -390,6 +390,30 @@ export const texts = {
     description: "Každý den v 8:00 přijde souhrn potravin, kterým do 2 dnů končí trvanlivost.",
     unsupported: "Tento prohlížeč upozornění nepodporuje. Na iPhonu je potřeba přidat aplikaci na plochu.",
     denied: "Upozornění jsou v prohlížeči zakázaná. Povol je v nastavení prohlížeče pro tuto stránku.",
+    sendTest: "Poslat zkušební upozornění",
+    testSent: "Zkušební upozornění odesláno. Mělo by se objevit do pár sekund.",
+    testFailed: "Zkušební upozornění se nepodařilo doručit. Vypni a znovu zapni upozornění a zkus to znovu.",
+    testTitle: "Upozornění fungují",
+    testBody: "Takhle ti bude iShelf připomínat potraviny, kterým končí trvanlivost.",
+    hints: {
+      iosInstall:
+        "Na iPhonu a iPadu fungují upozornění jen v aplikaci přidané na plochu (iOS 16.4 a novější). V Safari ťukni na Sdílet → Přidat na plochu, otevři iShelf z plochy a zapni upozornění tam.",
+      iosTooOld:
+        "Upozornění potřebují iOS 16.4 nebo novější. Aktualizuj prosím systém v Nastavení → Obecné → Aktualizace.",
+      brave:
+        "V Brave jsou upozornění ve výchozím stavu vypnutá. Otevři Nastavení → Soukromí a zabezpečení, zapni Používat služby Google pro push zprávy, restartuj Brave a zkus to znovu.",
+      deniedIos: "Upozornění jsou zakázaná. Povol je v Nastavení → Oznámení → iShelf → Povolit oznámení.",
+      deniedInstalledAndroid:
+        "Upozornění jsou zakázaná. Povol je v Nastavení telefonu → Aplikace → iShelf → Oznámení a pak sem vrať.",
+      deniedFirefox:
+        "Upozornění jsou zakázaná. Ťukni na zámek vedle adresy → Oprávnění → Oznámení → Povolit a stránku obnov.",
+      deniedSafari:
+        "Upozornění jsou zakázaná. Otevři Safari → Nastavení → Webové stránky → Oznámení, u ishelf.cz zvol Povolit a stránku obnov.",
+      deniedMobile:
+        "Upozornění jsou zakázaná. Ťukni na ikonu vedle adresy → Oprávnění (Nastavení webu) → Oznámení → Povolit a stránku obnov.",
+      deniedDesktop:
+        "Upozornění jsou zakázaná. Klikni na ikonu vedle adresy → Nastavení webu → Oznámení → Povolit a stránku obnov.",
+    },
     notConfigured: "Upozornění zatím nejsou na serveru nastavená.",
     subscribeFailed:
       "Tento prohlížeč teď nemůže upozornění zapnout. Zkus jiný prohlížeč nebo to zkus později.",

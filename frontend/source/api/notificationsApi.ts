@@ -11,6 +11,10 @@ export function savePushSubscription(subscription: PushSubscriptionJSON): Promis
   });
 }
 
+export function sendTestNotification(endpoint: string): Promise<void> {
+  return apiRequest<void>("/push-subscriptions/test", { method: "POST", body: { endpoint } });
+}
+
 export function deletePushSubscription(endpoint: string): Promise<void> {
   return apiRequest<void>("/push-subscriptions", { method: "DELETE", body: { endpoint } });
 }

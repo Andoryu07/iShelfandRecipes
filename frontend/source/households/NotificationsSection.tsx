@@ -1,9 +1,16 @@
-import { Alert, FormControlLabel, Switch, Typography } from "@mui/material";
+import { Alert, Button, FormControlLabel, Switch, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { ApiError } from "../api/apiClient";
-import { deletePushSubscription, getPushPublicKey, savePushSubscription } from "../api/notificationsApi";
+import {
+  deletePushSubscription,
+  getPushPublicKey,
+  savePushSubscription,
+  sendTestNotification,
+} from "../api/notificationsApi";
 import { describeError } from "../errorMessages";
 import { texts } from "../translations/cs";
+import { currentBrowser } from "./browser";
+import { deniedHint, subscribeFailedHint, unsupportedHint } from "./notificationHints";
 
 const isSupported = typeof window !== "undefined" && "serviceWorker" in navigator && "PushManager" in window;
 
@@ -18,7 +25,13 @@ function decodeBase64Url(text: string): Uint8Array<ArrayBuffer> {
 export function NotificationsSection() {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isBusy, setIsBusy] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [browser] = useState(currentBrowser);
+  const [errorMessage, setErrorMessage] = useState<string | null>(() =>
+    isSupported && Notification.permission === "denied" ? deniedHint(currentBrowser()) : null,
+  );
+  const [testMessage, setTestMessage] = useState<{ severity: "success" | "warning"; text: string } | null>(
+    null,
+  );
 
   useEffect(() => {
     if (!isSupported) {
@@ -26,14 +39,19 @@ export function NotificationsSection() {
     }
     navigator.serviceWorker.ready
       .then((registration) => registration.pushManager.getSubscription())
-      .then((subscription) => setIsSubscribed(subscription !== null))
+      .then((subscription) => {
+        setIsSubscribed(subscription !== null);
+        if (subscription) {
+          setErrorMessage(null);
+        }
+      })
       .catch(() => setIsSubscribed(false));
   }, []);
 
   async function subscribe() {
     const permission = await Notification.requestPermission();
     if (permission !== "granted") {
-      setErrorMessage(texts.notifications.denied);
+      setErrorMessage(deniedHint(browser));
       return;
     }
     const { publicKey } = await getPushPublicKey();
@@ -56,8 +74,28 @@ export function NotificationsSection() {
     setIsSubscribed(false);
   }
 
+  async function sendTest() {
+    setTestMessage(null);
+    setIsBusy(true);
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      const subscription = await registration.pushManager.getSubscription();
+      if (!subscription) {
+        setIsSubscribed(false);
+        throw new Error("No subscription");
+      }
+      await sendTestNotification(subscription.endpoint);
+      setTestMessage({ severity: "success", text: texts.notifications.testSent });
+    } catch {
+      setTestMessage({ severity: "warning", text: texts.notifications.testFailed });
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
   async function toggle(enabled: boolean) {
     setErrorMessage(null);
+    setTestMessage(null);
     setIsBusy(true);
     try {
       await (enabled ? subscribe() : unsubscribe());
@@ -65,7 +103,7 @@ export function NotificationsSection() {
       if (error instanceof ApiError && error.status === 503) {
         setErrorMessage(texts.notifications.notConfigured);
       } else if (error instanceof DOMException) {
-        setErrorMessage(texts.notifications.subscribeFailed);
+        setErrorMessage(subscribeFailedHint(browser));
       } else {
         setErrorMessage(describeError(error));
       }
@@ -91,11 +129,25 @@ export function NotificationsSection() {
           <Typography variant="body2" color="text.secondary">
             {texts.notifications.description}
           </Typography>
+          {isSubscribed && (
+            <Button variant="outlined" onClick={sendTest} disabled={isBusy} sx={{ mt: 2 }}>
+              {texts.notifications.sendTest}
+            </Button>
+          )}
+          {testMessage && (
+            <Alert severity={testMessage.severity} sx={{ mt: 2 }}>
+              {testMessage.text}
+            </Alert>
+          )}
         </>
       ) : (
-        <Typography color="text.secondary">{texts.notifications.unsupported}</Typography>
+        <Alert severity="info">{unsupportedHint(browser)}</Alert>
       )}
-      {errorMessage && <Alert severity="warning">{errorMessage}</Alert>}
+      {errorMessage && (
+        <Alert severity="warning" sx={{ mt: 2 }}>
+          {errorMessage}
+        </Alert>
+      )}
     </section>
   );
 }

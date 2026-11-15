@@ -14,7 +14,8 @@ from application.jobs.worker import nextRunAfter
 from application.models import Household, PushSubscription
 from application.notifications.expiration import sendExpirationNotifications
 from application.notifications.generate_vapid_keys import encode
-from application.notifications.push import WebPushSender
+from application.main import application
+from application.notifications.push import WebPushSender, getPushSender
 from application.stock import householdTimeZone
 from tests.helpers import createHousehold, joinHousehold, registerAndAuthorize
 from tests.test_foods import createFood
@@ -211,3 +212,32 @@ def test_generatedKeysSignAndEncryptARealPushRequest(capsys: pytest.CaptureFixtu
     assert captured["headers"]["authorization"].startswith("vapid t=")
     assert captured["headers"]["content-encoding"] == "aes128gcm"
     assert len(captured["data"]) > 0
+
+
+def sendTest(client: TestClient, headers: dict[str, str], endpoint: str):
+    return client.post("/push-subscriptions/test", json={"endpoint": endpoint}, headers=headers)
+
+
+def test_testNotificationGoesOnlyToTheOwnSubscription(client: TestClient, vapidKeys) -> None:
+    sender = FakeSender()
+    application.dependency_overrides[getPushSender] = lambda: sender
+    try:
+        anna = registerAndAuthorize(client, "anna@example.com", "Anna")
+        petr = registerAndAuthorize(client, "petr@example.com", "Petr")
+        subscribe(client, anna, "https://push.example/anna")
+        subscribe(client, petr, "https://push.example/petr")
+
+        assert sendTest(client, anna, "https://push.example/anna").status_code == 204
+        assert sendTest(client, anna, "https://push.example/petr").status_code == 404
+        assert sender.sent == [("https://push.example/anna", {"type": "test"})]
+
+        sender.expiredEndpoints = {"https://push.example/anna"}
+        assert sendTest(client, anna, "https://push.example/anna").status_code == 404
+        assert sendTest(client, anna, "https://push.example/anna").status_code == 404
+    finally:
+        application.dependency_overrides.pop(getPushSender, None)
+
+
+def test_testNotificationNeedsVapidKeys(client: TestClient) -> None:
+    anna = registerAndAuthorize(client, "anna@example.com", "Anna")
+    assert sendTest(client, anna, "https://push.example/anna").status_code == 503
