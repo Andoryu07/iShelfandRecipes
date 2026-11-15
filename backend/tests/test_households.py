@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from application.models import Food, Household, Reservation, StockItem, StorageLocation, User
 from application.models.enumerations import MeasurementUnit, ReservationStatus
-from tests.helpers import createHousehold, joinHousehold, registerAndAuthorize
+from tests.helpers import createHousehold, joinHousehold, registerAndAuthorize, requestToJoin
 
 
 def listMembers(client: TestClient, headers: dict[str, str], householdId: int) -> list[dict]:
@@ -46,10 +46,12 @@ def test_secondUserJoinsWithInviteCodeIgnoringCaseAndHyphen(client: TestClient) 
     petrHeaders = registerAndAuthorize(client, "petr@example.com", "Petr")
     household = createHousehold(client, annaHeaders)
 
-    response = joinHousehold(client, petrHeaders, household["inviteCode"].replace("-", " ").lower())
+    response = requestToJoin(client, petrHeaders, household["inviteCode"].replace("-", " ").lower())
 
-    assert response.status_code == 200
-    assert response.json()["role"] == "member"
+    assert response.status_code == 202
+    assert (response.json()["householdName"], response.json()["isRejected"]) == ("Home", False)
+    assert len(listMembers(client, annaHeaders, household["id"])) == 1
+    assert client.post(f"/join-requests/{response.json()['id']}/approve", headers=annaHeaders).status_code == 204
     members = listMembers(client, annaHeaders, household["id"])
     assert [(member["displayName"], member["role"]) for member in members] == [
         ("Anna", "owner"),
@@ -85,7 +87,7 @@ def test_newInviteCodeInvalidatesTheOldOne(client: TestClient) -> None:
     assert response.status_code == 200
     assert response.json()["inviteCode"] != household["inviteCode"]
     assert joinHousehold(client, petrHeaders, household["inviteCode"]).status_code == 404
-    assert joinHousehold(client, petrHeaders, response.json()["inviteCode"]).status_code == 200
+    assert requestToJoin(client, petrHeaders, response.json()["inviteCode"]).status_code == 202
 
 
 def test_nonMemberGetsNotFound(client: TestClient) -> None:

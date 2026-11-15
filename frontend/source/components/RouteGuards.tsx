@@ -7,7 +7,7 @@ import { useCurrentHousehold } from "../households/useCurrentHousehold";
 import { LoadingScreen } from "./LoadingScreen";
 
 interface RedirectState {
-  from?: { pathname: string; search: string };
+  from?: { pathname: string; search: string; hash?: string };
 }
 
 export function RequireSignedOut() {
@@ -17,7 +17,7 @@ export function RequireSignedOut() {
     return <LoadingScreen />;
   }
   return status === "signedIn" ? (
-    <Navigate to={from ? `${from.pathname}${from.search}` : "/"} replace />
+    <Navigate to={from ? `${from.pathname}${from.search}${from.hash ?? ""}` : "/"} replace />
   ) : (
     <Outlet />
   );
@@ -31,7 +31,9 @@ export function RequireSignedIn() {
   }
   if (status === "signedOut") {
     const from =
-      location.pathname === "/" ? undefined : { pathname: location.pathname, search: location.search };
+      location.pathname === "/"
+        ? undefined
+        : { pathname: location.pathname, search: location.search, hash: location.hash };
     return <Navigate to="/login" replace state={{ from } satisfies RedirectState} />;
   }
   if (user?.deletionScheduledAt) {

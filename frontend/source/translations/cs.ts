@@ -69,7 +69,7 @@ export const texts = {
   householdSetup: {
     title: "Domácnost",
     introduction:
-      "Zásoby sdílíš s ostatními členy domácnosti. Založ novou domácnost, nebo se připoj kódem pozvánky.",
+      "Zásoby sdílíš s ostatními členy domácnosti. Založ novou domácnost, nebo požádej o připojení kódem pozvánky.",
     createTitle: "Založit domácnost",
     householdName: "Název domácnosti",
     create: "Založit",
@@ -78,10 +78,36 @@ export const texts = {
     join: "Připojit se",
     invalidInviteCode: "Tento kód pozvánky neexistuje.",
     alreadyInHousehold: "Už jsi členem jiné domácnosti.",
+    joinCodeHint: "Vlastník domácnosti tvou žádost schválí. Když ti poslal odkaz, stačí ho otevřít.",
+    sendRequest: "Požádat o připojení",
+    waitingTitle: "Čeká se na schválení",
+    waitingText: (household: string) =>
+      `Žádost o připojení do domácnosti ${household} je odeslaná. Jakmile ji vlastník schválí, aplikace se otevře sama.`,
+    cancelRequest: "Zrušit žádost",
+    rejectedTitle: "Žádost byla zamítnuta",
+    rejectedText: (household: string) =>
+      `Vlastník domácnosti ${household} žádost nepřijal. Můžeš založit vlastní domácnost nebo zkusit jiný kód.`,
+    dismiss: "Rozumím",
+    joiningByLink: "Připojuji tě do domácnosti…",
+    linkInvalid: "Odkaz už neplatí. Mohl být použit, zrušen nebo mu vypršela platnost. Požádej o nový.",
+    linkWithoutToken: "Odkaz je neúplný. Zkopíruj ho prosím celý.",
+    alreadyMember: "Už jsi členem domácnosti. Pro připojení k jiné ji nejdřív opusť.",
+    continue: "Pokračovat",
   },
   household: {
     inviteTitle: "Pozvat člena",
-    inviteDescription: "Pošli tento kód tomu, koho chceš pozvat.",
+    inviteDescription: "Kdo zadá tento kód, pošle žádost a vlastník ji schválí.",
+    inviteLink: "Pozvat odkazem",
+    inviteLinkHint: "Odkaz připojí jednoho člověka hned, bez schválení. Platí 7 dní.",
+    inviteLinkMessage: (url: string) => `Připoj se k mé domácnosti v aplikaci iShelf: ${url}`,
+    inviteLinkCopied: "Odkaz zkopírován",
+    activeLinks: "Nepoužité odkazy",
+    linkValidUntil: (date: string) => `platí do ${date}`,
+    revokeLink: "Zrušit",
+    joinRequestsTitle: "Žádosti o připojení",
+    approve: "Schválit",
+    reject: "Zamítnout",
+    requestedAt: (date: string) => `žádost ${date}`,
     shareInviteCode: "Sdílet kód",
     copied: "Kód zkopírován",
     shareMessage: (inviteCode: string) => `Připoj se k mé domácnosti v aplikaci iShelf kódem ${inviteCode}`,
@@ -490,6 +516,9 @@ export const texts = {
   },
   notifications: {
     title: "Upozornění",
+    joinRequestTitle: "Nová žádost o připojení",
+    joinRequestBody: (name: string) =>
+      `${name} se chce připojit k tvé domácnosti. Otevři Domácnost a rozhodni.`,
     expirationSwitch: "Upozornění na blížící se trvanlivost",
     description: (hour: number, days: number) =>
       days === 0
@@ -652,7 +681,7 @@ export const texts = {
       {
         heading: "Kdo údaje vidí",
         paragraphs: [
-          "Členové tvé domácnosti vidí sdílené zásoby, účtenky, rezervace a jména ostatních členů. E-maily ostatních členů nevidí nikdo z domácnosti.",
+          "Členové tvé domácnosti vidí sdílené zásoby, účtenky, rezervace a jména ostatních členů. E-maily ostatních členů nevidí nikdo z domácnosti. Když požádáš o připojení kódem, vlastník domácnosti uvidí tvé jméno a začátek e-mailu (například an•••@gmail.com), aby poznal, koho schvaluje.",
           "Údaje jsou uložené na serverech v Evropské unii. Kromě služby Google Gemini pro čtení účtenek a služby Brevo pro odesílání e-mailů je nepředáváme nikomu dalšímu.",
         ],
       },

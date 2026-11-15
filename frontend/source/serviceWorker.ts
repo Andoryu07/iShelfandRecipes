@@ -30,7 +30,20 @@ interface ExpirationPayload {
 }
 
 self.addEventListener("push", (event) => {
-  const payload = event.data?.json() as ExpirationPayload | { type: "test" } | undefined;
+  const payload = event.data?.json() as
+    ExpirationPayload | { type: "test" } | { type: "joinRequest"; name: string } | undefined;
+  if (payload?.type === "joinRequest") {
+    event.waitUntil(
+      self.registration.showNotification(texts.notifications.joinRequestTitle, {
+        body: texts.notifications.joinRequestBody(payload.name),
+        icon: "/icons/icon-192.png",
+        badge: "/icons/icon-192.png",
+        tag: "joinRequest",
+        data: { url: "/household" },
+      }),
+    );
+    return;
+  }
   if (payload?.type === "test") {
     event.waitUntil(
       self.registration.showNotification(texts.notifications.testTitle, {

@@ -25,6 +25,7 @@ const PrivacyPolicyPage = lazyPage(() => import("./pages/PrivacyPolicyPage"), "P
 const ReceiptsPage = lazyPage(() => import("./pages/ReceiptsPage"), "ReceiptsPage");
 const ForgotPasswordPage = lazyPage(() => import("./pages/ForgotPasswordPage"), "ForgotPasswordPage");
 const ResetPasswordPage = lazyPage(() => import("./pages/ResetPasswordPage"), "ResetPasswordPage");
+const JoinLinkPage = lazyPage(() => import("./pages/JoinLinkPage"), "JoinLinkPage");
 const ShoppingListPage = lazyPage(() => import("./pages/ShoppingListPage"), "ShoppingListPage");
 const AboutPage = lazyPage(() => import("./profile/ProfilePages"), "AboutPage");
 const AccountSettingsPage = lazyPage(() => import("./profile/ProfilePages"), "AccountSettingsPage");
@@ -48,6 +49,7 @@ const router = createBrowserRouter([
   {
     element: <RequireSignedIn />,
     children: [
+      { path: "/join", element: <JoinLinkPage /> },
       {
         element: <RequireNoHousehold />,
         children: [{ path: "/household/setup", element: <HouseholdSetupPage /> }],

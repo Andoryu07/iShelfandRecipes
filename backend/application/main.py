@@ -6,6 +6,7 @@ from application.routers import (
     authentication,
     foods,
     households,
+    joining,
     notifications,
     receipts,
     recipe_scans,
@@ -25,6 +26,7 @@ application = FastAPI(
     openapi_url="/openapi.json" if apiDocumentationEnabled else None,
 )
 application.include_router(authentication.router)
+application.include_router(joining.router)
 application.include_router(households.router)
 application.include_router(storage_locations.router)
 application.include_router(foods.router)

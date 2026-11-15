@@ -42,6 +42,8 @@ erDiagram
 - **receipt_items**: id, receipt_id, food_id (nullable until confirmed), original_text, name, category, quantity, unit, price, discount, corrected_by_user
 - **recipes**: id, household_id, name, instructions, servings, preparation_minutes, is_predefined, icon (nullable emoji), dish_type (nullable: soup, mainCourse, sideDish, dessert, breakfast), is_vegetarian, created_at. Predefined recipes are copied into a household when it is created.
 - **recipe_ingredients**: id, recipe_id, food_id, quantity, accepts_any_of_kind (any food with the same generic name and unit counts), is_optional (never counted as missing)
+- **join_requests**: id, household_id, user_id (unique: one request per user), rejected_at (nullable; null = waiting), created_at. Approving deletes the request and adds the member.
+- **invite_links**: id, household_id, token_hash (unique), created_by_user_id, expires_at (7 days), used_at, used_by_user_id, revoked_at, created_at. One-time links that join without approval.
 - **shopping_list_items**: id, household_id, owner_user_id (null = shared list, otherwise the personal list of that user), food_id (nullable, null for free text), name, quantity (nullable, base units), note, recipe_id (nullable, where it came from), created_by_user_id, checked_at, checked_by_user_id, created_at.
 - **recipe_scans**: id, household_id, user_id (nullable), photo_count, processing_milliseconds, input_tokens, output_tokens, created_at. One row per successful recipe scan; counts towards the household limit.
 - **favourite_recipes**: user_id, recipe_id (primary key together), created_at. Personal favourites; deleted with the user or the recipe.

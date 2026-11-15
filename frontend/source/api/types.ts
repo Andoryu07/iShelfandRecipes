@@ -26,6 +26,26 @@ export interface Household {
   createdAt: string;
 }
 
+export interface JoinRequest {
+  id: number;
+  householdName: string;
+  isRejected: boolean;
+  createdAt: string;
+}
+
+export interface PendingJoinRequest {
+  id: number;
+  displayName: string;
+  maskedEmail: string;
+  createdAt: string;
+}
+
+export interface InviteLink {
+  id: number;
+  expiresAt: string;
+  createdAt: string;
+}
+
 export interface HouseholdMember {
   userId: number;
   displayName: string;

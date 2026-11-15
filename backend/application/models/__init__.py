@@ -1,5 +1,6 @@
 from application.models.authentication import PasswordResetToken, RefreshToken
 from application.models.base import Base
+from application.models.joining import InviteLink, JoinRequest
 from application.models.notification import PushSubscription
 from application.models.receipt import Receipt, ReceiptItem
 from application.models.recipe import FavouriteRecipe, Recipe, RecipeCooking, RecipeIngredient, RecipeScan
@@ -13,6 +14,8 @@ __all__ = [
     "Food",
     "Household",
     "HouseholdMember",
+    "InviteLink",
+    "JoinRequest",
     "PasswordResetToken",
     "PushSubscription",
     "Receipt",

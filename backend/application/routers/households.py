@@ -12,7 +12,6 @@ from application.households import (
     ensureUserHasNoHousehold,
     findMembership,
     generateUniqueInviteCode,
-    normalizeInviteCode,
     removeMember,
 )
 from application.models import Household, HouseholdMember, User
@@ -22,7 +21,6 @@ from application.schemas.households import (
     CreateHouseholdRequest,
     HouseholdMemberResponse,
     HouseholdResponse,
-    JoinHouseholdRequest,
     NotificationSettingsRequest,
     UpdateHouseholdRequest,
 )
@@ -63,28 +61,6 @@ def listHouseholds(
         .order_by(Household.id)
     ).all()
     return [buildHouseholdResponse(household, membership) for household, membership in rows]
-
-
-@router.post("/join", response_model=HouseholdResponse)
-def joinHousehold(
-    request: JoinHouseholdRequest,
-    user: User = Depends(getCurrentUser),
-    session: Session = Depends(getDatabaseSession),
-) -> HouseholdResponse:
-    household = session.scalar(
-        select(Household).where(Household.inviteCode == normalizeInviteCode(request.inviteCode))
-    )
-    if household is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid invite code")
-    ensureUserHasNoHousehold(session, user.id)
-    membership = HouseholdMember(userId=user.id, householdId=household.id, role=HouseholdRole.member)
-    session.add(membership)
-    try:
-        session.commit()
-    except IntegrityError:
-        session.rollback()
-        raise alreadyInHouseholdError()
-    return buildHouseholdResponse(household, membership)
 
 
 @router.get("/{householdId}", response_model=HouseholdResponse)

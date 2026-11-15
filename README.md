@@ -87,7 +87,16 @@ Password reset links point to `APPLICATION_URL/reset-password#token=…`; the to
 | `GET /households` | Households of the current user | done |
 | `GET /households/{householdId}` | Household detail | done |
 | `PATCH /households/{householdId}` | Rename the household (owner) | done |
-| `POST /households/join` | Join a household with an invite code | done |
+| `POST /households/join` | Ask to join with the invite code (202); the owner gets a push notification and must approve; a new request replaces the user's previous one | done |
+| `GET /join-requests/mine` | The user's own pending or rejected request, or `null` | done |
+| `DELETE /join-requests/mine` | Cancel or dismiss the own request | done |
+| `GET /households/{householdId}/join-requests` | Pending requests with the applicant's name and masked e-mail (owner only) | done |
+| `POST /join-requests/{requestId}/approve` | Approve a request: the applicant becomes a member (owner only) | done |
+| `POST /join-requests/{requestId}/reject` | Reject a request; the applicant sees it was rejected (owner only) | done |
+| `POST /households/{householdId}/invite-links` | Create a one-time invite link valid 7 days; the token is returned only now and stored hashed (owner only) | done |
+| `GET /households/{householdId}/invite-links` | Unused, valid links (owner only) | done |
+| `DELETE /invite-links/{linkId}` | Revoke a link (owner only) | done |
+| `POST /households/join-by-link` | Join right away with a link's token (`410` when used, revoked or expired) | done |
 | `POST /households/{householdId}/invite-code` | Generate a new invite code (owner) | done |
 | `GET /households/{householdId}/members` | List members | done |
 | `DELETE /households/{householdId}/members/{userId}` | Remove a member (owner) or leave the household (self) | done |

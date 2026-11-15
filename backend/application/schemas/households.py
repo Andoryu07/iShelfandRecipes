@@ -38,3 +38,31 @@ class HouseholdMemberResponse(BaseModel):
     displayName: str
     role: HouseholdRole
     joinedAt: datetime
+
+
+class JoinRequestResponse(BaseModel):
+    id: int
+    householdName: str
+    isRejected: bool
+    createdAt: datetime
+
+
+class PendingJoinRequestResponse(BaseModel):
+    id: int
+    displayName: str
+    maskedEmail: str
+    createdAt: datetime
+
+
+class InviteLinkResponse(BaseModel):
+    id: int
+    expiresAt: datetime
+    createdAt: datetime
+
+
+class CreatedInviteLinkResponse(InviteLinkResponse):
+    token: str
+
+
+class JoinByLinkRequest(BaseModel):
+    token: str = Field(min_length=1, max_length=200)

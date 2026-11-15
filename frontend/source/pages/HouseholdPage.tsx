@@ -7,6 +7,7 @@ import type { Household, User } from "../api/types";
 import { useAuthentication } from "../authentication/AuthenticationContext";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
 import { InviteCodeCard } from "../households/InviteCodeCard";
+import { JoinRequestsSection } from "../households/JoinRequestsSection";
 import { MembersSection, membersQueryKey } from "../households/MembersSection";
 import { StorageLocationsSection } from "../households/StorageLocationsSection";
 import { householdsQueryKey, useCurrentHousehold } from "../households/useCurrentHousehold";
@@ -41,6 +42,7 @@ function HouseholdDetails({ household, user }: { household: Household; user: Use
         {household.name}
       </Typography>
       <InviteCodeCard household={household} />
+      {household.role === "owner" && <JoinRequestsSection householdId={household.id} />}
       <MembersSection household={household} currentUserId={user.id} />
       <StorageLocationsSection householdId={household.id} />
       <Stack className="section" spacing={1} sx={{ alignItems: "flex-start" }}>

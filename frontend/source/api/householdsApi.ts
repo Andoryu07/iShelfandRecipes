@@ -1,6 +1,9 @@
 import { apiRequest } from "./apiClient";
 import type {
   Household,
+  InviteLink,
+  JoinRequest,
+  PendingJoinRequest,
   HouseholdMember,
   StorageLocation,
   StorageLocationHistoryEvent,
@@ -15,8 +18,40 @@ export function createHousehold(name: string): Promise<Household> {
   return apiRequest<Household>("/households", { method: "POST", body: { name } });
 }
 
-export function joinHousehold(inviteCode: string): Promise<Household> {
-  return apiRequest<Household>("/households/join", { method: "POST", body: { inviteCode } });
+export function requestToJoinHousehold(inviteCode: string): Promise<JoinRequest> {
+  return apiRequest<JoinRequest>("/households/join", { method: "POST", body: { inviteCode } });
+}
+
+export function getOwnJoinRequest(): Promise<JoinRequest | null> {
+  return apiRequest<JoinRequest | null>("/join-requests/mine");
+}
+
+export function cancelOwnJoinRequest(): Promise<void> {
+  return apiRequest<void>("/join-requests/mine", { method: "DELETE" });
+}
+
+export function listJoinRequests(householdId: number): Promise<PendingJoinRequest[]> {
+  return apiRequest<PendingJoinRequest[]>(`/households/${householdId}/join-requests`);
+}
+
+export function decideJoinRequest(requestId: number, decision: "approve" | "reject"): Promise<void> {
+  return apiRequest<void>(`/join-requests/${requestId}/${decision}`, { method: "POST" });
+}
+
+export function createInviteLink(householdId: number): Promise<InviteLink & { token: string }> {
+  return apiRequest(`/households/${householdId}/invite-links`, { method: "POST" });
+}
+
+export function listInviteLinks(householdId: number): Promise<InviteLink[]> {
+  return apiRequest<InviteLink[]>(`/households/${householdId}/invite-links`);
+}
+
+export function revokeInviteLink(linkId: number): Promise<void> {
+  return apiRequest<void>(`/invite-links/${linkId}`, { method: "DELETE" });
+}
+
+export function joinHouseholdByLink(token: string): Promise<Household> {
+  return apiRequest<Household>("/households/join-by-link", { method: "POST", body: { token } });
 }
 
 export function updateNotificationSettings(
