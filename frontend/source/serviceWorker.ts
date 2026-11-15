@@ -2,9 +2,17 @@
 import { clientsClaim } from "workbox-core";
 import { cleanupOutdatedCaches, createHandlerBoundToURL, precacheAndRoute } from "workbox-precaching";
 import { NavigationRoute, registerRoute } from "workbox-routing";
+import { storeSharedReceipt, shareTargetPath } from "./receipts/sharedReceipt";
 import { texts } from "./translations/cs";
 
 declare const self: ServiceWorkerGlobalScope;
+
+self.addEventListener("fetch", (event) => {
+  const url = new URL(event.request.url);
+  if (event.request.method === "POST" && url.pathname === shareTargetPath) {
+    event.respondWith(receiveSharedReceipt(event.request));
+  }
+});
 
 self.skipWaiting();
 clientsClaim();
@@ -54,3 +62,17 @@ self.addEventListener("notificationclick", (event) => {
     }),
   );
 });
+
+async function receiveSharedReceipt(request: Request): Promise<Response> {
+  try {
+    const formData = await request.formData();
+    const file = formData.getAll("receipt").find((value): value is File => value instanceof File);
+    if (file && file.size > 0) {
+      await storeSharedReceipt(file);
+      return Response.redirect("/receipts?shared=1", 303);
+    }
+  } catch {
+    // Reading the shared content failed; the receipts screen explains it.
+  }
+  return Response.redirect("/receipts?shared=unsupported", 303);
+}

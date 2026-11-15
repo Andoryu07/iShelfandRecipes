@@ -182,6 +182,11 @@ export const texts = {
     unknownUser: "bývalý člen",
   },
   receipts: {
+    sharedTitle: "Přidat potraviny z této účtenky?",
+    sharedText: "Účtenku přečteme a položky si před uložením zkontroluješ.",
+    sharedConfirm: "Načíst účtenku",
+    sharedUnsupported: "Sdílený obsah není obrázek ani PDF. Pošli účtenku jako obrázek nebo PDF soubor.",
+    sharedMissing: "Sdílená účtenka už není k dispozici. Zkus ji sdílet znovu.",
     scan: "Vyfotit účtenku",
     uploadFile: "Nahrát soubor (fotka nebo PDF)",
     scanning: "Čtu účtenku, chvilku to potrvá…",

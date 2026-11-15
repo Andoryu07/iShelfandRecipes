@@ -37,7 +37,7 @@ The tests use a separate database named `<POSTGRES_DB>_test`, so development dat
 
 ## Frontend
 
-A progressive web app in `frontend/`: React, TypeScript, Vite, Material UI, TanStack Query and React Router. The user interface is in Czech; all texts live in `frontend/source/translations/cs.ts`. The service worker (`frontend/source/serviceWorker.ts`) precaches the app and will handle push notifications later. The same build can later be wrapped with Capacitor for Google Play and the App Store.
+A progressive web app in `frontend/`: React, TypeScript, Vite, Material UI, TanStack Query and React Router. The user interface is in Czech; all texts live in `frontend/source/translations/cs.ts`. The service worker (`frontend/source/serviceWorker.ts`) precaches the app, shows push notifications and receives receipts shared from other apps: the manifest declares a share target (`POST /share-receipt`, an image or PDF in the `receipt` field), the service worker keeps the file in Cache Storage and opens `/receipts?shared=1`, which asks whether to scan it and deletes it afterwards. Sharing works in the installed app on Android and in Chrome or Edge on Windows and ChromeOS, not on iOS. The same build can later be wrapped with Capacitor for Google Play and the App Store.
 
 Navigation has five tabs (Přehled, Zásoby, Recepty, Účtenky, Domácnost), at the bottom on phones and at the side from 900 px; the profile opens from the top right avatar and has its own pages (account, appearance with light, dark or system theme stored on the device, notifications, privacy and data, about). The wireframes of the redesign are described in `docs/wireframes.md`.
 

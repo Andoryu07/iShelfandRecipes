@@ -1,26 +1,38 @@
 import { Alert } from "@mui/material";
-import { Navigate, Outlet } from "react-router";
+import { Navigate, Outlet, useLocation } from "react-router";
 import { AccountRestoreScreen } from "../authentication/AccountRestoreScreen";
 import { useAuthentication } from "../authentication/AuthenticationContext";
 import { describeError } from "../errorMessages";
 import { useCurrentHousehold } from "../households/useCurrentHousehold";
 import { LoadingScreen } from "./LoadingScreen";
 
+interface RedirectState {
+  from?: { pathname: string; search: string };
+}
+
 export function RequireSignedOut() {
   const { status } = useAuthentication();
+  const from = (useLocation().state as RedirectState | null)?.from;
   if (status === "loading") {
     return <LoadingScreen />;
   }
-  return status === "signedIn" ? <Navigate to="/" replace /> : <Outlet />;
+  return status === "signedIn" ? (
+    <Navigate to={from ? `${from.pathname}${from.search}` : "/"} replace />
+  ) : (
+    <Outlet />
+  );
 }
 
 export function RequireSignedIn() {
   const { status, user } = useAuthentication();
+  const location = useLocation();
   if (status === "loading") {
     return <LoadingScreen />;
   }
   if (status === "signedOut") {
-    return <Navigate to="/login" replace />;
+    const from =
+      location.pathname === "/" ? undefined : { pathname: location.pathname, search: location.search };
+    return <Navigate to="/login" replace state={{ from } satisfies RedirectState} />;
   }
   if (user?.deletionScheduledAt) {
     return <AccountRestoreScreen deletionScheduledAt={user.deletionScheduledAt} />;

@@ -24,7 +24,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Link as RouterLink, useSearchParams } from "react-router";
 import { giveReceiptConsent } from "../api/authenticationApi";
 import { listReceipts, scanReceipt } from "../api/receiptsApi";
@@ -37,6 +37,8 @@ import { formatMoney } from "../receipts/money";
 import { ReceiptDetailDialog } from "../receipts/ReceiptDetailDialog";
 import { ReceiptReview } from "../receipts/ReceiptReview";
 import { resizeImage } from "../receipts/resizeImage";
+import { SharedReceiptDialog } from "../receipts/SharedReceiptDialog";
+import { clearSharedReceipt, isSupportedReceiptFile, loadSharedReceipt } from "../receipts/sharedReceipt";
 import { SpendingView } from "../spending/SpendingView";
 import { formatDate, texts } from "../translations/cs";
 
@@ -49,7 +51,9 @@ function Receipts({ householdId }: { householdId: number }) {
   const { user, replaceUser } = useAuthentication();
   const cameraInput = useRef<HTMLInputElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
-  const [pendingInput, setPendingInput] = useState<"camera" | "file">("camera");
+  const [pendingInput, setPendingInput] = useState<"camera" | "file" | "shared">("camera");
+  const [sharedFile, setSharedFile] = useState<File | null>(null);
+  const [sharedProblem, setSharedProblem] = useState<string | null>(null);
   const [isConsentOpen, setIsConsentOpen] = useState(false);
   const [scannedReceipt, setScannedReceipt] = useState<ScannedReceipt | null>(null);
   const [selectedReceiptId, setSelectedReceiptId] = useState<number | null>(null);
@@ -57,6 +61,29 @@ function Receipts({ householdId }: { householdId: number }) {
   const storageLocations = useStorageLocations(householdId).data ?? [];
   const [searchParameters, setSearchParameters] = useSearchParams();
   const isSpendingView = searchParameters.get("view") === "spending";
+  const sharedParameter = searchParameters.get("shared");
+
+  useEffect(() => {
+    if (sharedParameter === null) {
+      return;
+    }
+    setSearchParameters({}, { replace: true });
+    const loading = sharedParameter === "1" ? loadSharedReceipt() : Promise.resolve(undefined);
+    loading
+      .then((file) => {
+        if (file === undefined) {
+          setSharedProblem(texts.receipts.sharedUnsupported);
+        } else if (!file) {
+          setSharedProblem(texts.receipts.sharedMissing);
+        } else if (!isSupportedReceiptFile(file)) {
+          setSharedProblem(texts.receipts.sharedUnsupported);
+          void clearSharedReceipt();
+        } else {
+          setSharedFile(file);
+        }
+      })
+      .catch(() => setSharedProblem(texts.receipts.sharedMissing));
+  }, [sharedParameter, setSearchParameters]);
   const receiptsQuery = useQuery({
     queryKey: ["households", householdId, "receipts"],
     queryFn: () => listReceipts(householdId),
@@ -66,7 +93,11 @@ function Receipts({ householdId }: { householdId: number }) {
     onSuccess: (updatedUser) => {
       replaceUser(updatedUser);
       setIsConsentOpen(false);
-      (pendingInput === "camera" ? cameraInput : fileInput).current?.click();
+      if (pendingInput === "shared") {
+        scanSharedFile();
+      } else {
+        (pendingInput === "camera" ? cameraInput : fileInput).current?.click();
+      }
     },
   });
   const scanMutation = useMutation({
@@ -85,6 +116,28 @@ function Receipts({ householdId }: { householdId: number }) {
       setPendingInput(input);
       setIsConsentOpen(true);
     }
+  }
+
+  function scanSharedFile() {
+    if (sharedFile) {
+      scanMutation.mutate(sharedFile);
+      setSharedFile(null);
+      void clearSharedReceipt();
+    }
+  }
+
+  function confirmSharedFile() {
+    if (user?.receiptConsentGivenAt) {
+      scanSharedFile();
+    } else {
+      setPendingInput("shared");
+      setIsConsentOpen(true);
+    }
+  }
+
+  function cancelSharedFile() {
+    setSharedFile(null);
+    void clearSharedReceipt();
   }
 
   function handleFileSelected(event: ChangeEvent<HTMLInputElement>) {
@@ -237,6 +290,17 @@ function Receipts({ householdId }: { householdId: number }) {
           </Stack>
         </DialogActions>
       </Dialog>
+      <SharedReceiptDialog
+        file={isConsentOpen ? null : sharedFile}
+        onConfirm={confirmSharedFile}
+        onCancel={cancelSharedFile}
+      />
+      <Snackbar
+        open={sharedProblem !== null}
+        autoHideDuration={5000}
+        onClose={() => setSharedProblem(null)}
+        message={sharedProblem}
+      />
       {selectedReceiptId !== null && (
         <ReceiptDetailDialog receiptId={selectedReceiptId} onClose={() => setSelectedReceiptId(null)} />
       )}

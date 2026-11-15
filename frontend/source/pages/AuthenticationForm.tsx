@@ -1,6 +1,6 @@
 import { Alert, Button, Link, TextField, Typography } from "@mui/material";
 import { useState, type FormEvent } from "react";
-import { Link as RouterLink } from "react-router";
+import { Link as RouterLink, useLocation } from "react-router";
 import { useAuthentication } from "../authentication/AuthenticationContext";
 import { describeError } from "../errorMessages";
 import { texts } from "../translations/cs";
@@ -13,6 +13,7 @@ export function AuthenticationForm({ mode }: { mode: "logIn" | "register" }) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isRegistration = mode === "register";
+  const redirectState: unknown = useLocation().state;
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -103,6 +104,7 @@ export function AuthenticationForm({ mode }: { mode: "logIn" | "register" }) {
       <Link
         component={RouterLink}
         to={isRegistration ? "/login" : "/register"}
+        state={redirectState}
         sx={{ mt: 3, textAlign: "center" }}
       >
         {isRegistration ? texts.authentication.alreadyHaveAccount : texts.authentication.noAccountYet}
