@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { FoodCategory, IngredientAvailability, MeasurementUnit, StorageLocation } from "../api/types";
-import { buildMissingFoodRows, defaultStorageLocationId } from "./missingFoods";
+import { buildFoodRows, defaultStorageLocationId, missingIngredientsToAdd } from "./missingFoods";
 
 const storageLocations: StorageLocation[] = [
   { id: 1, householdId: 1, name: "fridge", kind: "fridge" },
@@ -32,19 +32,17 @@ function ingredient(
 
 describe("missing foods", () => {
   it("keeps only required missing ingredients with readable quantities", () => {
-    const rows = buildMissingFoodRows(
-      [
+    const rows = buildFoodRows(
+      missingIngredientsToAdd([
         ingredient(1, "dairy", "milliliter", 1500),
         ingredient(2, "dryGoods", "gram", 250),
         ingredient(3, "vegetables", "piece", 1.5),
         ingredient(4, "spices", "gram", 5, true),
         ingredient(5, "fruit", "gram", 0),
-      ],
+      ]),
       storageLocations,
     );
-    expect(
-      rows.map((row) => [row.ingredientId, row.quantityText, row.unitSymbol, row.storageLocationId]),
-    ).toEqual([
+    expect(rows.map((row) => [row.key, row.quantityText, row.unitSymbol, row.storageLocationId])).toEqual([
       [1, "1,5", "l", 1],
       [2, "250", "g", 3],
       [3, "2", "ks", 1],
@@ -56,5 +54,22 @@ describe("missing foods", () => {
     expect(defaultStorageLocationId("frozen", storageLocations)).toBe(2);
     expect(defaultStorageLocationId("frozen", [storageLocations[2]])).toBe(3);
     expect(defaultStorageLocationId("other", [])).toBe(0);
+  });
+});
+
+describe("foods without a quantity", () => {
+  it("start empty with the smallest unit", () => {
+    const food = {
+      id: 9,
+      name: "Mouka",
+      genericName: null,
+      category: "dryGoods" as const,
+      baseUnit: "gram" as const,
+    };
+    expect(buildFoodRows([{ key: 1, food, quantity: null }], storageLocations)[0]).toMatchObject({
+      quantityText: "",
+      unitSymbol: "g",
+      storageLocationId: 3,
+    });
   });
 });

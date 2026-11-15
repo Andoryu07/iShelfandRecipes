@@ -1,13 +1,14 @@
 import type {
+  Food,
   FoodCategory,
   IngredientAvailability,
   StorageLocation,
   StorageLocationKind,
 } from "../api/types";
-import { quantityText } from "../stock/quantities";
+import { displayUnits, quantityText } from "../stock/quantities";
 
-export interface MissingFoodRow {
-  ingredientId: number;
+export interface FoodRow {
+  key: number;
   isSelected: boolean;
   quantityText: string;
   unitSymbol: string;
@@ -32,24 +33,35 @@ export function defaultStorageLocationId(
   return (preferred ?? storageLocations[0])?.id ?? 0;
 }
 
-export function buildMissingFoodRows(
-  ingredients: IngredientAvailability[],
-  storageLocations: StorageLocation[],
-): MissingFoodRow[] {
+export interface FoodToAdd {
+  key: number;
+  food: Food;
+  quantity: number | null;
+}
+
+export function missingIngredientsToAdd(ingredients: IngredientAvailability[]): FoodToAdd[] {
   return ingredients
     .filter((ingredient) => !ingredient.isOptional && ingredient.missingQuantity > 0)
-    .map((ingredient) => {
-      const { baseUnit } = ingredient.food;
-      const quantity =
-        baseUnit === "piece" ? Math.ceil(ingredient.missingQuantity) : ingredient.missingQuantity;
-      const { text, unitSymbol } = quantityText(quantity, baseUnit);
-      return {
-        ingredientId: ingredient.ingredientId,
-        isSelected: true,
-        quantityText: text,
-        unitSymbol,
-        storageLocationId: defaultStorageLocationId(ingredient.food.category, storageLocations),
-        expirationDate: "",
-      };
-    });
+    .map((ingredient) => ({
+      key: ingredient.ingredientId,
+      food: ingredient.food,
+      quantity:
+        ingredient.food.baseUnit === "piece"
+          ? Math.ceil(ingredient.missingQuantity)
+          : ingredient.missingQuantity,
+    }));
+}
+
+export function buildFoodRows(items: FoodToAdd[], storageLocations: StorageLocation[]): FoodRow[] {
+  return items.map((item) => {
+    const display = item.quantity === null ? null : quantityText(item.quantity, item.food.baseUnit);
+    return {
+      key: item.key,
+      isSelected: true,
+      quantityText: display?.text ?? "",
+      unitSymbol: display?.unitSymbol ?? displayUnits[item.food.baseUnit][0].symbol,
+      storageLocationId: defaultStorageLocationId(item.food.category, storageLocations),
+      expirationDate: "",
+    };
+  });
 }

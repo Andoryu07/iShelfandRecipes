@@ -4,7 +4,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
-from application.models import Household, HouseholdMember, Reservation, StockItem, StorageLocation
+from application.models import Household, HouseholdMember, Reservation, ShoppingListItem, StockItem, StorageLocation
 from application.models.enumerations import HouseholdRole, ReservationStatus, StorageLocationKind
 from application.schemas.households import HouseholdResponse
 
@@ -88,6 +88,11 @@ def removeMember(session: Session, membership: HouseholdMember) -> None:
     householdId = membership.householdId
     wasOwner = membership.role == HouseholdRole.owner
     cancelActiveReservations(session, membership.userId, householdId)
+    session.execute(
+        delete(ShoppingListItem).where(
+            ShoppingListItem.householdId == householdId, ShoppingListItem.ownerUserId == membership.userId
+        )
+    )
     session.delete(membership)
     session.flush()
     longestStandingMember = session.scalar(

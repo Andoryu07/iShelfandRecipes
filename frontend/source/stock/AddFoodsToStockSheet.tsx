@@ -13,69 +13,70 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { createStockItem } from "../api/stockApi";
-import type { IngredientAvailability, StorageLocation } from "../api/types";
+import type { StorageLocation } from "../api/types";
 import { BottomSheet } from "../components/BottomSheet";
 import { StorageLocationChips } from "../components/StorageLocationChips";
 import { CategoryAvatar } from "../components/CategoryAvatar";
 import { describeError } from "../errorMessages";
-import { ExpirationDatePicker } from "../stock/ExpirationDatePicker";
-import { parseBaseQuantity } from "../stock/quantities";
-import { QuantityInput } from "../stock/QuantityInput";
+import { ExpirationDatePicker } from "./ExpirationDatePicker";
+import { parseBaseQuantity } from "./quantities";
+import { QuantityInput } from "./QuantityInput";
 import { displayStorageLocationName, formatDate, texts } from "../translations/cs";
-import { buildMissingFoodRows, type MissingFoodRow } from "./missingFoods";
+import { buildFoodRows, type FoodRow, type FoodToAdd } from "../recipes/missingFoods";
 
-interface AddMissingFoodsSheetProps {
+interface AddFoodsToStockSheetProps {
   householdId: number;
-  ingredients: IngredientAvailability[];
+  items: FoodToAdd[];
+  title: string;
+  hint: string;
   storageLocations: StorageLocation[];
   onClose: () => void;
-  onAdded: () => Promise<void>;
+  onAdded: (addedKeys: number[]) => Promise<void>;
 }
 
-export function AddMissingFoodsSheet({
+export function AddFoodsToStockSheet({
   householdId,
-  ingredients,
+  items,
+  title,
+  hint,
   storageLocations,
   onClose,
   onAdded,
-}: AddMissingFoodsSheetProps) {
-  const [rows, setRows] = useState(() => buildMissingFoodRows(ingredients, storageLocations));
+}: AddFoodsToStockSheetProps) {
+  const [rows, setRows] = useState(() => buildFoodRows(items, storageLocations));
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [invalidIds, setInvalidIds] = useState<number[]>([]);
-  const ingredientsById = new Map(ingredients.map((ingredient) => [ingredient.ingredientId, ingredient]));
+  const itemsByKey = new Map(items.map((item) => [item.key, item]));
   const selectedRows = rows.filter((row) => row.isSelected);
 
   const saveMutation = useMutation({
-    mutationFn: async (requests: { row: MissingFoodRow; quantity: number }[]) => {
+    mutationFn: async (requests: { row: FoodRow; quantity: number }[]) => {
+      const addedKeys: number[] = [];
       for (const { row, quantity } of requests) {
         await createStockItem(householdId, {
-          foodId: ingredientsById.get(row.ingredientId)!.food.id,
+          foodId: itemsByKey.get(row.key)!.food.id,
           storageLocationId: row.storageLocationId,
           quantity,
           expirationDate: row.expirationDate || null,
         });
-        setRows((current) => current.filter((other) => other.ingredientId !== row.ingredientId));
+        addedKeys.push(row.key);
+        setRows((current) => current.filter((other) => other.key !== row.key));
       }
+      return addedKeys;
     },
     onSuccess: onAdded,
   });
 
-  function updateRow(changed: MissingFoodRow) {
-    setRows((current) => current.map((row) => (row.ingredientId === changed.ingredientId ? changed : row)));
+  function updateRow(changed: FoodRow) {
+    setRows((current) => current.map((row) => (row.key === changed.key ? changed : row)));
   }
 
   function save() {
     const requests = selectedRows.map((row) => ({
       row,
-      quantity: parseBaseQuantity(
-        row.quantityText,
-        ingredientsById.get(row.ingredientId)!.food.baseUnit,
-        row.unitSymbol,
-      ),
+      quantity: parseBaseQuantity(row.quantityText, itemsByKey.get(row.key)!.food.baseUnit, row.unitSymbol),
     }));
-    const invalid = requests
-      .filter((request) => request.quantity === null)
-      .map((request) => request.row.ingredientId);
+    const invalid = requests.filter((request) => request.quantity === null).map((request) => request.row.key);
     setInvalidIds(invalid);
     if (invalid.length > 0) {
       setExpandedId(invalid[0]);
@@ -86,22 +87,22 @@ export function AddMissingFoodsSheet({
 
   return (
     <BottomSheet open onClose={onClose}>
-      <DialogTitle>{texts.recipes.addMissingTitle}</DialogTitle>
+      <DialogTitle>{title}</DialogTitle>
       <DialogContent>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-          {texts.recipes.addMissingHint}
+          {hint}
         </Typography>
         <Stack spacing={1}>
           {rows.map((row) => {
-            const { food } = ingredientsById.get(row.ingredientId)!;
+            const { food } = itemsByKey.get(row.key)!;
             const storageLocation = storageLocations.find(
               (location) => location.id === row.storageLocationId,
             );
-            const isExpanded = expandedId === row.ingredientId;
-            const isInvalid = invalidIds.includes(row.ingredientId);
+            const isExpanded = expandedId === row.key;
+            const isInvalid = invalidIds.includes(row.key);
             return (
               <Box
-                key={row.ingredientId}
+                key={row.key}
                 sx={{
                   border: 1,
                   borderColor: isInvalid ? "error.main" : "divider",
@@ -125,7 +126,7 @@ export function AddMissingFoodsSheet({
                     role="button"
                     tabIndex={0}
                     sx={{ flex: 1, py: 1, cursor: "pointer", minWidth: 0 }}
-                    onClick={() => setExpandedId(isExpanded ? null : row.ingredientId)}
+                    onClick={() => setExpandedId(isExpanded ? null : row.key)}
                   >
                     <Typography sx={{ fontWeight: 600 }} noWrap>
                       {food.name}

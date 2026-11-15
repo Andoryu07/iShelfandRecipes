@@ -7,6 +7,7 @@ import SpaceDashboardRoundedIcon from "@mui/icons-material/SpaceDashboardRounded
 import {
   AppBar,
   Avatar,
+  Badge,
   BottomNavigation,
   BottomNavigationAction,
   Box,
@@ -24,6 +25,9 @@ import {
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { Outlet, useLocation, useNavigate } from "react-router";
+import { useCurrentHousehold } from "../households/useCurrentHousehold";
+import { useShoppingList } from "../shopping/useShoppingList";
+import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
 import { Suspense } from "react";
 import { useAuthentication } from "../authentication/AuthenticationContext";
 import { texts } from "../translations/cs";
@@ -56,6 +60,9 @@ export function pageInformation(pathname: string): PageInformation {
   }
   if (pathname === "/profile") {
     return { title: texts.profile.title, backTo: "/overview" };
+  }
+  if (pathname === "/shopping-list") {
+    return { title: texts.shoppingList.title, backTo: "/overview" };
   }
   if (/^\/recipes\/\d+/.test(pathname)) {
     return { title: texts.navigation.recipe, backTo: "/recipes" };
@@ -126,6 +133,7 @@ export function ApplicationLayout() {
             <Typography variant="h6" component="h1" sx={{ flex: 1 }} noWrap>
               {page.title}
             </Typography>
+            <ShoppingCartButton />
             <IconButton aria-label={texts.profile.title} onClick={() => navigate("/profile")}>
               <Avatar
                 sx={{
@@ -182,5 +190,23 @@ function PageLoading() {
     <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
       <CircularProgress />
     </Box>
+  );
+}
+
+function ShoppingCartButton() {
+  const navigate = useNavigate();
+  const { household } = useCurrentHousehold();
+  const shoppingListQuery = useShoppingList(household?.id ?? 0);
+  const openCount = (shoppingListQuery.data ?? []).filter((item) => !item.isChecked).length;
+  return (
+    <IconButton
+      aria-label={texts.shoppingList.open}
+      onClick={() => navigate("/shopping-list")}
+      sx={{ mr: 0.5 }}
+    >
+      <Badge badgeContent={openCount} color="primary" max={99}>
+        <ShoppingCartRoundedIcon />
+      </Badge>
+    </IconButton>
   );
 }

@@ -23,6 +23,7 @@ import { listActiveReservations, listStockItems } from "../api/stockApi";
 import { useAuthentication } from "../authentication/AuthenticationContext";
 import { CategoryAvatar } from "../components/CategoryAvatar";
 import { useCurrentHousehold, useExpirationWarningDays } from "../households/useCurrentHousehold";
+import { useShoppingList } from "../shopping/useShoppingList";
 import { greetingFor, vocative } from "../overview/vocative";
 import { formatMoney } from "../receipts/money";
 import { changePercent, monthLocative, monthText } from "../spending/months";
@@ -151,6 +152,7 @@ function Overview({ householdId }: { householdId: number }) {
       )}
 
       <SpendingCard householdId={householdId} />
+      <ShoppingListCard householdId={householdId} />
 
       <SectionHeader title={texts.overview.cookNowTitle} onShowAll={() => navigate("/recipes")} />
       {cookable.length === 0 ? (
@@ -217,5 +219,31 @@ function SpendingCard({ householdId }: { householdId: number }) {
         </CardActionArea>
       </Card>
     </>
+  );
+}
+
+function ShoppingListCard({ householdId }: { householdId: number }) {
+  const navigate = useNavigate();
+  const shoppingListQuery = useShoppingList(householdId);
+  const openItems = (shoppingListQuery.data ?? []).filter((item) => !item.isChecked);
+  return (
+    <Card sx={{ mt: 2 }}>
+      <CardActionArea onClick={() => navigate("/shopping-list")}>
+        <CardContent sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography sx={{ fontSize: 28 }}>🛒</Typography>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography sx={{ fontWeight: 650 }}>{texts.shoppingList.overviewTitle}</Typography>
+            <Typography variant="body2" color="text.secondary" noWrap>
+              {openItems.length === 0
+                ? texts.shoppingList.overviewEmpty
+                : `${texts.shoppingList.overviewCount(openItems.length)}: ${openItems
+                    .slice(0, 4)
+                    .map((item) => item.name)
+                    .join(", ")}${openItems.length > 4 ? "…" : ""}`}
+            </Typography>
+          </Box>
+        </CardContent>
+      </CardActionArea>
+    </Card>
   );
 }

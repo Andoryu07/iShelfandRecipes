@@ -42,6 +42,7 @@ erDiagram
 - **receipt_items**: id, receipt_id, food_id (nullable until confirmed), original_text, name, category, quantity, unit, price, discount, corrected_by_user
 - **recipes**: id, household_id, name, instructions, servings, preparation_minutes, is_predefined, icon (nullable emoji), dish_type (nullable: soup, mainCourse, sideDish, dessert, breakfast), is_vegetarian, created_at. Predefined recipes are copied into a household when it is created.
 - **recipe_ingredients**: id, recipe_id, food_id, quantity, accepts_any_of_kind (any food with the same generic name and unit counts), is_optional (never counted as missing)
+- **shopping_list_items**: id, household_id, owner_user_id (null = shared list, otherwise the personal list of that user), food_id (nullable, null for free text), name, quantity (nullable, base units), note, recipe_id (nullable, where it came from), created_by_user_id, checked_at, checked_by_user_id, created_at.
 - **favourite_recipes**: user_id, recipe_id (primary key together), created_at. Personal favourites; deleted with the user or the recipe.
 - **recipe_cookings**: id, household_id, recipe_id (nullable, set to null when the recipe is deleted), recipe_name (the name when cooked), user_id (nullable), servings, created_at. One row each time a recipe is cooked; the history survives deleting the recipe.
 - **push_subscriptions**: id, user_id, endpoint (unique), public_key, authentication_secret

@@ -405,6 +405,46 @@ export const texts = {
     correction: "Oprava",
     moved: "Přesunuto",
   } satisfies Record<StockMovementReason, string>,
+  shoppingList: {
+    title: "Nákupní seznam",
+    open: "Nákupní seznam",
+    shared: "Společný",
+    personal: "Můj",
+    sharedHint: "Vidí a upravuje celá domácnost.",
+    personalHint: "Vidíš jen ty.",
+    addPlaceholder: "Co koupit?",
+    add: "Přidat",
+    empty: "Seznam je prázdný. Přidej, co chceš koupit, nebo chybějící suroviny z receptu.",
+    inCart: (count: number) => `V košíku (${count})`,
+    addBoughtToStock: (count: number) => `Přidat koupené do zásob (${count})`,
+    clearChecked: "Smazat odškrtnuté",
+    addBoughtTitle: "Přidat koupené do zásob",
+    addBoughtHint: "Zkontroluj množství, místo a datum. Přidané položky zmizí ze seznamu.",
+    forRecipe: (name: string) => `pro ${name}`,
+    addedBy: (name: string) => `přidal(a) ${name}`,
+    editTitle: "Položka seznamu",
+    quantity: "Množství (nepovinné)",
+    note: "Poznámka (nepovinné)",
+    moveToPersonal: "Přesunout na můj seznam",
+    moveToShared: "Přesunout na společný seznam",
+    remove: "Odebrat ze seznamu",
+    addMissing: "Na nákupní seznam",
+    addedMissing: (count: number) =>
+      count === 0
+        ? "Na seznamu už všechno je."
+        : `Na nákupní seznam ${count === 1 ? "přidána 1 položka" : count < 5 ? `přidány ${count} položky` : `přidáno ${count} položek`}`,
+    ranOut: "Došlo, přidat na seznam",
+    addedFood: (name: string) => `${name} je na nákupním seznamu`,
+    show: "Zobrazit",
+    overviewTitle: "Nákupní seznam",
+    overviewEmpty: "Nic nechybí.",
+    overviewCount: (count: number) =>
+      count === 1
+        ? "1 položka ke koupi"
+        : count < 5
+          ? `${count} položky ke koupi`
+          : `${count} položek ke koupi`,
+  },
   history: {
     movedBetween: (from: string, to: string) => `Přesunuto: ${from} → ${to}`,
     unknownStorageLocation: "smazané místo",

@@ -1,6 +1,7 @@
 import ExpandLessRoundedIcon from "@mui/icons-material/ExpandLessRounded";
 import ExpandMoreRoundedIcon from "@mui/icons-material/ExpandMoreRounded";
 import HistoryRoundedIcon from "@mui/icons-material/HistoryRounded";
+import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
 import {
   Alert,
   Button,
@@ -20,6 +21,8 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { ApiError } from "../api/apiClient";
+import { addShoppingListItem } from "../api/shoppingListApi";
+import { shoppingListQueryKey } from "../shopping/useShoppingList";
 import {
   cancelReservation,
   correctStockQuantity,
@@ -85,6 +88,10 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
   const movementsQuery = useQuery({
     queryKey: stockMovementsQueryKey(householdId, stockItem.id),
     queryFn: () => listStockMovements(stockItem.id),
+  });
+  const shoppingListMutation = useMutation({
+    mutationFn: () => addShoppingListItem(householdId, { foodId: food.id, isPersonal: false }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: shoppingListQueryKey(householdId) }),
   });
   const actionMutation = useMutation({
     mutationFn: (action: () => Promise<unknown>) => action(),
@@ -292,6 +299,16 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
               <Button onClick={() => setMode("reserve")} disabled={stockItem.availableQuantity <= 0}>
                 {texts.stock.reserve}
               </Button>
+              <Button
+                startIcon={<ShoppingCartRoundedIcon />}
+                onClick={() => shoppingListMutation.mutate()}
+                disabled={shoppingListMutation.isPending || shoppingListMutation.isSuccess}
+              >
+                {texts.shoppingList.ranOut}
+              </Button>
+              {shoppingListMutation.isSuccess && (
+                <Alert severity="success">{texts.shoppingList.addedFood(food.name)}</Alert>
+              )}
             </Stack>
           )}
 

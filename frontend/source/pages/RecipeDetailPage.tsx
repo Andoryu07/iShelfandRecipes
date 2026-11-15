@@ -2,6 +2,7 @@ import CancelRoundedIcon from "@mui/icons-material/CancelRounded";
 import MoreVertRoundedIcon from "@mui/icons-material/MoreVertRounded";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import ReportProblemRoundedIcon from "@mui/icons-material/ReportProblemRounded";
+import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
 import {
   Alert,
   Avatar,
@@ -35,12 +36,15 @@ import {
   reserveRecipeIngredients,
 } from "../api/recipesApi";
 import type { IngredientAvailability } from "../api/types";
+import { addRecipeToShoppingList } from "../api/shoppingListApi";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
+import { shoppingListQueryKey } from "../shopping/useShoppingList";
 import { recipeIcon } from "../components/icons";
 import { LoadingScreen } from "../components/LoadingScreen";
 import { describeError } from "../errorMessages";
 import { useCurrentHousehold } from "../households/useCurrentHousehold";
-import { AddMissingFoodsSheet } from "../recipes/AddMissingFoodsSheet";
+import { AddFoodsToStockSheet } from "../stock/AddFoodsToStockSheet";
+import { missingIngredientsToAdd } from "../recipes/missingFoods";
 import { CookingHistory } from "../recipes/CookingHistory";
 import { FavouriteButton } from "../recipes/FavouriteButton";
 import { RecipeEditorDialog } from "../recipes/RecipeEditorDialog";
@@ -81,6 +85,7 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
   const [isCookConfirmationOpen, setIsCookConfirmationOpen] = useState(false);
   const [isCookedMessageOpen, setIsCookedMessageOpen] = useState(false);
   const [isAddingMissing, setIsAddingMissing] = useState(false);
+  const [shoppingListMessage, setShoppingListMessage] = useState<string | null>(null);
   const storageLocations = useStorageLocations(householdId).data ?? [];
   const recipeQuery = useQuery({ queryKey: ["recipes", recipeId], queryFn: () => getRecipe(recipeId) });
   const recipe = recipeQuery.data;
@@ -110,6 +115,13 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
         queryClient.invalidateQueries({ queryKey: stockItemsQueryKey(householdId) }),
       ]);
       setIsCookedMessageOpen(true);
+    },
+  });
+  const shoppingListMutation = useMutation({
+    mutationFn: () => addRecipeToShoppingList(recipeId, currentServings),
+    onSuccess: async (result) => {
+      await queryClient.invalidateQueries({ queryKey: shoppingListQueryKey(householdId) });
+      setShoppingListMessage(texts.shoppingList.addedMissing(result.addedCount));
     },
   });
   const deleteMutation = useMutation({
@@ -245,6 +257,17 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
             {!isMissingExpanded && missing.length > collapsedMissingCount && (
               <Button sx={{ mt: 1, px: 0 }} onClick={() => setIsMissingExpanded(true)}>
                 {texts.recipes.moreMissing(missing.length - collapsedMissingCount)}
+              </Button>
+            )}
+            {missing.length > 0 && (
+              <Button
+                variant="outlined"
+                startIcon={<ShoppingCartRoundedIcon />}
+                onClick={() => shoppingListMutation.mutate()}
+                disabled={shoppingListMutation.isPending}
+                sx={{ mt: 1.5, display: "flex" }}
+              >
+                {texts.shoppingList.addMissing}
               </Button>
             )}
           </CardContent>
@@ -447,9 +470,11 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
         )}
       </Dialog>
       {isAddingMissing && (
-        <AddMissingFoodsSheet
+        <AddFoodsToStockSheet
           householdId={householdId}
-          ingredients={ingredients}
+          items={missingIngredientsToAdd(ingredients)}
+          title={texts.recipes.addMissingTitle}
+          hint={texts.recipes.addMissingHint}
           storageLocations={storageLocations}
           onClose={() => setIsAddingMissing(false)}
           onAdded={async () => {
@@ -468,6 +493,17 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
         autoHideDuration={3000}
         onClose={() => setIsCookedMessageOpen(false)}
         message={texts.recipes.cookDone}
+      />
+      <Snackbar
+        open={shoppingListMessage !== null}
+        autoHideDuration={4000}
+        onClose={() => setShoppingListMessage(null)}
+        message={shoppingListMessage}
+        action={
+          <Button color="inherit" size="small" onClick={() => navigate("/shopping-list")}>
+            {texts.shoppingList.show}
+          </Button>
+        }
       />
       <Snackbar
         open={isReservedMessageOpen}

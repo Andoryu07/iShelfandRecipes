@@ -124,6 +124,21 @@ export interface HouseholdCooking {
   createdAt: string;
 }
 
+export interface ShoppingListItem {
+  id: number;
+  food: Food | null;
+  name: string;
+  quantity: number | null;
+  note: string | null;
+  isPersonal: boolean;
+  isChecked: boolean;
+  recipeId: number | null;
+  recipeName: string | null;
+  createdByDisplayName: string | null;
+  checkedByDisplayName: string | null;
+  createdAt: string;
+}
+
 export interface ScannedReceiptItem {
   originalText: string;
   name: string;

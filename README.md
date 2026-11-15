@@ -180,6 +180,20 @@ docker compose run --rm -v ./receipt.jpg:/receipt.jpg backend python -m applicat
 
 A new household gets five predefined recipes written for this project (`backend/application/recipes/predefined.json`) together with the foods they need. Every ingredient points to a food; `acceptsAnyOfKind` lets any food of the same general kind and unit count (any milk), otherwise only that food counts (plain flour). Optional ingredients (salt, spices) never count as missing. For user A and recipe R, the available quantity is the stock minus active reservations of other users, minus A's own reservations for a different recipe.
 
+
+### Shopping list
+
+| Endpoint | Purpose | Status |
+| --- | --- | --- |
+| `GET /households/{householdId}/shopping-list` | Items the user can see: the shared household list and the user's personal list, unchecked first | done |
+| `POST /households/{householdId}/shopping-list` | Add a food (`foodId`, optional `quantity`) or free text (`name`), optional `note`, `isPersonal`; an unchecked item of the same food on the same list gets the quantity added | done |
+| `POST /recipes/{recipeId}/shopping-list` | Add the missing required ingredients of a recipe for the given servings (pieces rounded up) | done |
+| `PATCH /shopping-list-items/{itemId}` | Change quantity or note, check or uncheck, move between the shared and the personal list | done |
+| `DELETE /shopping-list-items/{itemId}` | Remove an item | done |
+| `DELETE /households/{householdId}/shopping-list/checked` | Remove all checked items the user can see | done |
+
+Personal items are visible only to their owner and are deleted when the owner leaves the household or deletes the account. Bought food items are added to stock in the app with the normal stock endpoint and then removed from the list.
+
 ### Notifications
 
 | Endpoint | Purpose | Status |
