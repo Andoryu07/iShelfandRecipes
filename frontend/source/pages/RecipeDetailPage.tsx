@@ -11,6 +11,7 @@ import {
   Card,
   CardContent,
   Dialog,
+  FormControlLabel,
   DialogActions,
   DialogContent,
   DialogTitle,
@@ -23,6 +24,7 @@ import {
   MenuItem,
   Snackbar,
   Stack,
+  Switch,
   Typography,
 } from "@mui/material";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -46,6 +48,7 @@ import { useCurrentHousehold } from "../households/useCurrentHousehold";
 import { AddFoodsToStockSheet } from "../stock/AddFoodsToStockSheet";
 import { missingIngredientsToAdd } from "../recipes/missingFoods";
 import { CookingHistory } from "../recipes/CookingHistory";
+import { isWakeLockSupported, useWakeLock } from "../recipes/useWakeLock";
 import { FavouriteButton } from "../recipes/FavouriteButton";
 import { RecipeEditorDialog } from "../recipes/RecipeEditorDialog";
 import { useStorageLocations } from "../households/useStorageLocations";
@@ -85,6 +88,8 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
   const [isCookConfirmationOpen, setIsCookConfirmationOpen] = useState(false);
   const [isCookedMessageOpen, setIsCookedMessageOpen] = useState(false);
   const [isAddingMissing, setIsAddingMissing] = useState(false);
+  const [isCooking, setIsCooking] = useState(false);
+  useWakeLock(isCooking);
   const [shoppingListMessage, setShoppingListMessage] = useState<string | null>(null);
   const storageLocations = useStorageLocations(householdId).data ?? [];
   const recipeQuery = useQuery({ queryKey: ["recipes", recipeId], queryFn: () => getRecipe(recipeId) });
@@ -115,6 +120,7 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
         queryClient.invalidateQueries({ queryKey: stockItemsQueryKey(householdId) }),
       ]);
       setIsCookedMessageOpen(true);
+      setIsCooking(false);
     },
   });
   const shoppingListMutation = useMutation({
@@ -284,6 +290,14 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
           +
         </IconButton>
       </Stack>
+
+      {isWakeLockSupported && (
+        <FormControlLabel
+          control={<Switch checked={isCooking} onChange={(event) => setIsCooking(event.target.checked)} />}
+          label={texts.recipes.cookingMode}
+          sx={{ mt: 1 }}
+        />
+      )}
 
       {reserveMutation.error && <Alert severity="error">{describeError(reserveMutation.error)}</Alert>}
 

@@ -306,6 +306,7 @@ export const texts = {
     reserveShort: "Rezervovat",
     addFavourite: "Přidat do oblíbených",
     writeRecipe: "Napsat recept",
+    cookingMode: "Vařím (obrazovka nezhasne)",
     scanRecipe: "Vyfotit recept z kuchařky",
     scanTitle: "Recept z fotky",
     scanIntroduction: "Vyfoť stránku s receptem. Když je recept přes víc stránek, přidej až 3 fotky.",
