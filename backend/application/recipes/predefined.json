@@ -40,6 +40,7 @@
       "name": "Svíčková na smetaně",
       "servings": 4,
       "preparationMinutes": 180,
+      "dishType": "mainCourse",
       "ingredients": [
         {"food": "Hovězí zadní", "quantity": 800, "acceptsAnyOfKind": false},
         {"food": "Slanina", "quantity": 80},
@@ -66,6 +67,7 @@
       "name": "Vepřo knedlo zelo",
       "servings": 4,
       "preparationMinutes": 150,
+      "dishType": "mainCourse",
       "ingredients": [
         {"food": "Vepřová plec", "quantity": 1000},
         {"food": "Sádlo", "quantity": 30},
@@ -83,8 +85,10 @@
     },
     {
       "name": "Smažený sýr",
+      "isVegetarian": true,
       "servings": 4,
       "preparationMinutes": 30,
+      "dishType": "mainCourse",
       "ingredients": [
         {"food": "Eidam", "quantity": 600, "acceptsAnyOfKind": false},
         {"food": "Vejce", "quantity": 2},
@@ -101,6 +105,7 @@
       "name": "Hovězí guláš",
       "servings": 4,
       "preparationMinutes": 150,
+      "dishType": "mainCourse",
       "ingredients": [
         {"food": "Hovězí kližka", "quantity": 800},
         {"food": "Cibule", "quantity": 500},
@@ -121,6 +126,7 @@
       "name": "Rajská omáčka",
       "servings": 4,
       "preparationMinutes": 120,
+      "dishType": "mainCourse",
       "ingredients": [
         {"food": "Hovězí zadní", "quantity": 600},
         {"food": "Mrkev", "quantity": 100},

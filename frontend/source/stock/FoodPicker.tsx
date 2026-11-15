@@ -37,6 +37,8 @@ interface FoodPickerProps {
   newFoodDefaults?: Partial<Omit<NewFood, "newFoodName">>;
   autoFocus?: boolean;
   required?: boolean;
+  allowNewFood?: boolean;
+  label?: string;
 }
 
 export function FoodPicker({
@@ -46,6 +48,8 @@ export function FoodPicker({
   newFoodDefaults,
   autoFocus,
   required,
+  allowNewFood = true,
+  label,
 }: FoodPickerProps) {
   const [input, setInput] = useState(value ? labelOf(value) : "");
   const searchText = useDeferredValue(input.trim());
@@ -63,7 +67,8 @@ export function FoodPicker({
     category: newFoodDefaults?.category ?? suggestion?.category ?? "other",
     genericName: newFoodDefaults?.genericName ?? suggestion?.genericName ?? "",
   };
-  const options: FoodChoice[] = searchText && !exactMatch ? [...foundFoods, newFoodOption] : foundFoods;
+  const options: FoodChoice[] =
+    allowNewFood && searchText && !exactMatch ? [...foundFoods, newFoodOption] : foundFoods;
 
   function chooseTypedFood() {
     if (!searchText) {
@@ -76,7 +81,9 @@ export function FoodPicker({
       return;
     }
     const sameName = foundFoods.find((food) => food.name.toLowerCase() === searchText.toLowerCase());
-    onChange(sameName ?? newFoodOption);
+    if (sameName || allowNewFood) {
+      onChange(sameName ?? newFoodOption);
+    }
   }
 
   return (
@@ -104,7 +111,12 @@ export function FoodPicker({
       }}
       noOptionsText={searchText ? texts.common.loading : texts.stock.startTyping}
       renderInput={(parameters) => (
-        <TextField {...parameters} label={texts.stock.food} autoFocus={autoFocus} required={required} />
+        <TextField
+          {...parameters}
+          label={label ?? texts.stock.food}
+          autoFocus={autoFocus}
+          required={required}
+        />
       )}
     />
   );

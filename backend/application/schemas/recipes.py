@@ -3,6 +3,7 @@ from typing import Annotated, Self
 
 from pydantic import BaseModel, Field, model_validator
 
+from application.models.enumerations import DishType
 from application.schemas.common import Icon, PositiveQuantity, QuantityValue, RequiredName
 from application.schemas.foods import FoodResponse, NewFoodRequest
 
@@ -31,6 +32,8 @@ class CreateRecipeRequest(BaseModel):
     preparationMinutes: PreparationMinutes | None = None
     instructions: Instructions = ""
     icon: Icon | None = None
+    dishType: DishType | None = None
+    isVegetarian: bool = False
     ingredients: list[RecipeIngredientRequest] = Field(max_length=100)
 
 
@@ -40,6 +43,8 @@ class UpdateRecipeRequest(BaseModel):
     preparationMinutes: PreparationMinutes | None = None
     instructions: Instructions | None = None
     icon: Icon | None = None
+    dishType: DishType | None = None
+    isVegetarian: bool | None = None
     ingredients: list[RecipeIngredientRequest] | None = Field(default=None, max_length=100)
 
 
@@ -59,7 +64,10 @@ class RecipeSummaryResponse(BaseModel):
     isPredefined: bool
     isFavourite: bool = False
     icon: str | None
+    dishType: DishType | None = None
+    isVegetarian: bool = False
     missingCount: int
+    expiringIngredientCount: int = 0
     estimatedPrice: QuantityValue | None = None
     createdAt: datetime
 

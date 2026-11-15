@@ -48,3 +48,11 @@ class FoodCategory(enum.Enum):
     spices = "spices"
     sweets = "sweets"
     other = "other"
+
+
+class DishType(enum.Enum):
+    soup = "soup"
+    mainCourse = "mainCourse"
+    sideDish = "sideDish"
+    dessert = "dessert"
+    breakfast = "breakfast"

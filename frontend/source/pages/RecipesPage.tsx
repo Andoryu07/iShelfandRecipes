@@ -1,9 +1,11 @@
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import HistoryRoundedIcon from "@mui/icons-material/HistoryRounded";
+import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import {
   Alert,
   Avatar,
+  Badge,
   Box,
   Button,
   Card,
@@ -19,31 +21,29 @@ import { useQuery } from "@tanstack/react-query";
 import { useDeferredValue, useState } from "react";
 import { useNavigate } from "react-router";
 import { listRecipes } from "../api/recipesApi";
-import type { RecipeSummary } from "../api/types";
 import { describeError } from "../errorMessages";
 import { useCurrentHousehold } from "../households/useCurrentHousehold";
 import { recipeIcon } from "../components/icons";
 import { FavouriteButton } from "../recipes/FavouriteButton";
+import { RecipeFiltersSheet } from "../recipes/RecipeFiltersSheet";
+import {
+  advancedFilterCount,
+  applyRecipeFilters,
+  emptyRecipeFilters,
+  type QuickFilter,
+  type RecipeFilterState,
+} from "../recipes/recipeFilters";
 import { HouseholdCookingHistorySheet } from "../recipes/HouseholdCookingHistorySheet";
 import { formatMoney } from "../receipts/money";
 import { RecipeEditorDialog } from "../recipes/RecipeEditorDialog";
 import { texts } from "../translations/cs";
 
-type RecipeFilter = "favourites" | "cookNow" | "quick" | "own";
-
-const filters: { value: RecipeFilter; label: string; matches: (recipe: RecipeSummary) => boolean }[] = [
-  {
-    value: "favourites",
-    label: texts.recipes.filterFavourites,
-    matches: (recipe) => recipe.isFavourite === true,
-  },
-  { value: "cookNow", label: texts.recipes.filterCookNow, matches: (recipe) => recipe.missingCount === 0 },
-  {
-    value: "quick",
-    label: texts.recipes.filterQuick,
-    matches: (recipe) => recipe.preparationMinutes !== null && recipe.preparationMinutes <= 30,
-  },
-  { value: "own", label: texts.recipes.filterOwn, matches: (recipe) => !recipe.isPredefined },
+const quickFilters: { value: QuickFilter; label: string }[] = [
+  { value: "favourites", label: texts.recipes.filterFavourites },
+  { value: "expiring", label: texts.recipes.filterExpiring },
+  { value: "quick", label: texts.recipes.filterQuick },
+  { value: "vegetarian", label: texts.recipes.filterVegetarian },
+  { value: "own", label: texts.recipes.filterOwn },
 ];
 
 export function RecipesPage() {
@@ -54,25 +54,29 @@ export function RecipesPage() {
 function RecipeList({ householdId }: { householdId: number }) {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
-  const [activeFilters, setActiveFilters] = useState<RecipeFilter[]>([]);
+  const [filterState, setFilterState] = useState<RecipeFilterState>(emptyRecipeFilters);
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const deferredSearch = useDeferredValue(search.trim());
+  const foodIds = filterState.foods.map((food) => food.id);
   const recipesQuery = useQuery({
-    queryKey: ["households", householdId, "recipes", deferredSearch],
-    queryFn: () => listRecipes(householdId, deferredSearch),
+    queryKey: ["households", householdId, "recipes", deferredSearch, foodIds],
+    queryFn: () => listRecipes(householdId, deferredSearch, foodIds),
     placeholderData: (previousData) => previousData,
   });
-  const recipes = (recipesQuery.data ?? []).filter((recipe) =>
-    activeFilters.every((filterValue) =>
-      filters.find((filter) => filter.value === filterValue)!.matches(recipe),
-    ),
-  );
+  const recipes = applyRecipeFilters(recipesQuery.data ?? [], filterState);
+  const hiddenFilterCount = advancedFilterCount(filterState);
+  const isFiltering =
+    filterState.quickFilters.length > 0 || filterState.maxMissing !== null || hiddenFilterCount > 0;
 
-  function toggleFilter(value: RecipeFilter) {
-    setActiveFilters((current) =>
-      current.includes(value) ? current.filter((filterValue) => filterValue !== value) : [...current, value],
-    );
+  function toggleQuickFilter(value: QuickFilter) {
+    setFilterState((current) => ({
+      ...current,
+      quickFilters: current.quickFilters.includes(value)
+        ? current.quickFilters.filter((filter) => filter !== value)
+        : [...current.quickFilters, value],
+    }));
   }
 
   return (
@@ -107,22 +111,99 @@ function RecipeList({ householdId }: { householdId: number }) {
       {isHistoryOpen && (
         <HouseholdCookingHistorySheet householdId={householdId} onClose={() => setIsHistoryOpen(false)} />
       )}
-      <Stack direction="row" sx={{ gap: 1, flexWrap: "wrap", mb: 2 }}>
-        {filters.map((filter) => (
+      <Stack direction="row" sx={{ gap: 1, flexWrap: "wrap", mb: 1 }}>
+        {quickFilters.slice(0, 1).map((filter) => (
           <Chip
             key={filter.value}
             label={filter.label}
-            color={activeFilters.includes(filter.value) ? "primary" : "default"}
-            onClick={() => toggleFilter(filter.value)}
+            color={filterState.quickFilters.includes(filter.value) ? "primary" : "default"}
+            onClick={() => toggleQuickFilter(filter.value)}
           />
         ))}
+        <Chip
+          label={texts.recipes.filterCookNow}
+          color={filterState.maxMissing === 0 ? "primary" : "default"}
+          onClick={() =>
+            setFilterState((current) => ({ ...current, maxMissing: current.maxMissing === 0 ? null : 0 }))
+          }
+        />
+        {quickFilters.slice(1).map((filter) => (
+          <Chip
+            key={filter.value}
+            label={filter.label}
+            color={filterState.quickFilters.includes(filter.value) ? "primary" : "default"}
+            onClick={() => toggleQuickFilter(filter.value)}
+          />
+        ))}
+        <Badge badgeContent={hiddenFilterCount} color="primary">
+          <Chip
+            icon={<TuneRoundedIcon />}
+            label={texts.recipes.moreFilters}
+            variant="outlined"
+            onClick={() => setIsFiltersOpen(true)}
+          />
+        </Badge>
       </Stack>
+      {hiddenFilterCount > 0 && (
+        <Stack direction="row" sx={{ gap: 1, flexWrap: "wrap", mb: 1 }}>
+          {filterState.maxMissing !== null && filterState.maxMissing > 0 && (
+            <Chip
+              size="small"
+              label={texts.recipes.maxMissingChip(filterState.maxMissing)}
+              onDelete={() => setFilterState((current) => ({ ...current, maxMissing: null }))}
+            />
+          )}
+          {filterState.dishTypes.map((dishType) => (
+            <Chip
+              key={dishType}
+              size="small"
+              label={texts.recipes.dishTypes[dishType]}
+              onDelete={() =>
+                setFilterState((current) => ({
+                  ...current,
+                  dishTypes: current.dishTypes.filter((other) => other !== dishType),
+                }))
+              }
+            />
+          ))}
+          {filterState.foods.map((food) => (
+            <Chip
+              key={food.id}
+              size="small"
+              label={food.name}
+              onDelete={() =>
+                setFilterState((current) => ({
+                  ...current,
+                  foods: current.foods.filter((other) => other.id !== food.id),
+                }))
+              }
+            />
+          ))}
+          {filterState.sort !== "name" && (
+            <Chip
+              size="small"
+              label={texts.recipes.sortOptions[filterState.sort]}
+              onDelete={() => setFilterState((current) => ({ ...current, sort: "name" }))}
+            />
+          )}
+        </Stack>
+      )}
+      <Box sx={{ mb: 1 }} />
+      {isFiltersOpen && (
+        <RecipeFiltersSheet
+          householdId={householdId}
+          value={filterState}
+          resultCount={recipes.length}
+          onChange={setFilterState}
+          onClose={() => setIsFiltersOpen(false)}
+        />
+      )}
       {recipesQuery.error && <Alert severity="error">{describeError(recipesQuery.error)}</Alert>}
       {recipesQuery.data && recipes.length === 0 && (
         <Stack sx={{ alignItems: "center", textAlign: "center", mt: 6, gap: 1 }}>
           <Typography sx={{ fontSize: 48 }}>🍳</Typography>
           <Typography color="text.secondary">
-            {deferredSearch || activeFilters.length ? texts.recipes.nothingFound : texts.recipes.empty}
+            {deferredSearch || isFiltering ? texts.recipes.nothingFound : texts.recipes.empty}
           </Typography>
         </Stack>
       )}
@@ -152,16 +233,28 @@ function RecipeList({ householdId }: { householdId: number }) {
                     .filter(Boolean)
                     .join(" · ")}
                 </Typography>
-                <Chip
-                  size="small"
-                  color={recipe.missingCount === 0 ? "success" : "warning"}
-                  label={
-                    recipe.missingCount === 0
-                      ? texts.recipes.haveEverything
-                      : texts.recipes.missingCount(recipe.missingCount)
-                  }
-                  sx={{ mt: 0.75 }}
-                />
+                <Stack direction="row" sx={{ gap: 0.5, flexWrap: "wrap", mt: 0.75 }}>
+                  <Chip
+                    size="small"
+                    color={recipe.missingCount === 0 ? "success" : "warning"}
+                    label={
+                      recipe.missingCount === 0
+                        ? texts.recipes.haveEverything
+                        : texts.recipes.missingCount(recipe.missingCount)
+                    }
+                  />
+                  {(recipe.expiringIngredientCount ?? 0) > 0 && (
+                    <Chip
+                      size="small"
+                      variant="outlined"
+                      color="warning"
+                      label={`⏳ ${texts.recipes.usesExpiring(recipe.expiringIngredientCount ?? 0)}`}
+                    />
+                  )}
+                  {recipe.isVegetarian && (
+                    <Chip size="small" variant="outlined" label={`🌱 ${texts.recipes.vegetarian}`} />
+                  )}
+                </Stack>
               </Box>
             </CardActionArea>
             <Box sx={{ position: "absolute", top: 4, right: 4 }}>

@@ -165,7 +165,7 @@ docker compose run --rm -v ./receipt.jpg:/receipt.jpg backend python -m applicat
 
 | Endpoint | Purpose | Status |
 | --- | --- | --- |
-| `GET /households/{householdId}/recipes` | List recipes | done |
+| `GET /households/{householdId}/recipes?search=&containsFoodIds=` | List recipes (the user's favourites first) with missing count, price estimate, dish type, vegetarian flag and `expiringIngredientCount` (ingredients the user could cover with food expiring within their warning days); `containsFoodIds` (up to 5) keeps recipes that contain every chosen food or a food of the same kind | done |
 | `POST /households/{householdId}/recipes` | Create a recipe | done |
 | `GET /recipes/{recipeId}` | Recipe detail with ingredients | done |
 | `PATCH /recipes/{recipeId}` | Edit a recipe | done |

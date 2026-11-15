@@ -1,4 +1,4 @@
-import type { Recipe, RecipeIngredientRequest, RecipeRequest } from "../api/types";
+import type { DishType, Recipe, RecipeIngredientRequest, RecipeRequest } from "../api/types";
 import { baseUnitOf, isNewFood, newFoodRequest, type FoodChoice } from "../stock/FoodPicker";
 import { bestDisplayUnit, fromBaseQuantity, parseBaseQuantity } from "../stock/quantities";
 import { texts } from "../translations/cs";
@@ -18,6 +18,8 @@ export interface RecipeFormValues {
   preparationMinutesText: string;
   instructions: string;
   icon: string | null;
+  dishType: DishType | null;
+  isVegetarian: boolean;
   ingredients: IngredientRow[];
 }
 
@@ -42,6 +44,8 @@ export function formValuesFromRecipe(recipe: Recipe | null): RecipeFormValues {
       preparationMinutesText: "",
       instructions: "",
       icon: null,
+      dishType: null,
+      isVegetarian: false,
       ingredients: [emptyIngredientRow()],
     };
   }
@@ -51,6 +55,8 @@ export function formValuesFromRecipe(recipe: Recipe | null): RecipeFormValues {
     preparationMinutesText: recipe.preparationMinutes ? String(recipe.preparationMinutes) : "",
     instructions: recipe.instructions,
     icon: recipe.icon ?? null,
+    dishType: recipe.dishType ?? null,
+    isVegetarian: recipe.isVegetarian ?? false,
     ingredients: recipe.ingredients.map((ingredient) => {
       const unit = bestDisplayUnit(ingredient.quantity, ingredient.food.baseUnit);
       return {
@@ -110,6 +116,8 @@ export function buildRecipeRequest(values: RecipeFormValues): {
       preparationMinutes,
       instructions: values.instructions,
       icon: values.icon,
+      dishType: values.dishType,
+      isVegetarian: values.isVegetarian,
       ingredients,
     },
     error: null,

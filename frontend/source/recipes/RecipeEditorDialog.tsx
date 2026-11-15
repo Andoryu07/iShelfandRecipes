@@ -11,6 +11,7 @@ import {
   Divider,
   FormControlLabel,
   IconButton,
+  MenuItem,
   Stack,
   TextField,
   Typography,
@@ -18,7 +19,7 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { createRecipe, updateRecipe } from "../api/recipesApi";
-import type { Recipe } from "../api/types";
+import { dishTypes, type DishType, type Recipe } from "../api/types";
 import { describeError } from "../errorMessages";
 import { IconPicker } from "../components/IconPicker";
 import { foodIcons, recipeIcon } from "../components/icons";
@@ -114,6 +115,30 @@ export function RecipeEditorDialog({ householdId, recipe, onClose, onSaved }: Re
             slotProps={{ htmlInput: { inputMode: "numeric" } }}
           />
         </Stack>
+        <TextField
+          select
+          label={texts.recipes.dishType}
+          value={values.dishType ?? ""}
+          onChange={(event) =>
+            setValues({ ...values, dishType: event.target.value ? (event.target.value as DishType) : null })
+          }
+        >
+          <MenuItem value="">{texts.recipes.dishTypeNone}</MenuItem>
+          {dishTypes.map((dishType) => (
+            <MenuItem key={dishType} value={dishType}>
+              {texts.recipes.dishTypes[dishType]}
+            </MenuItem>
+          ))}
+        </TextField>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={values.isVegetarian}
+              onChange={(event) => setValues({ ...values, isVegetarian: event.target.checked })}
+            />
+          }
+          label={texts.recipes.isVegetarian}
+        />
 
         <Typography variant="h6" sx={{ mt: 2 }}>
           {texts.recipes.ingredientsTitle}

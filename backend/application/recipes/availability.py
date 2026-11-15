@@ -1,5 +1,6 @@
 from collections import defaultdict
 from dataclasses import dataclass, field
+from datetime import date
 from decimal import ROUND_HALF_UP, Decimal
 
 from sqlalchemy import select
@@ -105,6 +106,20 @@ class AvailabilityCalculator:
             Decimal(0),
         )
         return max(snapshot.stockItem.quantity - unavailable, Decimal(0))
+
+    def countExpiringIngredients(
+        self, recipe: Recipe, ingredients: list[tuple[RecipeIngredient, Food]], today: date, lastDay: date
+    ) -> int:
+        return sum(
+            1
+            for ingredient, food in ingredients
+            if any(
+                snapshot.stockItem.expirationDate is not None
+                and today <= snapshot.stockItem.expirationDate <= lastDay
+                and self.availableFor(snapshot, recipe.id) > 0
+                for snapshot in self.matchingSnapshots(food, ingredient.acceptsAnyOfKind)
+            )
+        )
 
     def calculate(
         self,

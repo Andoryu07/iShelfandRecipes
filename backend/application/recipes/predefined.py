@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from application.foods import FoodResolver
 from application.models import Recipe, RecipeIngredient
-from application.models.enumerations import FoodCategory, MeasurementUnit
+from application.models.enumerations import DishType, FoodCategory, MeasurementUnit
 from application.schemas.foods import NewFoodRequest
 
 
@@ -29,6 +29,8 @@ class PredefinedRecipe(BaseModel):
     name: str
     servings: int
     preparationMinutes: int
+    dishType: DishType
+    isVegetarian: bool = False
     instructions: str
     ingredients: list[PredefinedIngredient]
 
@@ -62,6 +64,8 @@ def copyPredefinedRecipes(session: Session, householdId: int) -> None:
             servings=predefined.servings,
             preparationMinutes=predefined.preparationMinutes,
             instructions=predefined.instructions,
+            dishType=predefined.dishType,
+            isVegetarian=predefined.isVegetarian,
             isPredefined=True,
         )
         session.add(recipe)

@@ -211,6 +211,10 @@ export interface Reservation {
   createdAt: string;
 }
 
+export const dishTypes = ["soup", "mainCourse", "sideDish", "dessert", "breakfast"] as const;
+
+export type DishType = (typeof dishTypes)[number];
+
 export interface RecipeSummary {
   id: number;
   name: string;
@@ -219,7 +223,10 @@ export interface RecipeSummary {
   isPredefined: boolean;
   isFavourite?: boolean;
   icon?: string | null;
+  dishType?: DishType | null;
+  isVegetarian?: boolean;
   missingCount: number;
+  expiringIngredientCount?: number;
   estimatedPrice?: number | null;
   createdAt: string;
 }
@@ -280,6 +287,8 @@ export interface RecipeRequest {
   preparationMinutes: number | null;
   instructions: string;
   icon: string | null;
+  dishType: DishType | null;
+  isVegetarian: boolean;
   ingredients: RecipeIngredientRequest[];
 }
 

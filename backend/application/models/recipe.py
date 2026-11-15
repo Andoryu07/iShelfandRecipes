@@ -4,7 +4,8 @@ from decimal import Decimal
 from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Numeric, Text, UniqueConstraint, false, func, true
 from sqlalchemy.orm import Mapped, mapped_column
 
-from application.models.base import Base
+from application.models.base import Base, databaseEnum
+from application.models.enumerations import DishType
 
 
 class Recipe(Base):
@@ -20,6 +21,8 @@ class Recipe(Base):
     servings: Mapped[int]
     preparationMinutes: Mapped[int | None] = mapped_column("preparation_minutes")
     isPredefined: Mapped[bool] = mapped_column("is_predefined", default=False, server_default=false())
+    dishType: Mapped[DishType | None] = mapped_column("dish_type", databaseEnum(DishType, "dish_type"))
+    isVegetarian: Mapped[bool] = mapped_column("is_vegetarian", default=False, server_default=false())
     icon: Mapped[str | None]
     createdAt: Mapped[datetime] = mapped_column(
         "created_at", DateTime(timezone=True), server_default=func.now()

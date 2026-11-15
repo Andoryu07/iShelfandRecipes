@@ -8,8 +8,14 @@ import type {
   RecipeSummary,
 } from "./types";
 
-export function listRecipes(householdId: number, search: string): Promise<RecipeSummary[]> {
-  return apiRequest<RecipeSummary[]>(`/households/${householdId}/recipes?${new URLSearchParams({ search })}`);
+export function listRecipes(
+  householdId: number,
+  search: string,
+  foodIds: number[] = [],
+): Promise<RecipeSummary[]> {
+  const parameters = new URLSearchParams({ search });
+  foodIds.forEach((foodId) => parameters.append("containsFoodIds", String(foodId)));
+  return apiRequest<RecipeSummary[]>(`/households/${householdId}/recipes?${parameters}`);
 }
 
 export function getRecipe(recipeId: number): Promise<Recipe> {

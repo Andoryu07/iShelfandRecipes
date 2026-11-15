@@ -36,6 +36,8 @@ describe("recipe form", () => {
         preparationMinutes: 30,
         instructions: "Usmaž.",
         icon: "🥞",
+        dishType: null,
+        isVegetarian: false,
         ingredients: [
           { foodId: 3, newFood: null, quantity: 1500, acceptsAnyOfKind: false, isOptional: false },
         ],

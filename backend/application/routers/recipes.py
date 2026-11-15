@@ -1,3 +1,4 @@
+from datetime import timedelta
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
@@ -21,6 +22,7 @@ from application.models import (
 )
 from application.recipes.availability import AvailabilityCalculator, scaledQuantity
 from application.recipes.cooking import Cook, lockHouseholdStock
+from application.stock import todayInHouseholdTimeZone
 from application.schemas.recipes import (
     CookRecipeRequest,
     CookRecipeResponse,
@@ -74,6 +76,8 @@ def buildRecipeResponse(
         isPredefined=recipe.isPredefined,
         isFavourite=isFavourite,
         icon=recipe.icon,
+        dishType=recipe.dishType,
+        isVegetarian=recipe.isVegetarian,
         missingCount=missingCount,
         createdAt=recipe.createdAt,
         instructions=recipe.instructions,
@@ -95,6 +99,20 @@ def recipeResponse(session: Session, recipe: Recipe, userId: int) -> RecipeRespo
     availability = AvailabilityCalculator(session, recipe.householdId, userId).calculate(recipe, ingredients)
     isFavourite = isFavouriteOf(session, recipe.id, userId)
     return buildRecipeResponse(recipe, ingredients, availability.missingCount, isFavourite)
+
+
+def containsFood(ingredients: list[tuple[RecipeIngredient, Food]], wanted: Food) -> bool:
+    wantedKind = wanted.genericName.strip().lower() if wanted.genericName else None
+    return any(
+        food.id == wanted.id
+        or (
+            wantedKind is not None
+            and food.genericName is not None
+            and food.genericName.strip().lower() == wantedKind
+            and food.baseUnit == wanted.baseUnit
+        )
+        for _, food in ingredients
+    )
 
 
 def isFavouriteOf(session: Session, recipeId: int, userId: int) -> bool:
@@ -135,6 +153,7 @@ def replaceIngredients(session: Session, recipe: Recipe, requests: list[RecipeIn
 @router.get("/households/{householdId}/recipes", response_model=list[RecipeSummaryResponse])
 def listRecipes(
     search: str | None = Query(default=None, max_length=100),
+    containsFoodIds: list[int] = Query(default=[], max_length=5),
     membership: HouseholdMember = Depends(getHouseholdMembership),
     session: Session = Depends(getDatabaseSession),
 ) -> list[RecipeSummaryResponse]:
@@ -146,7 +165,20 @@ def listRecipes(
     )
     recipes = sorted(session.scalars(query), key=lambda recipe: recipe.id not in favouriteIds)
     ingredients = loadIngredients(session, [recipe.id for recipe in recipes])
+    if containsFoodIds:
+        wantedFoods = session.scalars(
+            select(Food).where(Food.id.in_(containsFoodIds), Food.householdId == membership.householdId)
+        ).all()
+        if len(wantedFoods) < len(set(containsFoodIds)):
+            return []
+        recipes = [
+            recipe
+            for recipe in recipes
+            if all(containsFood(ingredients[recipe.id], wanted) for wanted in wantedFoods)
+        ]
     calculator = AvailabilityCalculator(session, membership.householdId, membership.userId)
+    today = todayInHouseholdTimeZone()
+    lastExpiringDay = today + timedelta(days=membership.expirationWarningDays)
     summaries = []
     for recipe in recipes:
         availability = calculator.calculate(recipe, ingredients[recipe.id], includePrices=True)
@@ -159,7 +191,12 @@ def listRecipes(
                 isPredefined=recipe.isPredefined,
                 isFavourite=recipe.id in favouriteIds,
                 icon=recipe.icon,
+                dishType=recipe.dishType,
+                isVegetarian=recipe.isVegetarian,
                 missingCount=availability.missingCount,
+                expiringIngredientCount=calculator.countExpiringIngredients(
+                    recipe, ingredients[recipe.id], today, lastExpiringDay
+                ),
                 estimatedPrice=availability.estimatedPrice,
                 createdAt=recipe.createdAt,
             )
@@ -180,6 +217,8 @@ def createRecipe(
         preparationMinutes=request.preparationMinutes,
         instructions=request.instructions,
         icon=request.icon,
+        dishType=request.dishType,
+        isVegetarian=request.isVegetarian,
     )
     session.add(recipe)
     session.flush()
@@ -214,6 +253,10 @@ def updateRecipe(
         recipe.instructions = request.instructions
     if "icon" in request.model_fields_set:
         recipe.icon = request.icon
+    if "dishType" in request.model_fields_set:
+        recipe.dishType = request.dishType
+    if request.isVegetarian is not None:
+        recipe.isVegetarian = request.isVegetarian
     if request.ingredients is not None:
         replaceIngredients(session, recipe, request.ingredients)
     session.commit()

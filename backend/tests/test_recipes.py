@@ -1,9 +1,12 @@
+from datetime import timedelta
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from application.models import Food
+from application.stock import todayInHouseholdTimeZone
 from tests.helpers import createHousehold, joinHousehold, registerAndAuthorize
 from tests.test_foods import createFood
 
@@ -58,6 +61,8 @@ def test_newHouseholdGetsPredefinedRecipesAndTheirFoods(client: TestClient, data
         "Vepřo knedlo zelo",
     ]
     assert all(recipe["isPredefined"] and recipe["missingCount"] > 0 for recipe in recipes)
+    assert {recipe["dishType"] for recipe in recipes} == {"mainCourse"}
+    assert [recipe["name"] for recipe in recipes if recipe["isVegetarian"]] == ["Smažený sýr"]
     assert databaseSession.scalar(select(func.count()).select_from(Food)) == 34
     svickova = client.get(f"/recipes/{recipes[3]['id']}", headers=kitchen.anna).json()
     assert "Smetanu rozmíchej s moukou" in svickova["instructions"]
@@ -410,3 +415,77 @@ def test_favouritesArePersonalAndListedFirst(client: TestClient) -> None:
     stranger = registerAndAuthorize(client, "x@example.com", "X")
     assert client.put(f"/recipes/{ids['Bábovka']}/favourite", headers=stranger).status_code == 404
     assert client.delete(f"/recipes/{ids['Žemlovka']}", headers=kitchen.anna).status_code == 204
+
+
+def test_dishTypeAndVegetarianFlag(client: TestClient) -> None:
+    kitchen = Kitchen(client)
+    milk = kitchen.food("Mléko", "Mléko")
+    recipe = kitchen.recipe([{"foodId": milk, "quantity": 100}], dishType="soup", isVegetarian=True).json()
+    assert (recipe["dishType"], recipe["isVegetarian"]) == ("soup", True)
+
+    updated = client.patch(f"/recipes/{recipe['id']}", json={"dishType": None}, headers=kitchen.anna).json()
+    assert (updated["dishType"], updated["isVegetarian"]) == (None, True)
+    changes = {"isVegetarian": False, "dishType": "dessert"}
+    updated = client.patch(f"/recipes/{recipe['id']}", json=changes, headers=kitchen.anna).json()
+    assert (updated["dishType"], updated["isVegetarian"]) == ("dessert", False)
+    assert client.patch(f"/recipes/{recipe['id']}", json={"dishType": "pizza"}, headers=kitchen.anna).status_code == 422
+    summary = client.get(f"/households/{kitchen.householdId}/recipes", headers=kitchen.anna).json()[0]
+    assert (summary["dishType"], summary["isVegetarian"]) == ("dessert", False)
+
+
+def test_recipesContainingChosenFoods(client: TestClient) -> None:
+    kitchen = Kitchen(client)
+    wholeMilk = kitchen.food("Mléko plnotučné", "Mléko")
+    lightMilk = kitchen.food("Mléko polotučné", "Mléko")
+    flour = kitchen.food("Mouka hladká", "Mouka", baseUnit="gram")
+    eggs = kitchen.food("Vejce", "Vejce", baseUnit="piece")
+    kitchen.recipe([{"foodId": wholeMilk, "quantity": 500}, {"foodId": flour, "quantity": 200}], name="Palačinky")
+    kitchen.recipe([{"foodId": lightMilk, "quantity": 300}], name="Kakao")
+    kitchen.recipe([{"foodId": eggs, "quantity": 3}, {"foodId": flour, "quantity": 100}], name="Nudle")
+
+    def names(*foodIds: int) -> list[str]:
+        url = f"/households/{kitchen.householdId}/recipes"
+        response = client.get(url, params={"containsFoodIds": list(foodIds)}, headers=kitchen.anna)
+        assert response.status_code == 200
+        return [recipe["name"] for recipe in response.json()]
+
+    assert names(lightMilk) == ["Kakao", "Palačinky"]
+    assert names(flour) == ["Nudle", "Palačinky"]
+    assert names(flour, wholeMilk) == ["Palačinky"]
+    assert names(flour, eggs, lightMilk) == []
+    url = f"/households/{kitchen.householdId}/recipes"
+    tooMany = client.get(url, params={"containsFoodIds": [1, 2, 3, 4, 5, 6]}, headers=kitchen.anna)
+    assert tooMany.status_code == 422
+    stranger = registerAndAuthorize(client, "x@example.com", "X")
+    strangerHousehold = createHousehold(client, stranger)
+    strangerFood = createFood(client, stranger, strangerHousehold["id"], "Cizí mléko", genericName="Mléko").json()["id"]
+    assert names(strangerFood) == []
+
+
+def test_expiringIngredientsFollowTheUsersWarningDays(client: TestClient) -> None:
+    kitchen = Kitchen(client)
+    milk = kitchen.food("Mléko", "Mléko")
+    flour = kitchen.food("Mouka", "Mouka", baseUnit="gram")
+    eggs = kitchen.food("Vejce", "Vejce", baseUnit="piece")
+    today = todayInHouseholdTimeZone()
+    kitchen.stock(milk, 1000, (today + timedelta(days=1)).isoformat())
+    kitchen.stock(flour, 1000, (today + timedelta(days=4)).isoformat())
+    eggItem = kitchen.stock(eggs, 6, (today + timedelta(days=1)).isoformat())
+    kitchen.recipe(
+        [{"foodId": milk, "quantity": 100}, {"foodId": flour, "quantity": 100}, {"foodId": eggs, "quantity": 2}]
+    )
+    petr = registerAndAuthorize(client, "petr@example.com", "Petr")
+    joinHousehold(client, petr, kitchen.inviteCode)
+    client.post(
+        f"/households/{kitchen.householdId}/reservations", json={"stockItemId": eggItem, "quantity": 6}, headers=petr
+    )
+    url = f"/households/{kitchen.householdId}/recipes"
+
+    assert client.get(url, headers=kitchen.anna).json()[0]["expiringIngredientCount"] == 1
+    client.patch(
+        f"/households/{kitchen.householdId}/notification-settings",
+        json={"expirationWarningDays": 5},
+        headers=kitchen.anna,
+    )
+    assert client.get(url, headers=kitchen.anna).json()[0]["expiringIngredientCount"] == 2
+    assert client.get(url, headers=petr).json()[0]["expiringIngredientCount"] == 2
