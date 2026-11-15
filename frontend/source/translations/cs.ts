@@ -603,7 +603,7 @@ export const texts = {
         heading: "Jaké údaje ukládáme a proč",
         paragraphs: [
           "Účet: e-mail, jméno, které zadáš, a heslo uložené pouze jako bezpečný otisk (hash), ze kterého nejde zpětně zjistit.",
-          "Domácnost: název domácnosti, její členy, místa uložení, potraviny, zásoby, jejich úbytky a rezervace.",
+          "Domácnost: název domácnosti, její členy, místa uložení, potraviny, zásoby, jejich úbytky a rezervace, recepty, historii vaření a společný nákupní seznam. Osobní nákupní seznam, oblíbené recepty a nastavení upozornění patří jen tobě.",
           "Účtenky: obchod, datum, celková částka a přečtené položky s cenami.",
           "Tyto údaje potřebujeme k tomu, aby aplikace fungovala (plnění smlouvy). Nepoužíváme je k reklamě a neprodáváme je.",
         ],
