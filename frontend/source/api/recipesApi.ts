@@ -1,5 +1,12 @@
 import { apiRequest } from "./apiClient";
-import type { Recipe, RecipeAvailability, RecipeCooking, RecipeRequest, RecipeSummary } from "./types";
+import type {
+  HouseholdCooking,
+  Recipe,
+  RecipeAvailability,
+  RecipeCooking,
+  RecipeRequest,
+  RecipeSummary,
+} from "./types";
 
 export function listRecipes(householdId: number, search: string): Promise<RecipeSummary[]> {
   return apiRequest<RecipeSummary[]>(`/households/${householdId}/recipes?${new URLSearchParams({ search })}`);
@@ -31,6 +38,10 @@ export function getRecipeAvailability(
 
 export function listRecipeCookings(recipeId: number): Promise<RecipeCooking[]> {
   return apiRequest<RecipeCooking[]>(`/recipes/${recipeId}/cookings`);
+}
+
+export function listHouseholdCookings(householdId: number): Promise<HouseholdCooking[]> {
+  return apiRequest<HouseholdCooking[]>(`/households/${householdId}/cookings`);
 }
 
 export function cookRecipe(recipeId: number, servings: number): Promise<unknown> {

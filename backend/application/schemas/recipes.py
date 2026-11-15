@@ -115,6 +115,17 @@ class RecipeCookingResponse(BaseModel):
     createdAt: datetime
 
 
+class HouseholdCookingResponse(BaseModel):
+    id: int
+    recipeId: int | None
+    recipeName: str
+    recipeIcon: str | None
+    recipeIsPredefined: bool
+    servings: int
+    userDisplayName: str | None
+    createdAt: datetime
+
+
 class CookRecipeResponse(BaseModel):
     servings: int
     ingredients: list[CookedIngredientResponse]

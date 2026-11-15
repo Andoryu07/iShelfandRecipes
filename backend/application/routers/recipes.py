@@ -15,6 +15,7 @@ from application.schemas.recipes import (
     CookRecipeRequest,
     CookRecipeResponse,
     CreateRecipeRequest,
+    HouseholdCookingResponse,
     RecipeAvailabilityResponse,
     RecipeCookingResponse,
     RecipeIngredientRequest,
@@ -275,7 +276,15 @@ def cookRecipe(
     servings = request.servings or recipe.servings
     ingredients = loadIngredients(session, [recipe.id])[recipe.id]
     results = Cook(session, recipe, user.id).cook(ingredients, servings)
-    session.add(RecipeCooking(recipeId=recipe.id, userId=user.id, servings=servings))
+    session.add(
+        RecipeCooking(
+            householdId=recipe.householdId,
+            recipeId=recipe.id,
+            recipeName=recipe.name,
+            userId=user.id,
+            servings=servings,
+        )
+    )
     session.commit()
     return CookRecipeResponse(servings=servings, ingredients=results)
 
@@ -296,4 +305,33 @@ def listRecipeCookings(
             id=cooking.id, servings=cooking.servings, userDisplayName=displayName, createdAt=cooking.createdAt
         )
         for cooking, displayName in rows
+    ]
+
+
+@router.get("/households/{householdId}/cookings", response_model=list[HouseholdCookingResponse])
+def listHouseholdCookings(
+    limit: int = Query(default=100, ge=1, le=200),
+    membership: HouseholdMember = Depends(getHouseholdMembership),
+    session: Session = Depends(getDatabaseSession),
+) -> list[HouseholdCookingResponse]:
+    rows = session.execute(
+        select(RecipeCooking, Recipe, User.displayName)
+        .outerjoin(Recipe, Recipe.id == RecipeCooking.recipeId)
+        .outerjoin(User, User.id == RecipeCooking.userId)
+        .where(RecipeCooking.householdId == membership.householdId)
+        .order_by(RecipeCooking.createdAt.desc(), RecipeCooking.id.desc())
+        .limit(limit)
+    ).all()
+    return [
+        HouseholdCookingResponse(
+            id=cooking.id,
+            recipeId=cooking.recipeId,
+            recipeName=recipe.name if recipe else cooking.recipeName,
+            recipeIcon=recipe.icon if recipe else None,
+            recipeIsPredefined=recipe.isPredefined if recipe else False,
+            servings=cooking.servings,
+            userDisplayName=displayName,
+            createdAt=cooking.createdAt,
+        )
+        for cooking, recipe, displayName in rows
     ]

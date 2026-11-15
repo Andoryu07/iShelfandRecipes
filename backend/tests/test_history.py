@@ -80,3 +80,24 @@ def test_cookingIsRecordedInTheRecipeHistory(client: TestClient) -> None:
     assert [event["kind"] for event in fridgeHistory][:2] == ["cooked", "cooked"]
     stranger = registerAndAuthorize(client, "petr@example.com", "Petr")
     assert client.get(url, headers=stranger).status_code == 404
+
+
+def test_householdCookingHistoryKeepsDeletedRecipes(client: TestClient) -> None:
+    kitchen = Kitchen(client)
+    milk = kitchen.food("Mléko", "Mléko")
+    kitchen.stock(milk, 2000)
+    pancakesId = kitchen.recipe([{"foodId": milk, "quantity": 400}], name="Palačinky", icon="🥞").json()["id"]
+    puddingId = kitchen.recipe([{"foodId": milk, "quantity": 500}], name="Pudink").json()["id"]
+    client.post(f"/recipes/{pancakesId}/cook", json={"servings": 2}, headers=kitchen.anna)
+    client.post(f"/recipes/{puddingId}/cook", json={}, headers=kitchen.anna)
+    url = f"/households/{kitchen.householdId}/cookings"
+
+    assert client.delete(f"/recipes/{puddingId}", headers=kitchen.anna).status_code == 204
+    cookings = client.get(url, headers=kitchen.anna).json()
+
+    assert [
+        (cooking["recipeId"], cooking["recipeName"], cooking["recipeIcon"], cooking["servings"], cooking["userDisplayName"])
+        for cooking in cookings
+    ] == [(None, "Pudink", None, 4, "Anna"), (pancakesId, "Palačinky", "🥞", 2, "Anna")]
+    stranger = registerAndAuthorize(client, "petr@example.com", "Petr")
+    assert client.get(url, headers=stranger).status_code == 404

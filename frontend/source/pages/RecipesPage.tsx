@@ -1,9 +1,11 @@
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import HistoryRoundedIcon from "@mui/icons-material/HistoryRounded";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import {
   Alert,
   Avatar,
   Box,
+  Button,
   Card,
   CardActionArea,
   Chip,
@@ -21,6 +23,7 @@ import type { RecipeSummary } from "../api/types";
 import { describeError } from "../errorMessages";
 import { useCurrentHousehold } from "../households/useCurrentHousehold";
 import { recipeIcon } from "../components/icons";
+import { HouseholdCookingHistorySheet } from "../recipes/HouseholdCookingHistorySheet";
 import { formatMoney } from "../receipts/money";
 import { RecipeEditorDialog } from "../recipes/RecipeEditorDialog";
 import { texts } from "../translations/cs";
@@ -47,6 +50,7 @@ function RecipeList({ householdId }: { householdId: number }) {
   const [search, setSearch] = useState("");
   const [activeFilters, setActiveFilters] = useState<RecipeFilter[]>([]);
   const [isCreating, setIsCreating] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const deferredSearch = useDeferredValue(search.trim());
   const recipesQuery = useQuery({
     queryKey: ["households", householdId, "recipes", deferredSearch],
@@ -67,22 +71,36 @@ function RecipeList({ householdId }: { householdId: number }) {
 
   return (
     <>
-      <TextField
-        placeholder={texts.recipes.searchPlaceholder}
-        value={search}
-        onChange={(event) => setSearch(event.target.value)}
-        size="small"
-        slotProps={{
-          input: {
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchRoundedIcon />
-              </InputAdornment>
-            ),
-          },
-          htmlInput: { type: "search", maxLength: 100 },
-        }}
-      />
+      <Stack direction="row" sx={{ gap: 1, alignItems: "center" }}>
+        <TextField
+          placeholder={texts.recipes.searchPlaceholder}
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          size="small"
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchRoundedIcon />
+                </InputAdornment>
+              ),
+            },
+            htmlInput: { type: "search", maxLength: 100 },
+          }}
+          sx={{ flex: 1 }}
+        />
+        <Button
+          variant="outlined"
+          startIcon={<HistoryRoundedIcon />}
+          onClick={() => setIsHistoryOpen(true)}
+          sx={{ flexShrink: 0, mt: 1, height: 40 }}
+        >
+          {texts.history.openHistory}
+        </Button>
+      </Stack>
+      {isHistoryOpen && (
+        <HouseholdCookingHistorySheet householdId={householdId} onClose={() => setIsHistoryOpen(false)} />
+      )}
       <Stack direction="row" sx={{ gap: 1, flexWrap: "wrap", mb: 2 }}>
         {filters.map((filter) => (
           <Chip

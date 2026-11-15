@@ -111,6 +111,17 @@ export interface RecipeCooking {
   createdAt: string;
 }
 
+export interface HouseholdCooking {
+  id: number;
+  recipeId: number | null;
+  recipeName: string;
+  recipeIcon: string | null;
+  recipeIsPredefined: boolean;
+  servings: number;
+  userDisplayName: string | null;
+  createdAt: string;
+}
+
 export interface ScannedReceiptItem {
   originalText: string;
   name: string;

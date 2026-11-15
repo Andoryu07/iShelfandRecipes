@@ -1,3 +1,6 @@
+import ExpandLessRoundedIcon from "@mui/icons-material/ExpandLessRounded";
+import ExpandMoreRoundedIcon from "@mui/icons-material/ExpandMoreRounded";
+import HistoryRoundedIcon from "@mui/icons-material/HistoryRounded";
 import {
   Alert,
   Button,
@@ -387,8 +390,13 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
           )}
 
           <Divider sx={{ my: 2 }} />
-          <Button onClick={() => setIsHistoryOpen(!isHistoryOpen)} sx={{ px: 0 }}>
-            {isHistoryOpen ? "▾" : "▸"} {texts.stock.historyTitle}
+          <Button
+            variant="outlined"
+            startIcon={<HistoryRoundedIcon />}
+            endIcon={isHistoryOpen ? <ExpandLessRoundedIcon /> : <ExpandMoreRoundedIcon />}
+            onClick={() => setIsHistoryOpen(!isHistoryOpen)}
+          >
+            {texts.stock.historyTitle}
           </Button>
           <Collapse in={isHistoryOpen}>
             <List dense>

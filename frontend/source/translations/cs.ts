@@ -372,6 +372,11 @@ export const texts = {
     movedOut: (to: string) => `Přesunuto do: ${to}`,
     cookingsTitle: "Historie vaření",
     cookingsEmpty: "Tento recept zatím nikdo neuvařil.",
+    householdCookingsEmpty: "Zatím se nic nevařilo. Uvařené recepty se tu objeví po stisknutí Uvařeno.",
+    deletedRecipe: (name: string) => `${name} (smazaný recept)`,
+    today: "Dnes",
+    yesterday: "Včera",
+    openHistory: "Historie",
     cookingLine: (name: string, servings: string) => `${name} · ${servings}`,
   },
   notifications: {

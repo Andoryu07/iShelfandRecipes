@@ -45,7 +45,13 @@ class RecipeCooking(Base):
     __tablename__ = "recipe_cookings"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    recipeId: Mapped[int] = mapped_column("recipe_id", ForeignKey("recipes.id", ondelete="CASCADE"), index=True)
+    householdId: Mapped[int] = mapped_column(
+        "household_id", ForeignKey("households.id", ondelete="CASCADE"), index=True
+    )
+    recipeId: Mapped[int | None] = mapped_column(
+        "recipe_id", ForeignKey("recipes.id", ondelete="SET NULL"), index=True
+    )
+    recipeName: Mapped[str] = mapped_column("recipe_name")
     userId: Mapped[int | None] = mapped_column("user_id", ForeignKey("users.id", ondelete="SET NULL"))
     servings: Mapped[int]
     createdAt: Mapped[datetime] = mapped_column(

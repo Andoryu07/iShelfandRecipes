@@ -172,6 +172,7 @@ docker compose run --rm -v ./receipt.jpg:/receipt.jpg backend python -m applicat
 | `DELETE /recipes/{recipeId}` | Delete a recipe | done |
 | `GET /recipes/{recipeId}/availability?servings=` | Available and missing ingredients for the current user and a price estimate from the latest receipt price of each food (or of the same kind) | done |
 | `POST /recipes/{recipeId}/reserve` | Reserve everything that is available for the recipe, earliest expiration first | done |
+| `GET /households/{householdId}/cookings?limit=` | Everything cooked in the household, newest first (default 100); cookings of deleted recipes stay with their name | done |
 | `GET /recipes/{recipeId}/cookings` | Who cooked the recipe, when and for how many servings (newest 50) | done |
 | `POST /recipes/{recipeId}/cook` | Deduct the ingredients from stock (own reservations for the recipe first, then free stock with the earliest expiration) and fulfil the related reservations | done |
 

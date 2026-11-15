@@ -1,6 +1,7 @@
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
+import HistoryRoundedIcon from "@mui/icons-material/HistoryRounded";
 import {
   Alert,
   Avatar,
@@ -90,6 +91,12 @@ export function StorageLocationsSection({ householdId }: { householdId: number }
               secondaryAction={
                 <>
                   <IconButton
+                    aria-label={texts.history.openHistory}
+                    onClick={() => setStorageLocationForHistory(storageLocation)}
+                  >
+                    <HistoryRoundedIcon />
+                  </IconButton>
+                  <IconButton
                     aria-label={texts.common.rename}
                     onClick={() => setStorageLocationToRename(storageLocation)}
                   >
@@ -116,7 +123,7 @@ export function StorageLocationsSection({ householdId }: { householdId: number }
               </ListItemAvatar>
               <ListItemButton
                 onClick={() => setStorageLocationForHistory(storageLocation)}
-                sx={{ borderRadius: 2, mr: 10, px: 1 }}
+                sx={{ borderRadius: 2, mr: 15, px: 1 }}
               >
                 <ListItemText
                   primary={displayStorageLocationName(storageLocation)}

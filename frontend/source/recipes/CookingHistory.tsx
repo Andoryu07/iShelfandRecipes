@@ -1,3 +1,6 @@
+import ExpandLessRoundedIcon from "@mui/icons-material/ExpandLessRounded";
+import ExpandMoreRoundedIcon from "@mui/icons-material/ExpandMoreRounded";
+import HistoryRoundedIcon from "@mui/icons-material/HistoryRounded";
 import { Button, Collapse, List, ListItem, ListItemText, Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -14,8 +17,14 @@ export function CookingHistory({ recipeId }: { recipeId: number }) {
   const cookings = cookingsQuery.data ?? [];
   return (
     <section>
-      <Button onClick={() => setIsOpen(!isOpen)} sx={{ px: 0 }}>
-        {isOpen ? "▾" : "▸"} {texts.history.cookingsTitle}
+      <Button
+        variant="outlined"
+        startIcon={<HistoryRoundedIcon />}
+        endIcon={isOpen ? <ExpandLessRoundedIcon /> : <ExpandMoreRoundedIcon />}
+        onClick={() => setIsOpen(!isOpen)}
+        sx={{ mt: 2 }}
+      >
+        {texts.history.cookingsTitle}
       </Button>
       <Collapse in={isOpen}>
         {cookingsQuery.isSuccess && cookings.length === 0 && (
