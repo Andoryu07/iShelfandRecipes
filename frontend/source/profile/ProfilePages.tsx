@@ -28,6 +28,8 @@ import { ConfirmationDialog } from "../components/ConfirmationDialog";
 import { describeError } from "../errorMessages";
 import { NotificationsSection } from "../households/NotificationsSection";
 import { formatTimestamp, texts } from "../translations/cs";
+import { NotificationSettingsCard } from "../households/NotificationSettingsCard";
+import { useCurrentHousehold } from "../households/useCurrentHousehold";
 import { ChangePasswordCard } from "./ChangePasswordCard";
 import { DeleteAccountButton } from "./DeleteAccountButton";
 import { SettingsList } from "./SettingsList";
@@ -141,12 +143,16 @@ export function AppearancePage() {
 }
 
 export function NotificationsSettingsPage() {
+  const { household } = useCurrentHousehold();
   return (
-    <Card sx={{ mt: 2 }}>
-      <CardContent>
-        <NotificationsSection />
-      </CardContent>
-    </Card>
+    <>
+      <Card sx={{ mt: 2 }}>
+        <CardContent>
+          <NotificationsSection />
+        </CardContent>
+      </Card>
+      {household && <NotificationSettingsCard household={household} />}
+    </>
   );
 }
 

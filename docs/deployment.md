@@ -8,7 +8,7 @@ Production uses `docker-compose.production.yml`:
 | --- | --- |
 | `caddy` | Serves the built PWA, forwards `/api` to the backend and gets and renews the HTTPS certificate automatically (Let's Encrypt) |
 | `backend` | The API (`BACKEND_WORKERS` processes, 1 by default); database migrations run on start; `/docs` is turned off |
-| `worker` | Daily jobs at 8:00 (push notifications, deleting accounts after the 14-day period) |
+| `worker` | Scheduled jobs every full hour (push notifications at each member's chosen hour, deleting accounts after the 14-day period) |
 | `database` | PostgreSQL, not reachable from the internet |
 | `backup` | A database backup every night at 3:00 into `backups/`, the last 14 days are kept |
 

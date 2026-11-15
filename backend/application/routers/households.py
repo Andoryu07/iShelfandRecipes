@@ -23,6 +23,7 @@ from application.schemas.households import (
     HouseholdMemberResponse,
     HouseholdResponse,
     JoinHouseholdRequest,
+    NotificationSettingsRequest,
     UpdateHouseholdRequest,
 )
 
@@ -39,7 +40,8 @@ def createHousehold(
     household = Household(name=request.name, inviteCode=generateUniqueInviteCode(session))
     session.add(household)
     session.flush()
-    session.add(HouseholdMember(userId=user.id, householdId=household.id, role=HouseholdRole.owner))
+    membership = HouseholdMember(userId=user.id, householdId=household.id, role=HouseholdRole.owner)
+    session.add(membership)
     createDefaultStorageLocations(session, household.id)
     copyPredefinedRecipes(session, household.id)
     try:
@@ -47,7 +49,7 @@ def createHousehold(
     except IntegrityError:
         session.rollback()
         raise alreadyInHouseholdError()
-    return buildHouseholdResponse(household, HouseholdRole.owner)
+    return buildHouseholdResponse(household, membership)
 
 
 @router.get("", response_model=list[HouseholdResponse])
@@ -55,12 +57,12 @@ def listHouseholds(
     user: User = Depends(getCurrentUser), session: Session = Depends(getDatabaseSession)
 ) -> list[HouseholdResponse]:
     rows = session.execute(
-        select(Household, HouseholdMember.role)
+        select(Household, HouseholdMember)
         .join(HouseholdMember, HouseholdMember.householdId == Household.id)
         .where(HouseholdMember.userId == user.id)
         .order_by(Household.id)
     ).all()
-    return [buildHouseholdResponse(household, role) for household, role in rows]
+    return [buildHouseholdResponse(household, membership) for household, membership in rows]
 
 
 @router.post("/join", response_model=HouseholdResponse)
@@ -75,13 +77,14 @@ def joinHousehold(
     if household is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid invite code")
     ensureUserHasNoHousehold(session, user.id)
-    session.add(HouseholdMember(userId=user.id, householdId=household.id, role=HouseholdRole.member))
+    membership = HouseholdMember(userId=user.id, householdId=household.id, role=HouseholdRole.member)
+    session.add(membership)
     try:
         session.commit()
     except IntegrityError:
         session.rollback()
         raise alreadyInHouseholdError()
-    return buildHouseholdResponse(household, HouseholdRole.member)
+    return buildHouseholdResponse(household, membership)
 
 
 @router.get("/{householdId}", response_model=HouseholdResponse)
@@ -89,7 +92,7 @@ def getHousehold(
     membership: HouseholdMember = Depends(getHouseholdMembership),
     session: Session = Depends(getDatabaseSession),
 ) -> HouseholdResponse:
-    return buildHouseholdResponse(session.get(Household, membership.householdId), membership.role)
+    return buildHouseholdResponse(session.get(Household, membership.householdId), membership)
 
 
 @router.patch("/{householdId}", response_model=HouseholdResponse)
@@ -101,7 +104,7 @@ def updateHousehold(
     household = session.get(Household, membership.householdId)
     household.name = request.name
     session.commit()
-    return buildHouseholdResponse(household, membership.role)
+    return buildHouseholdResponse(household, membership)
 
 
 @router.post("/{householdId}/invite-code", response_model=HouseholdResponse)
@@ -112,7 +115,21 @@ def regenerateInviteCode(
     household = session.get(Household, membership.householdId)
     household.inviteCode = generateUniqueInviteCode(session)
     session.commit()
-    return buildHouseholdResponse(household, membership.role)
+    return buildHouseholdResponse(household, membership)
+
+
+@router.patch("/{householdId}/notification-settings", response_model=HouseholdResponse)
+def updateNotificationSettings(
+    request: NotificationSettingsRequest,
+    membership: HouseholdMember = Depends(getHouseholdMembership),
+    session: Session = Depends(getDatabaseSession),
+) -> HouseholdResponse:
+    if request.notificationHour is not None:
+        membership.notificationHour = request.notificationHour
+    if request.expirationWarningDays is not None:
+        membership.expirationWarningDays = request.expirationWarningDays
+    session.commit()
+    return buildHouseholdResponse(session.get(Household, membership.householdId), membership)
 
 
 @router.get("/{householdId}/members", response_model=list[HouseholdMemberResponse])

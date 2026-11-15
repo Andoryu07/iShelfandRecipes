@@ -27,6 +27,7 @@ function compareExpiration(first: string | null, second: string | null): number 
 export function groupStockItems(
   items: StockItem[],
   today: Date,
+  warningDays: number,
 ): { soon: StockGroup[]; other: StockGroup[] } {
   const byFood = new Map<number, StockItem[]>();
   for (const item of items) {
@@ -43,7 +44,7 @@ export function groupStockItems(
       totalQuantity: sorted.reduce((sum, item) => sum + item.quantity, 0),
       reservedQuantity: sorted.reduce((sum, item) => sum + item.reservedQuantity, 0),
       nearestExpirationDate,
-      status: expirationStatus(nearestExpirationDate, today),
+      status: expirationStatus(nearestExpirationDate, today, warningDays),
       storageLocationIds: [...new Set(sorted.map((item) => item.storageLocationId))],
     };
   });

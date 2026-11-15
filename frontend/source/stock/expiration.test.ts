@@ -15,7 +15,11 @@ describe("expiration", () => {
     expect(expirationStatus(null, today)).toBe("none");
     expect(expirationStatus("2026-11-11", today)).toBe("expired");
     expect(expirationStatus("2026-11-12", today)).toBe("soon");
-    expect(expirationStatus("2026-11-15", today)).toBe("soon");
-    expect(expirationStatus("2026-11-16", today)).toBe("fresh");
+    expect(expirationStatus("2026-11-15", today, 3)).toBe("soon");
+    expect(expirationStatus("2026-11-16", today, 3)).toBe("fresh");
+    expect(expirationStatus("2026-11-14", today)).toBe("soon");
+    expect(expirationStatus("2026-11-15", today)).toBe("fresh");
+    expect(expirationStatus("2026-11-12", today, 0)).toBe("soon");
+    expect(expirationStatus("2026-11-13", today, 0)).toBe("fresh");
   });
 });

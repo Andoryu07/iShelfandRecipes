@@ -387,7 +387,25 @@ export const texts = {
   notifications: {
     title: "Upozornění",
     expirationSwitch: "Upozornění na blížící se trvanlivost",
-    description: "Každý den v 8:00 přijde souhrn potravin, kterým do 2 dnů končí trvanlivost.",
+    description: (hour: number, days: number) =>
+      days === 0
+        ? `Každý den v ${hour}:00 přijde souhrn potravin, kterým ten den končí trvanlivost.`
+        : `Každý den v ${hour}:00 přijde souhrn potravin, kterým do ${days} ${days === 1 ? "dne" : "dnů"} končí trvanlivost.`,
+    settingsTitle: "Kdy upozornit",
+    settingsDescription: "Nastavení platí jen pro tebe. Podle něj se počítá i sekce Brzy projde v zásobách.",
+    hour: "Čas souhrnu",
+    daysAhead: "Kolik dní předem",
+    daysAheadOption: (days: number) =>
+      days === 0
+        ? "v den konce"
+        : days === 1
+          ? "1 den"
+          : days < 5
+            ? `${days} dny`
+            : days === 7
+              ? "týden"
+              : `${days} dní`,
+    settingsSaved: "Nastavení uloženo",
     unsupported: "Tento prohlížeč upozornění nepodporuje. Na iPhonu je potřeba přidat aplikaci na plochu.",
     denied: "Upozornění jsou v prohlížeči zakázaná. Povol je v nastavení prohlížeče pro tuto stránku.",
     sendTest: "Poslat zkušební upozornění",
@@ -423,7 +441,14 @@ export const texts = {
         : count < 5
           ? `${count} potraviny brzy projdou`
           : `${count} potravin brzy projde`,
-    daysLeft: (days: number) => (days === 0 ? "dnes" : days === 1 ? "zítra" : "pozítří"),
+    daysLeft: (days: number) =>
+      days === 0
+        ? "dnes"
+        : days === 1
+          ? "zítra"
+          : days === 2
+            ? "pozítří"
+            : `za ${days} ${days < 5 ? "dny" : "dní"}`,
     andMore: (count: number) => `a ${count} další`,
   },
   profile: {

@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 
 from application.configuration import getConfiguration
 from application.jobs.worker import nextRunAfter
-from application.models import Household, PushSubscription
+from application.models import HouseholdMember, PushSubscription
 from application.notifications.expiration import sendExpirationNotifications
 from application.notifications.generate_vapid_keys import encode
 from application.main import application
@@ -21,6 +21,7 @@ from tests.helpers import createHousehold, joinHousehold, registerAndAuthorize
 from tests.test_foods import createFood
 
 today = date(2026, 11, 20)
+morning = datetime(2026, 11, 20, 9, 0, tzinfo=householdTimeZone)
 
 
 class FakeSender:
@@ -98,13 +99,13 @@ def prepareHousehold(client: TestClient) -> dict:
     return household
 
 
-def test_dailyJobSendsOneSummaryPerHouseholdAndDay(client: TestClient, databaseSession: Session) -> None:
+def test_eachMemberGetsOneSummaryPerDay(client: TestClient, databaseSession: Session) -> None:
     household = prepareHousehold(client)
     stranger = registerAndAuthorize(client, "stranger@example.com", "Stranger")
     subscribe(client, stranger, "https://push.example/stranger")
     sender = FakeSender()
 
-    assert sendExpirationNotifications(databaseSession, sender, today) == 1
+    assert sendExpirationNotifications(databaseSession, sender, morning) == 2
 
     expectedPayload = {
         "type": "expiration",
@@ -116,13 +117,42 @@ def test_dailyJobSendsOneSummaryPerHouseholdAndDay(client: TestClient, databaseS
         ("https://push.example/petr", expectedPayload),
     ]
     databaseSession.expire_all()
-    assert databaseSession.get(Household, household["id"]).expirationNotifiedOn == today
+    notifiedOn = databaseSession.scalars(
+        select(HouseholdMember.expirationNotifiedOn).where(HouseholdMember.householdId == household["id"])
+    ).all()
+    assert notifiedOn == [today, today]
 
-    assert sendExpirationNotifications(databaseSession, sender, today) == 0
+    assert sendExpirationNotifications(databaseSession, sender, morning + timedelta(hours=5)) == 0
     assert len(sender.sent) == 2
-    assert sendExpirationNotifications(databaseSession, sender, today, force=True) == 1
-    assert sendExpirationNotifications(databaseSession, sender, today + timedelta(days=1)) == 1
+    assert sendExpirationNotifications(databaseSession, sender, morning, force=True) == 2
+    assert sendExpirationNotifications(databaseSession, sender, morning + timedelta(days=1)) == 2
     assert len(sender.sent) == 6
+
+
+def test_membersChooseTheirOwnTimeAndDays(client: TestClient, databaseSession: Session) -> None:
+    household = prepareHousehold(client)
+    anna = client.post("/auth/login", json={"email": "anna@example.com", "password": "correct horse battery"}).json()
+    annaHeaders = {"Authorization": f"Bearer {anna['accessToken']}"}
+    settingsUrl = f"/households/{household['id']}/notification-settings"
+
+    response = client.patch(settingsUrl, json={"notificationHour": 18, "expirationWarningDays": 3}, headers=annaHeaders)
+
+    assert response.status_code == 200
+    assert (response.json()["notificationHour"], response.json()["expirationWarningDays"]) == (18, 3)
+    assert client.get(f"/households/{household['id']}", headers=annaHeaders).json()["notificationHour"] == 18
+    for invalid in [{"notificationHour": 5}, {"notificationHour": 23}, {"expirationWarningDays": 8}, {"expirationWarningDays": -1}]:
+        assert client.patch(settingsUrl, json=invalid, headers=annaHeaders).status_code == 422
+
+    sender = FakeSender()
+    assert sendExpirationNotifications(databaseSession, sender, morning) == 1
+    assert [endpoint for endpoint, _ in sender.sent] == ["https://push.example/petr"]
+
+    evening = morning.replace(hour=18)
+    assert sendExpirationNotifications(databaseSession, sender, evening) == 1
+    endpoint, payload = sender.sent[-1]
+    assert endpoint == "https://push.example/anna"
+    assert payload["count"] == 4
+    assert payload["items"][-1] == {"name": "Sýr", "daysLeft": 3}
 
 
 def test_expiredSubscriptionsAreRemoved(client: TestClient, databaseSession: Session) -> None:
@@ -130,7 +160,7 @@ def test_expiredSubscriptionsAreRemoved(client: TestClient, databaseSession: Ses
     sender = FakeSender()
     sender.expiredEndpoints = {"https://push.example/petr"}
 
-    sendExpirationNotifications(databaseSession, sender, today)
+    sendExpirationNotifications(databaseSession, sender, morning)
 
     endpoints = databaseSession.scalars(select(PushSubscription.endpoint)).all()
     assert endpoints == ["https://push.example/anna"]
@@ -140,7 +170,7 @@ def test_householdWithoutExpiringFoodGetsNothing(client: TestClient, databaseSes
     prepareHousehold(client)
     sender = FakeSender()
 
-    assert sendExpirationNotifications(databaseSession, sender, today + timedelta(days=30)) == 0
+    assert sendExpirationNotifications(databaseSession, sender, morning + timedelta(days=30)) == 0
     assert sender.sent == []
 
 
@@ -171,12 +201,13 @@ def test_generatedKeysBelongTogether(capsys: pytest.CaptureFixture[str]) -> None
     assert len(base64.urlsafe_b64decode(lines["VAPID_PUBLIC_KEY"] + "==")) == 65
 
 
-def test_workerRunsEveryDayAtEight() -> None:
-    morning = datetime(2026, 11, 20, 7, 30, tzinfo=householdTimeZone)
-    evening = datetime(2026, 11, 20, 21, 0, tzinfo=householdTimeZone)
-
-    assert nextRunAfter(morning) == datetime(2026, 11, 20, 8, 0, tzinfo=householdTimeZone)
-    assert nextRunAfter(evening) == datetime(2026, 11, 21, 8, 0, tzinfo=householdTimeZone)
+def test_workerRunsAtEveryFullHour() -> None:
+    assert nextRunAfter(datetime(2026, 11, 20, 7, 30, tzinfo=householdTimeZone)) == datetime(
+        2026, 11, 20, 8, 0, tzinfo=householdTimeZone
+    )
+    assert nextRunAfter(datetime(2026, 11, 20, 23, 0, tzinfo=householdTimeZone)) == datetime(
+        2026, 11, 21, 0, 0, tzinfo=householdTimeZone
+    )
 
 
 def test_generatedKeysSignAndEncryptARealPushRequest(capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch) -> None:

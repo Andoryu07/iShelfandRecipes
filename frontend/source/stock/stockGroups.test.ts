@@ -39,6 +39,7 @@ describe("stock groups", () => {
         item(5, milk, 500, "2026-11-14"),
       ],
       today,
+      3,
     );
 
     expect(groups.soon.map((group) => group.food.name)).toEqual(["Mléko"]);

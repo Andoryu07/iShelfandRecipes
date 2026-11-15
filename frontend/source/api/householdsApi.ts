@@ -19,6 +19,16 @@ export function joinHousehold(inviteCode: string): Promise<Household> {
   return apiRequest<Household>("/households/join", { method: "POST", body: { inviteCode } });
 }
 
+export function updateNotificationSettings(
+  householdId: number,
+  settings: { notificationHour?: number; expirationWarningDays?: number },
+): Promise<Household> {
+  return apiRequest<Household>(`/households/${householdId}/notification-settings`, {
+    method: "PATCH",
+    body: settings,
+  });
+}
+
 export function regenerateInviteCode(householdId: number): Promise<Household> {
   return apiRequest<Household>(`/households/${householdId}/invite-code`, { method: "POST" });
 }

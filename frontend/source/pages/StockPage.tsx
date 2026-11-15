@@ -26,6 +26,7 @@ import { listStockItems } from "../api/stockApi";
 import type { StockItem, StorageLocation } from "../api/types";
 import { describeError } from "../errorMessages";
 import { useCurrentHousehold } from "../households/useCurrentHousehold";
+import { useExpirationWarningDays } from "../households/useCurrentHousehold";
 import { useStorageLocations } from "../households/useStorageLocations";
 import { AddStockItemDialog } from "../stock/AddStockItemDialog";
 import { CategoryAvatar } from "../components/CategoryAvatar";
@@ -71,7 +72,8 @@ function StockList({ householdId }: { householdId: number }) {
   const storageLocationsById = new Map<number, StorageLocation>(
     storageLocations.map((storageLocation) => [storageLocation.id, storageLocation]),
   );
-  const groups = groupStockItems(stockQuery.data ?? [], new Date());
+  const warningDays = useExpirationWarningDays();
+  const groups = groupStockItems(stockQuery.data ?? [], new Date(), warningDays);
   const isFiltered = Boolean(deferredSearch) || selectedStorageLocationId !== undefined;
 
   return (

@@ -18,11 +18,18 @@ class JoinHouseholdRequest(BaseModel):
     inviteCode: str = Field(min_length=1, max_length=50)
 
 
+class NotificationSettingsRequest(BaseModel):
+    notificationHour: int | None = Field(default=None, ge=6, le=22)
+    expirationWarningDays: int | None = Field(default=None, ge=0, le=7)
+
+
 class HouseholdResponse(BaseModel):
     id: int
     name: str
     inviteCode: str
     role: HouseholdRole
+    notificationHour: int
+    expirationWarningDays: int
     createdAt: datetime
 
 

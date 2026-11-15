@@ -1,5 +1,6 @@
 import { Chip } from "@mui/material";
 import { formatDate, texts } from "../translations/cs";
+import { useExpirationWarningDays } from "../households/useCurrentHousehold";
 import { daysUntil, expirationStatus } from "./expiration";
 
 export function expirationLabel(expirationDate: string | null, today: Date = new Date()): string {
@@ -23,7 +24,7 @@ export function expirationLabel(expirationDate: string | null, today: Date = new
 }
 
 export function ExpirationChip({ expirationDate }: { expirationDate: string | null }) {
-  const status = expirationStatus(expirationDate, new Date());
+  const status = expirationStatus(expirationDate, new Date(), useExpirationWarningDays());
   const color = status === "expired" ? "error" : status === "soon" ? "warning" : "default";
   return (
     <Chip

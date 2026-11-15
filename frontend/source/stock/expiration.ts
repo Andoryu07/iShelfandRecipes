@@ -1,6 +1,6 @@
 export type ExpirationStatus = "none" | "expired" | "soon" | "fresh";
 
-export const expiringSoonDays = 3;
+export const defaultExpirationWarningDays = 2;
 
 export function localDateText(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -15,7 +15,11 @@ export function daysUntil(expirationDate: string, today: Date): number {
   return Math.round((expiration - todayUtc) / 86_400_000);
 }
 
-export function expirationStatus(expirationDate: string | null, today: Date): ExpirationStatus {
+export function expirationStatus(
+  expirationDate: string | null,
+  today: Date,
+  warningDays: number = defaultExpirationWarningDays,
+): ExpirationStatus {
   if (!expirationDate) {
     return "none";
   }
@@ -23,5 +27,5 @@ export function expirationStatus(expirationDate: string | null, today: Date): Ex
   if (remainingDays < 0) {
     return "expired";
   }
-  return remainingDays <= expiringSoonDays ? "soon" : "fresh";
+  return remainingDays <= warningDays ? "soon" : "fresh";
 }

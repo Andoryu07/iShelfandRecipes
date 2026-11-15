@@ -22,7 +22,7 @@ import { getSpending } from "../api/statisticsApi";
 import { listActiveReservations, listStockItems } from "../api/stockApi";
 import { useAuthentication } from "../authentication/AuthenticationContext";
 import { CategoryAvatar } from "../components/CategoryAvatar";
-import { useCurrentHousehold } from "../households/useCurrentHousehold";
+import { useCurrentHousehold, useExpirationWarningDays } from "../households/useCurrentHousehold";
 import { greetingFor, vocative } from "../overview/vocative";
 import { formatMoney } from "../receipts/money";
 import { changePercent, monthLocative, monthText } from "../spending/months";
@@ -55,9 +55,10 @@ function SectionHeader({ title, onShowAll }: { title: string; onShowAll?: () => 
 function Overview({ householdId }: { householdId: number }) {
   const navigate = useNavigate();
   const { user } = useAuthentication();
+  const warningDays = useExpirationWarningDays();
   const expiringQuery = useQuery({
-    queryKey: [...stockItemsQueryKey(householdId), { expiringWithinDays: 3 }],
-    queryFn: () => listStockItems(householdId, { expiringWithinDays: 3 }),
+    queryKey: [...stockItemsQueryKey(householdId), { expiringWithinDays: warningDays }],
+    queryFn: () => listStockItems(householdId, { expiringWithinDays: warningDays }),
   });
   const reservationsQuery = useQuery({
     queryKey: [...stockItemsQueryKey(householdId), "activeReservations"],

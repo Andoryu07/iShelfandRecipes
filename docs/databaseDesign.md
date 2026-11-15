@@ -31,8 +31,8 @@ erDiagram
 ## Tables (14)
 
 - **users**: id, email (unique), password_hash, display_name, receipt_consent_given_at (nullable), deletion_requested_at (nullable; the account is deleted 14 days later), created_at
-- **households**: id, name, invite_code (unique), expiration_notified_on (date of the last expiration notification), created_at
-- **household_members**: id, user_id, household_id, role (owner, member), joined_at. A user belongs to one household for now; several households are a premium feature.
+- **households**: id, name, invite_code (unique), created_at
+- **household_members**: id, user_id, household_id, role (owner, member), notification_hour (6-22, default 8), expiration_warning_days (0-7, default 2), expiration_notified_on (date of the member's last expiration notification), joined_at. A user belongs to one household for now; several households are a premium feature.
 - **storage_locations**: id, household_id, name, kind (fridge, freezer, pantry, custom), icon (nullable emoji)
 - **foods**: id, household_id, name (unique per household ignoring letter case, as specific as known, for example "Mouka hladká"), generic_name (nullable general kind, for example "Mouka"; recipes will accept any food of the same kind unless they require a specific food), category (fixed list kept in the application), base_unit (gram, milliliter, piece), icon (nullable emoji chosen by the user). Each household has its own catalog of foods.
 - **stock_items**: id, storage_location_id, food_id, quantity (remaining), expiration_date (nullable), receipt_item_id (nullable), created_by_user_id (nullable, who added it), created_at

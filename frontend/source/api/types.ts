@@ -20,6 +20,8 @@ export interface Household {
   name: string;
   inviteCode: string;
   role: HouseholdRole;
+  notificationHour: number;
+  expirationWarningDays: number;
   createdAt: string;
 }
 

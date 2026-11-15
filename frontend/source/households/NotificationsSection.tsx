@@ -9,7 +9,9 @@ import {
 } from "../api/notificationsApi";
 import { describeError } from "../errorMessages";
 import { texts } from "../translations/cs";
+import { defaultExpirationWarningDays } from "../stock/expiration";
 import { currentBrowser } from "./browser";
+import { useCurrentHousehold } from "./useCurrentHousehold";
 import { deniedHint, subscribeFailedHint, unsupportedHint } from "./notificationHints";
 
 const isSupported = typeof window !== "undefined" && "serviceWorker" in navigator && "PushManager" in window;
@@ -25,6 +27,7 @@ function decodeBase64Url(text: string): Uint8Array<ArrayBuffer> {
 export function NotificationsSection() {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isBusy, setIsBusy] = useState(false);
+  const { household } = useCurrentHousehold();
   const [browser] = useState(currentBrowser);
   const [errorMessage, setErrorMessage] = useState<string | null>(() =>
     isSupported && Notification.permission === "denied" ? deniedHint(currentBrowser()) : null,
@@ -127,7 +130,10 @@ export function NotificationsSection() {
             label={texts.notifications.expirationSwitch}
           />
           <Typography variant="body2" color="text.secondary">
-            {texts.notifications.description}
+            {texts.notifications.description(
+              household?.notificationHour ?? 8,
+              household?.expirationWarningDays ?? defaultExpirationWarningDays,
+            )}
           </Typography>
           {isSubscribed && (
             <Button variant="outlined" onClick={sendTest} disabled={isBusy} sx={{ mt: 2 }}>

@@ -55,12 +55,14 @@ def createDefaultStorageLocations(session: Session, householdId: int) -> None:
         session.add(StorageLocation(householdId=householdId, name=name, kind=kind))
 
 
-def buildHouseholdResponse(household: Household, role: HouseholdRole) -> HouseholdResponse:
+def buildHouseholdResponse(household: Household, membership: HouseholdMember) -> HouseholdResponse:
     return HouseholdResponse(
         id=household.id,
         name=household.name,
         inviteCode=formatInviteCode(household.inviteCode),
-        role=role,
+        role=membership.role,
+        notificationHour=membership.notificationHour,
+        expirationWarningDays=membership.expirationWarningDays,
         createdAt=household.createdAt,
     )
 

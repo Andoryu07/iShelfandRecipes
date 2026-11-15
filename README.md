@@ -185,9 +185,10 @@ A new household gets five predefined recipes written for this project (`backend/
 | `GET /push/public-key` | Public key for web push subscriptions | done |
 | `POST /push-subscriptions` | Register a device for push notifications | done |
 | `DELETE /push-subscriptions` | Unregister a device | done |
+| `PATCH /households/{householdId}/notification-settings` | Change the own notification hour (6-22) and days ahead (0-7); returns the household with the own settings | done |
 | `POST /push-subscriptions/test` | Send a test notification to one of the user's own subscriptions (by `endpoint`); `404` if it is unknown or the browser cancelled it | done |
 
-The `worker` service runs the daily jobs every day at 8:00 Prague time (and right after start if that time has passed): accounts past their 14-day deletion period are deleted and every household gets one summary push notification about food that expires today or in the next two days, sent to all members who switched notifications on in the household screen. A household is notified at most once a day and subscriptions the browser has cancelled are removed. The server sends only data; the service worker writes the Czech text.
+The `worker` service runs the scheduled jobs right after start and then at every full hour (Prague time): accounts past their 14-day deletion period are deleted, and every member whose notification hour has come and who has not been notified today gets one summary push notification on their devices about food in the household that expires within their chosen number of days. Each member picks the hour (6:00-22:00, default 8:00) and the days ahead (0-7, default 2) in the profile (`PATCH /households/{householdId}/notification-settings`); the same days decide what the app shows as expiring soon. Subscriptions the browser has cancelled are removed. The server sends only data; the service worker writes the Czech text.
 
 Push notifications need VAPID keys in `.env`:
 
