@@ -32,18 +32,29 @@ import {
   emptyIngredientRow,
   formValuesFromRecipe,
   type IngredientRow,
+  type RecipeFormValues,
 } from "./recipeForm";
 
 interface RecipeEditorDialogProps {
   householdId: number;
   recipe: Recipe | null;
+  initialValues?: RecipeFormValues;
   onClose: () => void;
   onSaved: (recipe: Recipe) => void;
 }
 
-export function RecipeEditorDialog({ householdId, recipe, onClose, onSaved }: RecipeEditorDialogProps) {
+export function RecipeEditorDialog({
+  householdId,
+  recipe,
+  initialValues,
+  onClose,
+  onSaved,
+}: RecipeEditorDialogProps) {
   const queryClient = useQueryClient();
-  const [values, setValues] = useState(() => formValuesFromRecipe(recipe));
+  const [values, setValues] = useState(() => initialValues ?? formValuesFromRecipe(recipe));
+  const missingQuantityCount = initialValues
+    ? values.ingredients.filter((row) => row.food !== null && !row.quantityText.trim()).length
+    : 0;
   const [formError, setFormError] = useState<string | null>(null);
   const saveMutation = useMutation({
     mutationFn: (request: NonNullable<ReturnType<typeof buildRecipeRequest>["request"]>) =>
@@ -88,6 +99,12 @@ export function RecipeEditorDialog({ householdId, recipe, onClose, onSaved }: Re
     <Dialog open onClose={onClose} fullWidth fullScreen={window.innerWidth < 600}>
       <DialogTitle>{recipe ? texts.recipes.editRecipe : texts.recipes.newRecipe}</DialogTitle>
       <DialogContent>
+        {initialValues && (
+          <Alert severity={missingQuantityCount > 0 ? "warning" : "info"} sx={{ mb: 1 }}>
+            {texts.recipes.scannedNotice}
+            {missingQuantityCount > 0 && ` ${texts.recipes.scannedMissingQuantities(missingQuantityCount)}`}
+          </Alert>
+        )}
         <TextField
           label={texts.recipes.name}
           value={values.name}

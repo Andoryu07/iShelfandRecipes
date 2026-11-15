@@ -12,6 +12,7 @@ export interface User {
   email: string;
   displayName: string;
   receiptConsentGivenAt: string | null;
+  recipePhotoConsentGivenAt?: string | null;
   deletionScheduledAt: string | null;
 }
 
@@ -137,6 +138,29 @@ export interface ShoppingListItem {
   createdByDisplayName: string | null;
   checkedByDisplayName: string | null;
   createdAt: string;
+}
+
+export interface ScannedIngredient {
+  originalText: string;
+  name: string;
+  genericName: string | null;
+  category: FoodCategory;
+  quantity: number | null;
+  unit: MeasurementUnit | null;
+  isOptional: boolean;
+  suggestedFood: Food | null;
+}
+
+export interface ScannedRecipe {
+  name: string;
+  servings: number;
+  preparationMinutes: number | null;
+  dishType: DishType | null;
+  isVegetarian: boolean;
+  instructions: string;
+  ingredients: ScannedIngredient[];
+  usedScans: number;
+  scanLimit: number;
 }
 
 export interface ScannedReceiptItem {

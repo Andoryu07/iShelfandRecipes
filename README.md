@@ -167,6 +167,8 @@ docker compose run --rm -v ./receipt.jpg:/receipt.jpg backend python -m applicat
 | --- | --- | --- |
 | `GET /households/{householdId}/recipes?search=&containsFoodIds=` | List recipes (the user's favourites first) with missing count, price estimate, dish type, vegetarian flag and `expiringIngredientCount` (ingredients the user could cover with food expiring within their warning days); `containsFoodIds` (up to 5) keeps recipes that contain every chosen food or a food of the same kind | done |
 | `POST /households/{householdId}/recipes` | Create a recipe | done |
+| `GET /households/{householdId}/recipes/scan-allowance` | How many recipe scans the household has used and the limit (`RECIPE_SCAN_LIMIT`, default 3) | done |
+| `POST /households/{householdId}/recipes/scan` | Read a recipe from 1-3 photos or PDFs (multipart field `files`) with Gemini and return a draft for the editor: name, servings, time, dish type, vegetarian flag, numbered steps and ingredients in base units matched to the household's foods by name; needs the photo consent; a successful scan counts towards the household limit (`429` when used up); photos are never stored | done |
 | `GET /recipes/{recipeId}` | Recipe detail with ingredients | done |
 | `PATCH /recipes/{recipeId}` | Edit a recipe | done |
 | `DELETE /recipes/{recipeId}` | Delete a recipe | done |

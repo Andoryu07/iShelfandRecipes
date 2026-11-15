@@ -8,6 +8,7 @@ from application.routers import (
     households,
     notifications,
     receipts,
+    recipe_scans,
     recipes,
     reservations,
     shopping_list,
@@ -30,6 +31,7 @@ application.include_router(foods.router)
 application.include_router(stock_items.router)
 application.include_router(receipts.router)
 application.include_router(reservations.router)
+application.include_router(recipe_scans.router)
 application.include_router(recipes.router)
 application.include_router(notifications.router)
 application.include_router(statistics.router)

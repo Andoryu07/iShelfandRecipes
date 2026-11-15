@@ -9,7 +9,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { objectUrlFor } from "../components/objectUrls";
 import { texts } from "../translations/cs";
 
 interface SharedReceiptDialogProps {
@@ -46,8 +46,7 @@ export function SharedReceiptDialog({ file, onConfirm, onCancel }: SharedReceipt
 }
 
 function ImagePreview({ file }: { file: File }) {
-  const [url] = useState(() => URL.createObjectURL(file));
-  useEffect(() => () => URL.revokeObjectURL(url), [url]);
+  const url = objectUrlFor(file);
   return (
     <Box
       component="img"

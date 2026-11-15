@@ -3,7 +3,7 @@ from typing import Annotated, Self
 
 from pydantic import BaseModel, Field, model_validator
 
-from application.models.enumerations import DishType
+from application.models.enumerations import DishType, FoodCategory, MeasurementUnit
 from application.schemas.common import Icon, PositiveQuantity, QuantityValue, RequiredName
 from application.schemas.foods import FoodResponse, NewFoodRequest
 
@@ -138,3 +138,31 @@ class HouseholdCookingResponse(BaseModel):
 class CookRecipeResponse(BaseModel):
     servings: int
     ingredients: list[CookedIngredientResponse]
+
+
+class ScannedIngredient(BaseModel):
+    originalText: str
+    name: str
+    genericName: str | None
+    category: FoodCategory
+    quantity: QuantityValue | None
+    unit: MeasurementUnit | None
+    isOptional: bool
+    suggestedFood: FoodResponse | None
+
+
+class ScanRecipeResponse(BaseModel):
+    name: str
+    servings: int
+    preparationMinutes: int | None
+    dishType: DishType | None
+    isVegetarian: bool
+    instructions: str
+    ingredients: list[ScannedIngredient]
+    usedScans: int
+    scanLimit: int
+
+
+class RecipeScanAllowanceResponse(BaseModel):
+    usedScans: int
+    scanLimit: int

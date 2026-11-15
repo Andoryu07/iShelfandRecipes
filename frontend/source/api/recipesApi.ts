@@ -6,6 +6,7 @@ import type {
   RecipeCooking,
   RecipeRequest,
   RecipeSummary,
+  ScannedRecipe,
 } from "./types";
 
 export function listRecipes(
@@ -16,6 +17,24 @@ export function listRecipes(
   const parameters = new URLSearchParams({ search });
   foodIds.forEach((foodId) => parameters.append("containsFoodIds", String(foodId)));
   return apiRequest<RecipeSummary[]>(`/households/${householdId}/recipes?${parameters}`);
+}
+
+export function getRecipeScanAllowance(
+  householdId: number,
+): Promise<{ usedScans: number; scanLimit: number }> {
+  return apiRequest(`/households/${householdId}/recipes/scan-allowance`);
+}
+
+export function scanRecipe(
+  householdId: number,
+  photos: { content: Blob; fileName: string }[],
+): Promise<ScannedRecipe> {
+  const formData = new FormData();
+  photos.forEach((photo) => formData.append("files", photo.content, photo.fileName));
+  return apiRequest<ScannedRecipe>(`/households/${householdId}/recipes/scan`, {
+    method: "POST",
+    body: formData,
+  });
 }
 
 export function getRecipe(recipeId: number): Promise<Recipe> {

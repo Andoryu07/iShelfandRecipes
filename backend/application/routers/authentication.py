@@ -164,6 +164,7 @@ def buildUserResponse(user: User) -> UserResponse:
         email=user.email,
         displayName=user.displayName,
         receiptConsentGivenAt=user.receiptConsentGivenAt,
+        recipePhotoConsentGivenAt=user.recipePhotoConsentGivenAt,
         deletionScheduledAt=scheduledDeletionTime(user),
     )
 
@@ -209,15 +210,17 @@ def withdrawReceiptConsent(
     user: User = Depends(getCurrentUser), session: Session = Depends(getDatabaseSession)
 ) -> UserResponse:
     user.receiptConsentGivenAt = None
+    user.recipePhotoConsentGivenAt = None
     session.commit()
     return buildUserResponse(user)
 
 
 @router.post("/me/receipt-consent", response_model=UserResponse)
-def giveReceiptConsent(
+def givePhotoConsent(
     user: User = Depends(getCurrentUser), session: Session = Depends(getDatabaseSession)
 ) -> UserResponse:
-    if user.receiptConsentGivenAt is None:
-        user.receiptConsentGivenAt = datetime.now(timezone.utc)
-        session.commit()
+    now = datetime.now(timezone.utc)
+    user.receiptConsentGivenAt = user.receiptConsentGivenAt or now
+    user.recipePhotoConsentGivenAt = user.recipePhotoConsentGivenAt or now
+    session.commit()
     return buildUserResponse(user)

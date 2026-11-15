@@ -1,6 +1,12 @@
-import type { DishType, Recipe, RecipeIngredientRequest, RecipeRequest } from "../api/types";
+import type { DishType, Recipe, RecipeIngredientRequest, RecipeRequest, ScannedRecipe } from "../api/types";
 import { baseUnitOf, isNewFood, newFoodRequest, type FoodChoice } from "../stock/FoodPicker";
-import { bestDisplayUnit, fromBaseQuantity, parseBaseQuantity } from "../stock/quantities";
+import {
+  bestDisplayUnit,
+  displayUnits,
+  fromBaseQuantity,
+  parseBaseQuantity,
+  quantityText,
+} from "../stock/quantities";
 import { texts } from "../translations/cs";
 
 export interface IngredientRow {
@@ -121,5 +127,35 @@ export function buildRecipeRequest(values: RecipeFormValues): {
       ingredients,
     },
     error: null,
+  };
+}
+
+export function formValuesFromScan(scan: ScannedRecipe): RecipeFormValues {
+  return {
+    name: scan.name,
+    servingsText: String(scan.servings),
+    preparationMinutesText: scan.preparationMinutes ? String(scan.preparationMinutes) : "",
+    instructions: scan.instructions,
+    icon: null,
+    dishType: scan.dishType,
+    isVegetarian: scan.isVegetarian,
+    ingredients: scan.ingredients.map((ingredient) => {
+      const food: FoodChoice = ingredient.suggestedFood ?? {
+        newFoodName: ingredient.name,
+        baseUnit: ingredient.unit ?? "gram",
+        category: ingredient.category,
+        genericName: ingredient.genericName ?? "",
+      };
+      const baseUnit = food.baseUnit;
+      const display = ingredient.quantity !== null ? quantityText(ingredient.quantity, baseUnit) : null;
+      return {
+        key: `ingredient${nextKey++}`,
+        food,
+        quantityText: display?.text ?? "",
+        unitSymbol: display?.unitSymbol ?? displayUnits[baseUnit][0].symbol,
+        acceptsAnyOfKind: true,
+        isOptional: ingredient.isOptional,
+      };
+    }),
   };
 }

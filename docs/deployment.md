@@ -276,6 +276,7 @@ for `JWT_SECRET`. Fill in also:
 
 - `DOMAIN`: your domain without `https://`, for example `ishelf.cz`.
 - `GEMINI_API_KEY`: the key from Google AI Studio.
+- `RECIPE_SCAN_LIMIT`: how many recipes each household may read from photos (default 3; raise it for testers).
 - `VAPID_SUBJECT`: `mailto:` followed by your e-mail.
 - `BACKEND_WORKERS`: keep `1` on this server (2 GB RAM); it is plenty for testing. With more memory you can use `2`.
 
@@ -414,7 +415,7 @@ The app sends e-mails for password reset, after a password change and when someo
 - **The build stops with "Killed" or the server becomes very slow:** check that the swap is on (`free -h`, step 5).
 - **No space left on the disk:** run `docker system prune -f` and delete old backups you have already copied to your computer.
 - **A service keeps restarting:** see its log, for example `docker compose -f docker-compose.production.yml logs backend`, and send it to Claude.
-- **Receipts cannot be read:** check `GEMINI_API_KEY` in `.env` and run `deploy/deploy.sh` again.
+- **Receipts or recipes cannot be read:** check `GEMINI_API_KEY` in `.env` and run `deploy/deploy.sh` again.
 - **E-mails do not arrive:** see `docker compose -f docker-compose.production.yml logs backend | grep -i e-mail`. Check the SMTP values in `.env` and that the domain is verified in Brevo. If the connection times out, try `SMTP_PORT=2525`.
 - **Notifications do not arrive:** check the VAPID keys in `.env` and run the daily jobs by hand:
 

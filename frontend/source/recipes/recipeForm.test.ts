@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { Food, Recipe } from "../api/types";
-import { buildRecipeRequest, emptyIngredientRow, formValuesFromRecipe } from "./recipeForm";
+import {
+  buildRecipeRequest,
+  emptyIngredientRow,
+  formValuesFromRecipe,
+  formValuesFromScan,
+} from "./recipeForm";
 
 const flour: Food = {
   id: 3,
@@ -81,5 +86,71 @@ describe("recipe form", () => {
 
     values.servingsText = "0";
     expect(buildRecipeRequest(values).request).toBeNull();
+  });
+});
+
+describe("recipe from a photo", () => {
+  it("uses known foods, proposes new ones and leaves unknown amounts empty", () => {
+    const values = formValuesFromScan({
+      name: "Bramboráky",
+      servings: 4,
+      preparationMinutes: 45,
+      dishType: "mainCourse",
+      isVegetarian: true,
+      instructions: "1. Nastrouhej.",
+      usedScans: 1,
+      scanLimit: 3,
+      ingredients: [
+        {
+          originalText: "1,5 kg mouky",
+          name: "Mouka hladká",
+          genericName: "Mouka",
+          category: "dryGoods",
+          quantity: 1500,
+          unit: "gram",
+          isOptional: false,
+          suggestedFood: flour,
+        },
+        {
+          originalText: "2 vejce",
+          name: "Vejce",
+          genericName: "Vejce",
+          category: "dairy",
+          quantity: 2,
+          unit: "piece",
+          isOptional: false,
+          suggestedFood: null,
+        },
+        {
+          originalText: "sůl",
+          name: "Sůl",
+          genericName: "Sůl",
+          category: "spices",
+          quantity: null,
+          unit: null,
+          isOptional: true,
+          suggestedFood: null,
+        },
+      ],
+    });
+
+    expect([values.name, values.servingsText, values.preparationMinutesText, values.dishType]).toEqual([
+      "Bramboráky",
+      "4",
+      "45",
+      "mainCourse",
+    ]);
+    expect(values.ingredients.map((row) => [row.quantityText, row.unitSymbol, row.isOptional])).toEqual([
+      ["1,5", "kg", false],
+      ["2", "ks", false],
+      ["", "g", true],
+    ]);
+    expect(values.ingredients[0].food).toBe(flour);
+    expect(values.ingredients[1].food).toEqual({
+      newFoodName: "Vejce",
+      baseUnit: "piece",
+      category: "dairy",
+      genericName: "Vejce",
+    });
   });
 });

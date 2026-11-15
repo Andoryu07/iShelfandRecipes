@@ -1,5 +1,7 @@
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import EditNoteRoundedIcon from "@mui/icons-material/EditNoteRounded";
 import HistoryRoundedIcon from "@mui/icons-material/HistoryRounded";
+import PhotoCameraRoundedIcon from "@mui/icons-material/PhotoCameraRounded";
 import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import {
@@ -13,6 +15,9 @@ import {
   Chip,
   Fab,
   InputAdornment,
+  ListItemIcon,
+  Menu,
+  MenuItem,
   Stack,
   TextField,
   Typography,
@@ -36,6 +41,8 @@ import {
 import { HouseholdCookingHistorySheet } from "../recipes/HouseholdCookingHistorySheet";
 import { formatMoney } from "../receipts/money";
 import { RecipeEditorDialog } from "../recipes/RecipeEditorDialog";
+import { RecipeScanSheet } from "../recipes/RecipeScanSheet";
+import { formValuesFromScan, type RecipeFormValues } from "../recipes/recipeForm";
 import { texts } from "../translations/cs";
 
 const quickFilters: { value: QuickFilter; label: string }[] = [
@@ -57,6 +64,9 @@ function RecipeList({ householdId }: { householdId: number }) {
   const [filterState, setFilterState] = useState<RecipeFilterState>(emptyRecipeFilters);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const [scannedValues, setScannedValues] = useState<RecipeFormValues | null>(null);
+  const [newRecipeMenuAnchor, setNewRecipeMenuAnchor] = useState<HTMLElement | null>(null);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const deferredSearch = useDeferredValue(search.trim());
   const foodIds = filterState.foods.map((food) => food.id);
@@ -271,7 +281,7 @@ function RecipeList({ householdId }: { householdId: number }) {
       <Fab
         color="primary"
         aria-label={texts.recipes.newRecipe}
-        onClick={() => setIsCreating(true)}
+        onClick={(event) => setNewRecipeMenuAnchor(event.currentTarget)}
         sx={{
           position: "fixed",
           right: 16,
@@ -280,11 +290,55 @@ function RecipeList({ householdId }: { householdId: number }) {
       >
         <AddRoundedIcon />
       </Fab>
-      {isCreating && (
+      <Menu
+        anchorEl={newRecipeMenuAnchor}
+        open={newRecipeMenuAnchor !== null}
+        onClose={() => setNewRecipeMenuAnchor(null)}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        transformOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <MenuItem
+          onClick={() => {
+            setNewRecipeMenuAnchor(null);
+            setIsCreating(true);
+          }}
+        >
+          <ListItemIcon>
+            <EditNoteRoundedIcon />
+          </ListItemIcon>
+          {texts.recipes.writeRecipe}
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            setNewRecipeMenuAnchor(null);
+            setIsScanning(true);
+          }}
+        >
+          <ListItemIcon>
+            <PhotoCameraRoundedIcon />
+          </ListItemIcon>
+          {texts.recipes.scanRecipe}
+        </MenuItem>
+      </Menu>
+      {isScanning && (
+        <RecipeScanSheet
+          householdId={householdId}
+          onClose={() => setIsScanning(false)}
+          onScanned={(scan) => {
+            setIsScanning(false);
+            setScannedValues(formValuesFromScan(scan));
+          }}
+        />
+      )}
+      {(isCreating || scannedValues) && (
         <RecipeEditorDialog
           householdId={householdId}
           recipe={null}
-          onClose={() => setIsCreating(false)}
+          initialValues={scannedValues ?? undefined}
+          onClose={() => {
+            setIsCreating(false);
+            setScannedValues(null);
+          }}
           onSaved={(saved) => navigate(`/recipes/${saved.id}`)}
         />
       )}

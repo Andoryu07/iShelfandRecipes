@@ -191,9 +191,9 @@ export const texts = {
     uploadFile: "Nahrát soubor (fotka nebo PDF)",
     scanning: "Čtu účtenku, chvilku to potrvá…",
     empty: "Zatím žádné účtenky. Vyfoť první účtenku a položky se přidají do zásob.",
-    consentTitle: "Souhlas se zpracováním účtenek",
+    consentTitle: "Souhlas se zpracováním fotek",
     consentText:
-      "Fotka účtenky se odešle ke zpracování umělé inteligenci Google Gemini, která z ní přečte položky. Fotka se nikde neukládá, uloží se jen přečtené položky. Google podle svých podmínek pro placené služby tato data nepoužívá k trénování modelů.",
+      "Fotky účtenek a receptů se odešlou ke zpracování umělé inteligenci Google Gemini, která z nich přečte položky nebo recept. Fotky se nikde neukládají, uloží se jen to, co na obrazovce kontroly potvrdíš. Google podle svých podmínek pro placené služby tato data nepoužívá k trénování modelů.",
     consentAgree: "Souhlasím",
     reviewTitle: "Kontrola účtenky",
     storeName: "Obchod",
@@ -305,6 +305,31 @@ export const texts = {
     reserveIngredients: "Rezervovat suroviny",
     reserveShort: "Rezervovat",
     addFavourite: "Přidat do oblíbených",
+    writeRecipe: "Napsat recept",
+    scanRecipe: "Vyfotit recept z kuchařky",
+    scanTitle: "Recept z fotky",
+    scanIntroduction: "Vyfoť stránku s receptem. Když je recept přes víc stránek, přidej až 3 fotky.",
+    scanAllowance: (used: number, limit: number) =>
+      `Využito ${used} z ${limit} skenování receptů v domácnosti.`,
+    scanLimitReached: (limit: number) =>
+      `Domácnost už využila všech ${limit} skenování receptů. Recepty můžeš dál psát ručně.`,
+    takePhoto: "Vyfotit stránku",
+    uploadPhoto: "Nahrát fotku nebo PDF",
+    page: (number: number) => `Stránka ${number}`,
+    removePage: "Odebrat stránku",
+    readRecipe: "Přečíst recept",
+    readingRecipe: "Čtu recept, chvilku to potrvá…",
+    scanFailed: "Recept se nepodařilo přečíst. Zkus ostřejší fotku s celým receptem.",
+    scanNoRecipe: "Na fotce jsme recept nenašli. Vyfoť celou stránku s receptem.",
+    scanNotConfigured: "Čtení receptů zatím není na serveru nastavené.",
+    scanTooLarge: "Fotka je příliš velká.",
+    scanUnsupported: "Tento typ souboru nejde použít. Pošli fotku nebo PDF.",
+    recipeConsentTitle: "Fotky receptů",
+    recipeConsentText:
+      "Fotky receptů se stejně jako účtenky odešlou ke zpracování službě Google Gemini a nikde se neukládají. Přečtený recept si před uložením zkontroluješ a zůstane jen ve tvé domácnosti.",
+    scannedNotice: "Recept je přečtený z fotky. Zkontroluj suroviny a množství, než ho uložíš.",
+    scannedMissingQuantities: (count: number) =>
+      `${count} ${count === 1 ? "surovině" : "surovinám"} chybí množství, doplň ho prosím.`,
     removeFavourite: "Odebrat z oblíbených",
     filterFavourites: "Oblíbené",
     cooked: "Uvařeno",
@@ -590,7 +615,7 @@ export const texts = {
   registrationConsentLink: "zásadami ochrany soukromí",
   privacyPolicy: {
     title: "Zásady ochrany soukromí",
-    effectiveFrom: "Účinné od 14. 11. 2026",
+    effectiveFrom: "Účinné od 15. 11. 2026",
     back: "Zpět",
     sections: [
       {
@@ -609,11 +634,11 @@ export const texts = {
         ],
       },
       {
-        heading: "Skenování účtenek",
+        heading: "Skenování účtenek a receptů",
         paragraphs: [
-          "Když vyfotíš nebo nahraješ účtenku, odešleme fotku nebo PDF ke zpracování službě Google Gemini, která z ní přečte položky. Používáme placenou úroveň této služby, u které Google podle svých podmínek odeslaná data nepoužívá k trénování svých modelů.",
-          "Fotku ani PDF nikde neukládáme, zpracují se jen v paměti a hned se zahodí. Uloží se pouze položky, které na obrazovce kontroly potvrdíš.",
-          "Skenování je možné jen s tvým souhlasem, který udělíš před první účtenkou. Souhlas můžeš kdykoli odvolat v Profilu v části Soukromí a data. Už uložené položky tím zůstanou zachované.",
+          "Když vyfotíš nebo nahraješ účtenku nebo recept (například stránku kuchařky), odešleme fotky nebo PDF ke zpracování službě Google Gemini, která z nich přečte položky nebo recept. Používáme placenou úroveň této služby, u které Google podle svých podmínek odeslaná data nepoužívá k trénování svých modelů.",
+          "Fotku ani PDF nikde neukládáme, zpracují se jen v paměti a hned se zahodí. Uloží se pouze položky nebo recept, které na obrazovce kontroly potvrdíš. Recepty z fotek zůstávají jen ve tvé domácnosti a nikde se nesdílejí.",
+          "Skenování je možné jen s tvým souhlasem, který udělíš před první fotkou. Souhlas můžeš kdykoli odvolat v Profilu v části Soukromí a data. Už uložené položky tím zůstanou zachované.",
         ],
       },
       {
