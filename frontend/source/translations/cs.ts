@@ -336,10 +336,12 @@ export const texts = {
     scanRecipe: "Vyfotit recept z kuchařky",
     scanTitle: "Recept z fotky",
     scanIntroduction: "Vyfoť stránku s receptem. Když je recept přes víc stránek, přidej až 3 fotky.",
-    scanAllowance: (used: number, limit: number) =>
-      `Využito ${used} z ${limit} skenování receptů v domácnosti.`,
-    scanLimitReached: (limit: number) =>
-      `Domácnost už využila všech ${limit} skenování receptů. Recepty můžeš dál psát ručně.`,
+    scanAllowance: (used: number, limit: number, period: "month" | "total") =>
+      `Využito ${used} z ${limit} skenování receptů${period === "month" ? " tento měsíc" : ""}.`,
+    scanLimitReached: (limit: number, period: "month" | "total") =>
+      period === "month"
+        ? `Všech ${limit} skenování receptů na tento měsíc je využitých. Recepty můžeš dál psát ručně.`
+        : `Všechna ${limit} skenování receptů jsou využitá. Víc jich má Premium, recepty můžeš dál psát ručně.`,
     takePhoto: "Vyfotit stránku",
     uploadPhoto: "Nahrát fotku nebo PDF",
     page: (number: number) => `Stránka ${number}`,
@@ -592,10 +594,52 @@ export const texts = {
             : `za ${days} ${days < 5 ? "dny" : "dní"}`,
     andMore: (count: number) => `a ${count} další`,
   },
+  premium: {
+    title: "Premium",
+    free: "Zdarma",
+    premium: "Premium",
+    active: "Aktivní",
+    freeDescription: "Základní verze aplikace.",
+    activeUntil: (date: string) => `Aktivní do ${date}.`,
+    receiptScans: "Skenování účtenek",
+    recipeScans: "Recepty z fotky",
+    usage: (used: number, limit: number, period: "month" | "total") =>
+      `${used} z ${limit}${period === "month" ? " tento měsíc" : " celkem"}`,
+    comparisonTitle: "Co získáš s Premium",
+    comparison: [
+      ["Skeny účtenek", "10 měsíčně", "60 měsíčně"],
+      ["Recepty z fotky", "3 celkem", "20 měsíčně"],
+      ["Členové domácnosti", "až 6", "až 12"],
+      ["Historie útrat", "6 měsíců", "celá"],
+      ["Reklamy", "ano", "bez reklam"],
+    ] as [string, string, string][],
+    price: "59 Kč měsíčně nebo 590 Kč ročně",
+    paymentsLater:
+      "Premium platí pro tvůj účet. Ostatní členové tvé domácnosti mají víc místa, i když premium nemají. Placení zatím není spuštěné.",
+    testDescription: "Testovací verze: premium si můžeš zdarma zapnout na 30 dní a kdykoli ho zase vypnout.",
+    activateTest: "Vyzkoušet premium na 30 dní",
+    cancelTest: "Ukončit testovací premium",
+    lockedHint: "V Premium",
+    olderSpendingInPremium: "Starší útraty a pohled na celý rok jsou v Premium.",
+    receiptScansLeft: (left: number) =>
+      left === 1
+        ? "Tento měsíc ti zbývá 1 sken."
+        : left < 5
+          ? `Tento měsíc ti zbývají ${left} skeny.`
+          : `Tento měsíc ti zbývá ${left} skenů.`,
+    receiptLimitReached:
+      "Skeny účtenek na tento měsíc jsou vyčerpané. Další přibudou 1. dne příštího měsíce, víc jich má Premium.",
+    householdFull: (limit: number) =>
+      `Domácnost je plná (nejvýš ${limit} členů). Víc členů umožní Premium vlastníka domácnosti.`,
+    householdFullForApplicant: "Domácnost je plná. Požádej vlastníka, ať si zapne Premium nebo uvolní místo.",
+    showPremium: "Premium",
+  },
   profile: {
     title: "Profil",
     account: "Účet",
     accountDescription: "Jméno, e-mail, smazání účtu",
+    premium: "Premium",
+    premiumDescription: (isPremium: boolean) => (isPremium ? "Aktivní" : "Zdarma, porovnání a limity"),
     appearance: "Vzhled",
     appearanceDescription: "Světlý, tmavý, podle systému",
     notifications: "Upozornění",

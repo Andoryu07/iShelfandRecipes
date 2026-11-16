@@ -182,6 +182,7 @@ export interface ScannedRecipe {
   ingredients: ScannedIngredient[];
   usedScans: number;
   scanLimit: number;
+  scanPeriod: ScanPeriod;
 }
 
 export interface ScannedReceiptItem {
@@ -361,4 +362,22 @@ export interface Spending {
   months: { month: string; total: number; receiptCount: number }[];
   stores: { storeName: string | null; total: number; receiptCount: number }[];
   categories: { category: FoodCategory; total: number }[];
+}
+
+export type ScanPeriod = "month" | "total";
+
+export interface ScanAllowance {
+  used: number;
+  limit: number;
+  period: ScanPeriod;
+}
+
+export interface PlanSummary {
+  plan: "free" | "premium";
+  premiumUntil: string | null;
+  testActivationAvailable: boolean;
+  receiptScans: ScanAllowance;
+  recipeScans: ScanAllowance;
+  householdMemberLimit: number;
+  spendingMonths: number | null;
 }

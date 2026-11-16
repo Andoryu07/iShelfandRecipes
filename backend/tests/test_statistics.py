@@ -1,6 +1,8 @@
 from fastapi.testclient import TestClient
 
-from tests.helpers import createHousehold, registerAndAuthorize
+from datetime import date
+
+from tests.helpers import createHousehold, makePremium, registerAndAuthorize
 
 
 def saveReceipt(client: TestClient, headers: dict[str, str], householdId: int, storeName: str, purchasedOn: str, items: list[tuple[str, str, float]]) -> None:
@@ -20,6 +22,7 @@ def saveReceipt(client: TestClient, headers: dict[str, str], householdId: int, s
 def test_spendingByMonthStoreAndCategory(client: TestClient) -> None:
     headers = registerAndAuthorize(client, "anna@example.com", "Anna")
     householdId = createHousehold(client, headers)["id"]
+    makePremium("anna@example.com")
     saveReceipt(client, headers, householdId, "Albert", "2026-11-03", [("Mléko", "dairy", 30), ("Šunka", "meatAndSausages", 50), ("Sleva", "other", -10)])
     saveReceipt(client, headers, householdId, "Lidl", "2026-11-20", [("Sýr", "dairy", 100)])
     saveReceipt(client, headers, householdId, "Albert", "2026-11-25", [("Chléb", "bakery", 30)])
@@ -73,3 +76,25 @@ def test_spendingValidatesInputAndMembership(client: TestClient) -> None:
     assert client.get(f"/households/{householdId}/statistics/spending", headers=stranger).status_code == 404
     empty = client.get(f"/households/{householdId}/statistics/spending", headers=headers).json()
     assert (empty["monthTotal"], empty["stores"], empty["categories"], len(empty["months"])) == (0, [], [], 6)
+
+
+def shiftedMonth(months: int) -> str:
+    today = date.today()
+    index = today.year * 12 + today.month - 1 + months
+    return f"{index // 12}-{index % 12 + 1:02d}"
+
+
+def test_freePlanSeesSixMonthsOfSpending(client: TestClient) -> None:
+    headers = registerAndAuthorize(client, "anna@example.com", "Anna")
+    householdId = createHousehold(client, headers)["id"]
+    url = f"/households/{householdId}/statistics/spending"
+
+    year = client.get(url, params={"months": 12}, headers=headers).json()
+    assert [month["month"] for month in year["months"]] == [shiftedMonth(offset) for offset in range(-5, 1)]
+    oldest = client.get(url, params={"month": shiftedMonth(-5), "months": 6}, headers=headers).json()
+    assert [month["month"] for month in oldest["months"]] == [shiftedMonth(-5)]
+    assert client.get(url, params={"month": shiftedMonth(-6)}, headers=headers).status_code == 403
+
+    makePremium("anna@example.com")
+    assert client.get(url, params={"month": shiftedMonth(-6)}, headers=headers).status_code == 200
+    assert len(client.get(url, params={"months": 12}, headers=headers).json()["months"]) == 12

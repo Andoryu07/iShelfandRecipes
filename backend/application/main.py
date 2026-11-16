@@ -8,6 +8,7 @@ from application.routers import (
     households,
     joining,
     notifications,
+    plans,
     receipts,
     recipe_scans,
     recipes,
@@ -25,6 +26,7 @@ application = FastAPI(
     redoc_url="/redoc" if apiDocumentationEnabled else None,
     openapi_url="/openapi.json" if apiDocumentationEnabled else None,
 )
+application.include_router(plans.router)
 application.include_router(authentication.router)
 application.include_router(joining.router)
 application.include_router(households.router)

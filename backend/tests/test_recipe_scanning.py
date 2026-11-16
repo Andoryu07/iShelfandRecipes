@@ -110,11 +110,11 @@ def test_scanReturnsAReviewableRecipe(client: TestClient, fakeReader: FakeRecipe
     assert fakeReader.calls[0] == [(b"fake image", "image/jpeg"), (b"second page", "image/png")]
 
 
-def test_limitCountsSuccessfulScansPerHousehold(client: TestClient, fakeReader: FakeRecipeReader) -> None:
+def test_freeLimitCountsSuccessfulScansOfTheUser(client: TestClient, fakeReader: FakeRecipeReader) -> None:
     kitchen = Kitchen(client)
     client.post("/auth/me/receipt-consent", headers=kitchen.anna)
     allowanceUrl = f"/households/{kitchen.householdId}/recipes/scan-allowance"
-    assert client.get(allowanceUrl, headers=kitchen.anna).json() == {"usedScans": 0, "scanLimit": 3}
+    assert client.get(allowanceUrl, headers=kitchen.anna).json() == {"usedScans": 0, "scanLimit": 3, "scanPeriod": "total"}
 
     fakeReader.error = RecipeReadingError("timeout")
     assert scan(client, kitchen).status_code == 502
@@ -123,24 +123,28 @@ def test_limitCountsSuccessfulScansPerHousehold(client: TestClient, fakeReader: 
     assert scan(client, kitchen).status_code == 422
     fakeReader.recipe = FakeRecipeReader().recipe
     assert [scan(client, kitchen).status_code for _ in range(4)] == [200, 200, 200, 429]
-    assert client.get(allowanceUrl, headers=kitchen.anna).json() == {"usedScans": 3, "scanLimit": 3}
+    assert client.get(allowanceUrl, headers=kitchen.anna).json() == {"usedScans": 3, "scanLimit": 3, "scanPeriod": "total"}
     assert len(fakeReader.calls) == 5
 
     manualRecipe = kitchen.recipe([{"foodId": kitchen.food("Mléko", "Mléko"), "quantity": 100}])
     assert manualRecipe.status_code == 201
 
 
-def test_limitCanBeRaisedOnTheServer(
+def test_premiumGivesMonthlyScans(
     client: TestClient, fakeReader: FakeRecipeReader, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setenv("RECIPE_SCAN_LIMIT", "5")
+    monkeypatch.setenv("PREMIUM_TEST_ACTIVATION", "true")
     getConfiguration.cache_clear()
     try:
         kitchen = Kitchen(client)
         client.post("/auth/me/receipt-consent", headers=kitchen.anna)
-        assert [scan(client, kitchen).status_code for _ in range(6)] == [200] * 5 + [429]
+        assert [scan(client, kitchen).status_code for _ in range(4)] == [200, 200, 200, 429]
+        client.post("/auth/me/premium/test-activation", headers=kitchen.anna)
+        allowance = client.get(f"/households/{kitchen.householdId}/recipes/scan-allowance", headers=kitchen.anna)
+        assert allowance.json() == {"usedScans": 3, "scanLimit": 20, "scanPeriod": "month"}
+        assert scan(client, kitchen).status_code == 200
     finally:
-        monkeypatch.delenv("RECIPE_SCAN_LIMIT")
+        monkeypatch.delenv("PREMIUM_TEST_ACTIVATION")
         getConfiguration.cache_clear()
 
 

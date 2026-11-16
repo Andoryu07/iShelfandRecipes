@@ -14,7 +14,7 @@ class Configuration:
     geminiModel: str = "gemini-3.8-flash"
     geminiThinkingLevel: str = "low"
     geminiTimeoutSeconds: int = 60
-    recipeScanLimit: int = 3
+    premiumTestActivation: bool = False
     vapidPublicKey: str | None = None
     vapidPrivateKey: str | None = None
     vapidSubject: str = "mailto:admin@example.com"
@@ -36,7 +36,7 @@ def getConfiguration() -> Configuration:
         geminiApiKey=os.environ.get("GEMINI_API_KEY") or None,
         geminiModel=os.environ.get("GEMINI_MODEL") or "gemini-3.8-flash",
         geminiThinkingLevel=os.environ.get("GEMINI_THINKING_LEVEL") or "low",
-        recipeScanLimit=int(os.environ.get("RECIPE_SCAN_LIMIT") or 3),
+        premiumTestActivation=os.environ.get("PREMIUM_TEST_ACTIVATION", "false").lower() == "true",
         vapidPublicKey=os.environ.get("VAPID_PUBLIC_KEY") or None,
         vapidPrivateKey=os.environ.get("VAPID_PRIVATE_KEY") or None,
         vapidSubject=os.environ.get("VAPID_SUBJECT") or "mailto:admin@example.com",

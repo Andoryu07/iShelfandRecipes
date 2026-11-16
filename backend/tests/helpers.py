@@ -1,4 +1,7 @@
+from datetime import datetime, timedelta, timezone
+
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 
 from application.database import getSessionFactory
 from application.models import JoinRequest, User
@@ -42,3 +45,10 @@ def joinHousehold(client: TestClient, headers: dict[str, str], inviteCode: str):
         joinAsMember(session, session.get(User, joinRequest.userId), joinRequest.householdId)
         session.commit()
     return response
+
+
+def makePremium(email: str, days: int = 30) -> None:
+    with getSessionFactory()() as session:
+        user = session.scalar(select(User).where(User.email == email))
+        user.premiumUntil = datetime.now(timezone.utc) + timedelta(days=days)
+        session.commit()

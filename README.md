@@ -72,6 +72,9 @@ Status: **done** endpoints exist, the others are planned.
 | `DELETE /auth/me/receipt-consent` | Withdraw the consent; saved items stay | done |
 | `DELETE /auth/me` | Schedule the account for deletion after confirming the password (`{"password": "..."}`) | done |
 | `POST /auth/me/restore` | Cancel a scheduled deletion | done |
+| `GET /auth/me/plan` | The user's plan (`free` or `premium`, per user), premium end, used and allowed receipt and recipe scans, household member limit and months of spending history | done |
+| `POST /auth/me/premium/test-activation` | Turn on 30 days of premium without paying (only with `PREMIUM_TEST_ACTIVATION=true`, otherwise 404) | done |
+| `DELETE /auth/me/premium/test-activation` | Turn the test premium off | done |
 
 Deleting an account signs the user out everywhere and schedules the deletion; signing in within 14 days offers to restore the account (other endpoints answer `403` until then), and the daily job then deletes it. Deletion removes the user, their reservations and sessions; stock, movements and receipts stay with the household without the link to the user, and a household whose last member leaves is deleted.
 
@@ -91,7 +94,7 @@ Password reset links point to `APPLICATION_URL/reset-password#token=…`; the to
 | `GET /join-requests/mine` | The user's own pending or rejected request, or `null` | done |
 | `DELETE /join-requests/mine` | Cancel or dismiss the own request | done |
 | `GET /households/{householdId}/join-requests` | Pending requests with the applicant's name and masked e-mail (owner only) | done |
-| `POST /join-requests/{requestId}/approve` | Approve a request: the applicant becomes a member (owner only) | done |
+| `POST /join-requests/{requestId}/approve` | Approve a request: the applicant becomes a member (owner only); `409` when the household is full (6 members, 12 when an owner has premium) | done |
 | `POST /join-requests/{requestId}/reject` | Reject a request; the applicant sees it was rejected (owner only) | done |
 | `POST /households/{householdId}/invite-links` | Create a one-time invite link valid 7 days; the token is returned only now and stored hashed (owner only) | done |
 | `GET /households/{householdId}/invite-links` | Unused, valid links (owner only) | done |
@@ -158,7 +161,7 @@ Reservations are made only from the free quantity (stock minus all active reserv
 
 | Endpoint | Purpose | Status |
 | --- | --- | --- |
-| `POST /households/{householdId}/receipts/scan` | Upload a photo, returns extracted items and whether their sum matches the total; nothing is stored and the photo is discarded | done |
+| `POST /households/{householdId}/receipts/scan` | Upload a photo, returns extracted items and whether their sum matches the total; nothing is stored and the photo is discarded; `429` when the user's monthly limit is used up (free 10, premium 60; only successful scans count) | done |
 | `POST /households/{householdId}/receipts` | Save the confirmed items (with the original text and whether the user corrected them) and create stock items | done |
 | `GET /households/{householdId}/receipts` | List receipts | done |
 | `GET /receipts/{receiptId}` | Receipt detail with items | done |
@@ -179,7 +182,7 @@ docker compose run --rm -v ./receipt.jpg:/receipt.jpg backend python -m applicat
 | --- | --- | --- |
 | `GET /households/{householdId}/recipes?search=&containsFoodIds=` | List recipes (the user's favourites first) with missing count, price estimate, dish type, vegetarian flag and `expiringIngredientCount` (ingredients the user could cover with food expiring within their warning days); `containsFoodIds` (up to 5) keeps recipes that contain every chosen food or a food of the same kind | done |
 | `POST /households/{householdId}/recipes` | Create a recipe | done |
-| `GET /households/{householdId}/recipes/scan-allowance` | How many recipe scans the household has used and the limit (`RECIPE_SCAN_LIMIT`, default 3) | done |
+| `GET /households/{householdId}/recipes/scan-allowance` | How many recipe scans the user has used, the limit and its period (free: 3 in total, premium: 20 a month) | done |
 | `POST /households/{householdId}/recipes/scan` | Read a recipe from 1-3 photos or PDFs (multipart field `files`) with Gemini and return a draft for the editor: name, servings, time, dish type, vegetarian flag, numbered steps and ingredients in base units matched to the household's foods by name; needs the photo consent; a successful scan counts towards the household limit (`429` when used up); photos are never stored | done |
 | `GET /recipes/{recipeId}` | Recipe detail with ingredients | done |
 | `PATCH /recipes/{recipeId}` | Edit a recipe | done |
@@ -236,7 +239,7 @@ docker compose run --rm backend python -m application.jobs.run_daily_jobs --forc
 
 | Endpoint | Purpose | Status |
 | --- | --- | --- |
-| `GET /households/{householdId}/statistics/spending?month=2026-11&months=6` | Totals for the selected month and the months before it, by store and by food category | done |
+| `GET /households/{householdId}/statistics/spending?month=2026-11&months=6` | Totals for the selected month and the months before it, by store and by food category; free users see only the last 6 months (older month `403`, the chart is cut) | done |
 
 Totals are what was paid (`total_amount` of saved receipts, so whole-purchase discounts are included); category totals add up the positive item prices and discounts are reported separately. Stock added by hand has no price and is not counted.
 

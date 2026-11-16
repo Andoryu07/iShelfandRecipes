@@ -14,6 +14,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { decideJoinRequest, listJoinRequests } from "../api/householdsApi";
 import { describeError } from "../errorMessages";
 import { formatTimestamp, texts } from "../translations/cs";
+import { usePlan } from "../plans/usePlan";
 import { membersQueryKey } from "./MembersSection";
 
 export function joinRequestsQueryKey(householdId: number) {
@@ -22,6 +23,7 @@ export function joinRequestsQueryKey(householdId: number) {
 
 export function JoinRequestsSection({ householdId }: { householdId: number }) {
   const queryClient = useQueryClient();
+  const memberLimit = usePlan().data?.householdMemberLimit ?? 6;
   const requestsQuery = useQuery({
     queryKey: joinRequestsQueryKey(householdId),
     queryFn: () => listJoinRequests(householdId),
@@ -45,7 +47,11 @@ export function JoinRequestsSection({ householdId }: { householdId: number }) {
       <Typography className="listSectionTitle" component="h2">
         {texts.household.joinRequestsTitle}
       </Typography>
-      {decisionMutation.error && <Alert severity="error">{describeError(decisionMutation.error)}</Alert>}
+      {decisionMutation.error && (
+        <Alert severity="error">
+          {describeError(decisionMutation.error, { 409: texts.premium.householdFull(memberLimit) })}
+        </Alert>
+      )}
       <Card sx={{ borderColor: "warning.main", borderWidth: 2, borderStyle: "solid" }}>
         <List disablePadding>
           {requests.map((request, index) => (

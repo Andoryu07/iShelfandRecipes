@@ -3,6 +3,7 @@ import InfoRoundedIcon from "@mui/icons-material/InfoRounded";
 import LockRoundedIcon from "@mui/icons-material/LockRounded";
 import NotificationsRoundedIcon from "@mui/icons-material/NotificationsRounded";
 import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
+import WorkspacePremiumRoundedIcon from "@mui/icons-material/WorkspacePremiumRounded";
 import {
   Alert,
   Avatar,
@@ -30,6 +31,7 @@ import { NotificationsSection } from "../households/NotificationsSection";
 import { formatTimestamp, texts } from "../translations/cs";
 import { NotificationSettingsCard } from "../households/NotificationSettingsCard";
 import { useCurrentHousehold } from "../households/useCurrentHousehold";
+import { usePlan } from "../plans/usePlan";
 import { ChangePasswordCard } from "./ChangePasswordCard";
 import { DeleteAccountButton } from "./DeleteAccountButton";
 import { SettingsList } from "./SettingsList";
@@ -37,6 +39,7 @@ import { SettingsList } from "./SettingsList";
 export function ProfilePage() {
   const { user, logOut } = useAuthentication();
   const navigate = useNavigate();
+  const isPremium = usePlan().data?.plan === "premium";
   if (!user) {
     return null;
   }
@@ -60,6 +63,12 @@ export function ProfilePage() {
             label: texts.profile.account,
             description: texts.profile.accountDescription,
             onClick: () => navigate("/profile/account"),
+          },
+          {
+            icon: <WorkspacePremiumRoundedIcon color={isPremium ? "warning" : undefined} />,
+            label: texts.profile.premium,
+            description: texts.profile.premiumDescription(isPremium),
+            onClick: () => navigate("/profile/premium"),
           },
           {
             icon: <DarkModeRoundedIcon />,
@@ -229,3 +238,5 @@ export function AboutPage() {
     </Card>
   );
 }
+
+export { PremiumPage } from "./PremiumPage";

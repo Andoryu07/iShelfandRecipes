@@ -23,7 +23,7 @@ import { Link as RouterLink } from "react-router";
 import { ApiError } from "../api/apiClient";
 import { giveReceiptConsent } from "../api/authenticationApi";
 import { getRecipeScanAllowance, scanRecipe } from "../api/recipesApi";
-import type { ScannedRecipe } from "../api/types";
+import type { ScanPeriod, ScannedRecipe } from "../api/types";
 import { useAuthentication } from "../authentication/AuthenticationContext";
 import { BottomSheet } from "../components/BottomSheet";
 import { objectUrlFor, releaseObjectUrl } from "../components/objectUrls";
@@ -85,13 +85,13 @@ function PagePreview({ file, number, onRemove }: { file: File; number: number; o
   );
 }
 
-function describeScanError(error: unknown, limit: number): string {
+function describeScanError(error: unknown, limit: number, period: ScanPeriod): string {
   if (error instanceof ApiError) {
     const messages: Record<number, string> = {
       413: texts.recipes.scanTooLarge,
       415: texts.recipes.scanUnsupported,
       422: texts.recipes.scanNoRecipe,
-      429: texts.recipes.scanLimitReached(limit),
+      429: texts.recipes.scanLimitReached(limit, period),
       502: texts.recipes.scanFailed,
       503: texts.recipes.scanNotConfigured,
     };
@@ -115,6 +115,7 @@ export function RecipeScanSheet({ householdId, onClose, onScanned }: RecipeScanS
     staleTime: 0,
   });
   const limit = allowanceQuery.data?.scanLimit ?? 3;
+  const period = allowanceQuery.data?.scanPeriod ?? "total";
   const isLimitReached = allowanceQuery.data
     ? allowanceQuery.data.usedScans >= allowanceQuery.data.scanLimit
     : false;
@@ -181,8 +182,8 @@ export function RecipeScanSheet({ householdId, onClose, onScanned }: RecipeScanS
         {allowanceQuery.data && (
           <Typography variant="body2" color={isLimitReached ? "error" : "text.secondary"} sx={{ mt: 1 }}>
             {isLimitReached
-              ? texts.recipes.scanLimitReached(limit)
-              : texts.recipes.scanAllowance(allowanceQuery.data.usedScans, limit)}
+              ? texts.recipes.scanLimitReached(limit, period)
+              : texts.recipes.scanAllowance(allowanceQuery.data.usedScans, limit, period)}
           </Typography>
         )}
         {pages.length > 0 && (
@@ -227,7 +228,7 @@ export function RecipeScanSheet({ householdId, onClose, onScanned }: RecipeScanS
         )}
         {scanMutation.error && (
           <Alert severity="error" sx={{ mt: 2 }}>
-            {describeScanError(scanMutation.error, limit)}
+            {describeScanError(scanMutation.error, limit, period)}
           </Alert>
         )}
       </DialogContent>

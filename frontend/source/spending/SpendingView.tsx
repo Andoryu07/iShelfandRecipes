@@ -15,6 +15,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { getSpending } from "../api/statisticsApi";
+import { usePlan } from "../plans/usePlan";
 import { CategoryAvatar } from "../components/CategoryAvatar";
 import { describeError } from "../errorMessages";
 import { formatMoney } from "../receipts/money";
@@ -150,6 +151,8 @@ export function SpendingView({ householdId }: { householdId: number }) {
   const currentMonth = monthText(new Date());
   const [month, setMonth] = useState(currentMonth);
   const [monthCount, setMonthCount] = useState(6);
+  const spendingMonths = usePlan().data?.spendingMonths ?? null;
+  const oldestMonth = spendingMonths === null ? null : shiftMonthText(currentMonth, 1 - spendingMonths);
   const spendingQuery = useQuery({
     queryKey: spendingQueryKey(householdId, month, monthCount),
     queryFn: () => getSpending(householdId, month, monthCount),
@@ -165,6 +168,7 @@ export function SpendingView({ householdId }: { householdId: number }) {
         <IconButton
           aria-label={texts.spending.previousMonth}
           onClick={() => setMonth(shiftMonthText(month, -1))}
+          disabled={oldestMonth !== null && month <= oldestMonth}
         >
           <ChevronLeftRoundedIcon />
         </IconButton>
@@ -217,10 +221,17 @@ export function SpendingView({ householdId }: { householdId: number }) {
                   onChange={(_, value: number | null) => value && setMonthCount(value)}
                 >
                   <ToggleButton value={6}>{texts.spending.sixMonths}</ToggleButton>
-                  <ToggleButton value={12}>{texts.spending.year}</ToggleButton>
+                  <ToggleButton value={12} disabled={spendingMonths !== null}>
+                    {texts.spending.year}
+                  </ToggleButton>
                 </ToggleButtonGroup>
               </Stack>
               <MonthBars months={spending.months} selectedMonth={month} onSelect={setMonth} />
+              {spendingMonths !== null && (
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  {texts.premium.olderSpendingInPremium}
+                </Typography>
+              )}
             </CardContent>
           </Card>
 

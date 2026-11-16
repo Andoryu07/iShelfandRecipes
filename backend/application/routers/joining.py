@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from application.plans import householdMemberCount, householdMemberLimit
 from application.database import getDatabaseSession, getSessionFactory
 from application.dependencies import getCurrentUser, getHouseholdOwnership, notFoundError
 from application.households import (
@@ -63,6 +64,8 @@ def notifyOwners(sender: PushSender, householdId: int, displayName: str) -> None
 
 def joinAsMember(session: Session, user: User, householdId: int) -> HouseholdMember:
     ensureUserHasNoHousehold(session, user.id)
+    if householdMemberCount(session, householdId) >= householdMemberLimit(session, householdId):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="The household is full")
     membership = HouseholdMember(userId=user.id, householdId=householdId, role=HouseholdRole.member)
     session.add(membership)
     existingRequest = session.scalar(select(JoinRequest).where(JoinRequest.userId == user.id))

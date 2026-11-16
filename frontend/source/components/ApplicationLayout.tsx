@@ -54,6 +54,7 @@ export function pageInformation(pathname: string): PageInformation {
     "/profile/notifications": texts.profile.notifications,
     "/profile/privacy": texts.profile.privacy,
     "/profile/about": texts.profile.about,
+    "/profile/premium": texts.premium.title,
   };
   if (profileTitles[pathname]) {
     return { title: profileTitles[pathname], backTo: "/profile" };

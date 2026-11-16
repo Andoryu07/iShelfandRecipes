@@ -6,7 +6,8 @@ from sqlalchemy.orm import Session
 from application.database import getDatabaseSession
 from application.dependencies import getCurrentUser, getHouseholdMembership, notFoundError
 from application.households import findMembership
-from application.models import HouseholdMember, Receipt, User
+from application.models import HouseholdMember, Receipt, ReceiptScan, User
+from application.plans import limitsOf, usedReceiptScans
 from application.receipts.dependencies import getReceiptReader
 from application.receipts.reading import ReceiptReader, ReceiptReadingError
 from application.receipts.saving import buildReceiptSummary, loadReceiptResponse, receiptSummariesQuery, saveReceipt
@@ -31,6 +32,8 @@ def scanReceipt(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Receipt consent has not been given")
     if file.content_type not in acceptedFileTypes:
         raise HTTPException(status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, detail="Unsupported file type")
+    if usedReceiptScans(session, user) >= limitsOf(user).receiptScansPerMonth:
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="The receipt scan limit is used up")
     fileBytes = file.file.read(maximumFileBytes + 1)
     if len(fileBytes) > maximumFileBytes:
         raise HTTPException(status_code=status.HTTP_413_CONTENT_TOO_LARGE, detail="The file is too large")
@@ -47,6 +50,16 @@ def scanReceipt(
         result.inputTokens,
         result.outputTokens,
     )
+    session.add(
+        ReceiptScan(
+            householdId=membership.householdId,
+            userId=user.id,
+            processingMilliseconds=result.processingMilliseconds,
+            inputTokens=result.inputTokens,
+            outputTokens=result.outputTokens,
+        )
+    )
+    session.commit()
     return buildScanResponse(session, membership.householdId, result)
 
 

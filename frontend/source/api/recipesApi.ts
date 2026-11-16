@@ -1,5 +1,6 @@
 import { apiRequest } from "./apiClient";
 import type {
+  ScanPeriod,
   HouseholdCooking,
   Recipe,
   RecipeAvailability,
@@ -21,7 +22,7 @@ export function listRecipes(
 
 export function getRecipeScanAllowance(
   householdId: number,
-): Promise<{ usedScans: number; scanLimit: number }> {
+): Promise<{ usedScans: number; scanLimit: number; scanPeriod: ScanPeriod }> {
   return apiRequest(`/households/${householdId}/recipes/scan-allowance`);
 }
 

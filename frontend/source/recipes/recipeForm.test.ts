@@ -100,6 +100,7 @@ describe("recipe from a photo", () => {
       instructions: "1. Nastrouhej.",
       usedScans: 1,
       scanLimit: 3,
+      scanPeriod: "total",
       ingredients: [
         {
           originalText: "1,5 kg mouky",

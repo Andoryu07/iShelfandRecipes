@@ -276,7 +276,7 @@ for `JWT_SECRET`. Fill in also:
 
 - `DOMAIN`: your domain without `https://`, for example `ishelf.cz`.
 - `GEMINI_API_KEY`: the key from Google AI Studio.
-- `RECIPE_SCAN_LIMIT`: how many recipes each household may read from photos (default 3; raise it for testers).
+- `PREMIUM_TEST_ACTIVATION`: `true` lets every user switch on 30 days of premium for free in Profil → Premium (for testers and the project defence; set `false` once real payments exist). Plan limits are in `backend/application/plans.py`.
 - `VAPID_SUBJECT`: `mailto:` followed by your e-mail.
 - `BACKEND_WORKERS`: keep `1` on this server (2 GB RAM); it is plenty for testing. With more memory you can use `2`.
 

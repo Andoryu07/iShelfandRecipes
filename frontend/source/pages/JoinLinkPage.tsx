@@ -8,6 +8,8 @@ import { describeError } from "../errorMessages";
 import { householdsQueryKey, useCurrentHousehold } from "../households/useCurrentHousehold";
 import { texts } from "../translations/cs";
 
+const householdFullDetail = "The household is full";
+
 export function JoinLinkPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -40,7 +42,9 @@ export function JoinLinkPage() {
     message =
       joinMutation.error instanceof ApiError && joinMutation.error.status === 410
         ? texts.householdSetup.linkInvalid
-        : describeError(joinMutation.error, { 409: texts.householdSetup.alreadyMember });
+        : joinMutation.error instanceof ApiError && joinMutation.error.detail === householdFullDetail
+          ? texts.premium.householdFullForApplicant
+          : describeError(joinMutation.error, { 409: texts.householdSetup.alreadyMember });
   }
 
   return (

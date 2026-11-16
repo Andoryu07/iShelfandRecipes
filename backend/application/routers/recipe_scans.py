@@ -2,14 +2,13 @@ import logging
 from decimal import ROUND_HALF_UP, Decimal
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
-from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from application.configuration import getConfiguration
 from application.database import getDatabaseSession
 from application.dependencies import getCurrentUser, getHouseholdMembership
 from application.foods import buildFoodResponse
 from application.models import HouseholdMember, RecipeScan, User
+from application.plans import ScanPeriod, limitsOf, usedRecipeScans
 from application.receipts.scanning import findMatchingFoods, normalizeWhitespace
 from application.recipes.dependencies import getRecipeReader
 from application.recipes.reading import ExtractedRecipe, RecipeReader, RecipeReadingError
@@ -24,16 +23,19 @@ defaultServings = 4
 quantityPrecision = Decimal("0.001")
 
 
-def usedScans(session: Session, householdId: int) -> int:
-    return session.scalar(select(func.count()).select_from(RecipeScan).where(RecipeScan.householdId == householdId))
-
-
 def capitalize(text: str) -> str:
     text = normalizeWhitespace(text)
     return text[:1].upper() + text[1:]
 
 
-def buildScanResponse(session: Session, householdId: int, recipe: ExtractedRecipe, used: int) -> ScanRecipeResponse:
+def buildScanResponse(
+    session: Session,
+    householdId: int,
+    recipe: ExtractedRecipe,
+    used: int,
+    scanLimit: int,
+    scanPeriod: ScanPeriod,
+) -> ScanRecipeResponse:
     names = {capitalize(ingredient.name) for ingredient in recipe.ingredients if ingredient.name.strip()}
     matchingFoods = findMatchingFoods(session, householdId, names)
     ingredients = []
@@ -74,16 +76,20 @@ def buildScanResponse(session: Session, householdId: int, recipe: ExtractedRecip
         instructions="\n".join(f"{index}. {step}" for index, step in enumerate(steps, start=1))[:20000],
         ingredients=ingredients,
         usedScans=used,
-        scanLimit=getConfiguration().recipeScanLimit,
+        scanLimit=scanLimit,
+        scanPeriod=scanPeriod,
     )
 
 
 @router.get("/households/{householdId}/recipes/scan-allowance", response_model=RecipeScanAllowanceResponse)
 def getScanAllowance(
-    membership: HouseholdMember = Depends(getHouseholdMembership), session: Session = Depends(getDatabaseSession)
+    membership: HouseholdMember = Depends(getHouseholdMembership),
+    user: User = Depends(getCurrentUser),
+    session: Session = Depends(getDatabaseSession),
 ) -> RecipeScanAllowanceResponse:
+    limits = limitsOf(user)
     return RecipeScanAllowanceResponse(
-        usedScans=usedScans(session, membership.householdId), scanLimit=getConfiguration().recipeScanLimit
+        usedScans=usedRecipeScans(session, user), scanLimit=limits.recipeScans, scanPeriod=limits.recipeScanPeriod
     )
 
 
@@ -99,7 +105,7 @@ def scanRecipe(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Recipe photo consent has not been given")
     if not 1 <= len(files) <= maximumPhotoCount:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Send one to three photos")
-    if usedScans(session, membership.householdId) >= getConfiguration().recipeScanLimit:
+    if usedRecipeScans(session, user) >= limitsOf(user).recipeScans:
         raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="The recipe scan limit is used up")
     contents = []
     for file in files:
@@ -135,5 +141,7 @@ def scanRecipe(
         )
     )
     session.commit()
-    used = usedScans(session, membership.householdId)
-    return buildScanResponse(session, membership.householdId, result.recipe, used)
+    limits = limitsOf(user)
+    return buildScanResponse(
+        session, membership.householdId, result.recipe, usedRecipeScans(session, user), limits.recipeScans, limits.recipeScanPeriod
+    )

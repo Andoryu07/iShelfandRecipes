@@ -21,6 +21,7 @@ class User(Base):
         "recipe_photo_consent_given_at", DateTime(timezone=True)
     )
     deletionRequestedAt: Mapped[datetime | None] = mapped_column("deletion_requested_at", DateTime(timezone=True))
+    premiumUntil: Mapped[datetime | None] = mapped_column("premium_until", DateTime(timezone=True))
     createdAt: Mapped[datetime] = mapped_column(
         "created_at", DateTime(timezone=True), server_default=func.now()
     )

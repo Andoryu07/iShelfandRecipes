@@ -30,7 +30,7 @@ erDiagram
 
 ## Tables (14)
 
-- **users**: id, email (unique), password_hash, display_name, receipt_consent_given_at, recipe_photo_consent_given_at (nullable), deletion_requested_at (nullable; the account is deleted 14 days later), created_at
+- **users**: id, email (unique), password_hash, display_name, receipt_consent_given_at, recipe_photo_consent_given_at (nullable), deletion_requested_at (nullable; the account is deleted 14 days later), premium_until (nullable; premium is active while it is in the future, per user), created_at
 - **households**: id, name, invite_code (unique), created_at
 - **household_members**: id, user_id, household_id, role (owner, member), notification_hour (6-22, default 8), expiration_warning_days (0-7, default 2), expiration_notified_on (date of the member's last expiration notification), joined_at. A user belongs to one household for now; several households are a premium feature.
 - **storage_locations**: id, household_id, name, kind (fridge, freezer, pantry, custom), icon (nullable emoji)
@@ -45,7 +45,8 @@ erDiagram
 - **join_requests**: id, household_id, user_id (unique: one request per user), rejected_at (nullable; null = waiting), created_at. Approving deletes the request and adds the member.
 - **invite_links**: id, household_id, token_hash (unique), created_by_user_id, expires_at (7 days), used_at, used_by_user_id, revoked_at, created_at. One-time links that join without approval.
 - **shopping_list_items**: id, household_id, owner_user_id (null = shared list, otherwise the personal list of that user), food_id (nullable, null for free text), name, quantity (nullable, base units), note, recipe_id (nullable, where it came from), created_by_user_id, checked_at, checked_by_user_id, created_at.
-- **recipe_scans**: id, household_id, user_id (nullable), photo_count, processing_milliseconds, input_tokens, output_tokens, created_at. One row per successful recipe scan; counts towards the household limit.
+- **recipe_scans**: id, household_id, user_id (nullable), photo_count, processing_milliseconds, input_tokens, output_tokens, created_at. One row per successful recipe scan; counts towards the user's limit (free 3 in total, premium 20 a month).
+- **receipt_scans**: id, household_id, user_id (nullable), processing_milliseconds, input_tokens, output_tokens, created_at. One row per successful receipt scan; counts towards the user's monthly limit (free 10, premium 60) and shows the Gemini cost.
 - **favourite_recipes**: user_id, recipe_id (primary key together), created_at. Personal favourites; deleted with the user or the recipe.
 - **recipe_cookings**: id, household_id, recipe_id (nullable, set to null when the recipe is deleted), recipe_name (the name when cooked), user_id (nullable), servings, created_at. One row each time a recipe is cooked; the history survives deleting the recipe.
 - **push_subscriptions**: id, user_id, endpoint (unique), public_key, authentication_secret

@@ -46,3 +46,19 @@ class ReceiptItem(Base):
     correctedByUser: Mapped[bool] = mapped_column(
         "corrected_by_user", default=False, server_default=false()
     )
+
+
+class ReceiptScan(Base):
+    __tablename__ = "receipt_scans"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    householdId: Mapped[int] = mapped_column(
+        "household_id", ForeignKey("households.id", ondelete="CASCADE"), index=True
+    )
+    userId: Mapped[int | None] = mapped_column("user_id", ForeignKey("users.id", ondelete="SET NULL"), index=True)
+    processingMilliseconds: Mapped[int | None] = mapped_column("processing_milliseconds")
+    inputTokens: Mapped[int | None] = mapped_column("input_tokens")
+    outputTokens: Mapped[int | None] = mapped_column("output_tokens")
+    createdAt: Mapped[datetime] = mapped_column(
+        "created_at", DateTime(timezone=True), server_default=func.now()
+    )

@@ -23,7 +23,8 @@ import {
   ToggleButtonGroup,
   Typography,
 } from "@mui/material";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { planQueryKey, usePlan } from "../plans/usePlan";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Link as RouterLink, useSearchParams } from "react-router";
 import { giveReceiptConsent } from "../api/authenticationApi";
@@ -49,6 +50,7 @@ export function ReceiptsPage() {
 
 function Receipts({ householdId }: { householdId: number }) {
   const { user, replaceUser } = useAuthentication();
+  const queryClient = useQueryClient();
   const cameraInput = useRef<HTMLInputElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const [pendingInput, setPendingInput] = useState<"camera" | "file" | "shared">("camera");
@@ -107,7 +109,11 @@ function Receipts({ householdId }: { householdId: number }) {
       return scanReceipt(householdId, content, fileName);
     },
     onSuccess: setScannedReceipt,
+    onSettled: () => queryClient.invalidateQueries({ queryKey: planQueryKey }),
   });
+  const planQuery = usePlan();
+  const receiptScans = planQuery.data?.receiptScans;
+  const receiptScansLeft = receiptScans ? Math.max(0, receiptScans.limit - receiptScans.used) : null;
 
   function startScan(input: "camera" | "file") {
     if (user?.receiptConsentGivenAt) {
@@ -228,10 +234,25 @@ function Receipts({ householdId }: { householdId: number }) {
           {texts.receipts.uploadFile}
         </Button>
       </Card>
+      {receiptScansLeft !== null && (receiptScansLeft === 0 || receiptScansLeft <= 3) && (
+        <Typography
+          variant="body2"
+          color={receiptScansLeft === 0 ? "warning.main" : "text.secondary"}
+          sx={{ mt: 1, textAlign: "center" }}
+        >
+          {receiptScansLeft === 0
+            ? texts.premium.receiptLimitReached
+            : texts.premium.receiptScansLeft(receiptScansLeft)}{" "}
+          <Link component={RouterLink} to="/profile/premium">
+            {texts.premium.showPremium}
+          </Link>
+        </Typography>
+      )}
       {scanMutation.error && (
         <Alert severity="error" sx={{ mt: 2 }}>
           {describeError(scanMutation.error, {
             413: texts.receipts.imageTooLarge,
+            429: texts.premium.receiptLimitReached,
             415: texts.receipts.unsupportedFile,
             502: texts.receipts.readFailed,
             503: texts.receipts.notConfigured,

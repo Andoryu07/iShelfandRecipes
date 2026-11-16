@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field, model_validator
 from application.models.enumerations import DishType, FoodCategory, MeasurementUnit
 from application.schemas.common import Icon, PositiveQuantity, QuantityValue, RequiredName
 from application.schemas.foods import FoodResponse, NewFoodRequest
+from application.plans import ScanPeriod
 
 Servings = Annotated[int, Field(ge=1, le=100)]
 PreparationMinutes = Annotated[int, Field(ge=1, le=2880)]
@@ -161,8 +162,10 @@ class ScanRecipeResponse(BaseModel):
     ingredients: list[ScannedIngredient]
     usedScans: int
     scanLimit: int
+    scanPeriod: ScanPeriod
 
 
 class RecipeScanAllowanceResponse(BaseModel):
     usedScans: int
     scanLimit: int
+    scanPeriod: ScanPeriod
