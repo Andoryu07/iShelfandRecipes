@@ -23,6 +23,7 @@ import { foodIcons } from "../components/icons";
 import { shoppingListQueryKey } from "../shopping/useShoppingList";
 import { stockItemsQueryKey } from "../stock/stockQueries";
 import { texts } from "../translations/cs";
+import { usePlan } from "../plans/usePlan";
 import { compressFoodPhoto } from "./compressFoodPhoto";
 
 interface FoodAvatarMenuProps {
@@ -35,6 +36,7 @@ export function FoodAvatarMenu({ householdId, food }: FoodAvatarMenuProps) {
   const [currentFood, setCurrentFood] = useState(food);
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const [isIconPickerOpen, setIsIconPickerOpen] = useState(false);
+  const canUploadPhotos = usePlan().data?.canUploadFoodPhotos ?? true;
   const cameraInput = useRef<HTMLInputElement>(null);
   const galleryInput = useRef<HTMLInputElement>(null);
 
@@ -110,13 +112,21 @@ export function FoodAvatarMenu({ householdId, food }: FoodAvatarMenuProps) {
           </ListItemIcon>
           <ListItemText>{texts.foodPhotos.changeIcon}</ListItemText>
         </MenuItem>
-        <MenuItem onClick={() => choose(() => cameraInput.current?.click())}>
+        {!canUploadPhotos && (
+          <MenuItem disabled>
+            <ListItemText
+              secondary={texts.guest.photosNeedAccount}
+              slotProps={{ secondary: { sx: { whiteSpace: "normal" } } }}
+            />
+          </MenuItem>
+        )}
+        <MenuItem disabled={!canUploadPhotos} onClick={() => choose(() => cameraInput.current?.click())}>
           <ListItemIcon>
             <PhotoCameraOutlinedIcon />
           </ListItemIcon>
           <ListItemText>{texts.foodPhotos.takePhoto}</ListItemText>
         </MenuItem>
-        <MenuItem onClick={() => choose(() => galleryInput.current?.click())}>
+        <MenuItem disabled={!canUploadPhotos} onClick={() => choose(() => galleryInput.current?.click())}>
           <ListItemIcon>
             <PhotoLibraryOutlinedIcon />
           </ListItemIcon>

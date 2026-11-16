@@ -8,7 +8,9 @@ import {
   logIn as logInRequest,
   logOut as logOutRequest,
   registerAccount,
+  startAsGuest as startAsGuestRequest,
 } from "../api/authenticationApi";
+import { texts } from "../translations/cs";
 import type { User } from "../api/types";
 import { AuthenticationContext, type AuthenticationStatus } from "./AuthenticationContext";
 
@@ -59,6 +61,12 @@ export function AuthenticationProvider({ children }: { children: ReactNode }) {
     [loadCurrentUser],
   );
 
+  const startAsGuest = useCallback(async () => {
+    const tokens = await startAsGuestRequest(texts.guest.householdName);
+    setAccessToken(tokens.accessToken);
+    await loadCurrentUser();
+  }, [loadCurrentUser]);
+
   const logOut = useCallback(async () => {
     try {
       await logOutRequest();
@@ -68,8 +76,8 @@ export function AuthenticationProvider({ children }: { children: ReactNode }) {
   }, [signOutLocally]);
 
   const value = useMemo(
-    () => ({ status, user, logIn, register, logOut, replaceUser: setUser }),
-    [status, user, logIn, register, logOut],
+    () => ({ status, user, logIn, register, startAsGuest, logOut, replaceUser: setUser }),
+    [status, user, logIn, register, startAsGuest, logOut],
   );
 
   return <AuthenticationContext.Provider value={value}>{children}</AuthenticationContext.Provider>;

@@ -11,6 +11,7 @@ export const texts = {
   applicationName: "iShelf a recepty",
   common: {
     save: "Uložit",
+    or: "nebo",
     back: "Zpět",
     cancel: "Zrušit",
     delete: "Smazat",
@@ -594,6 +595,104 @@ export const texts = {
             : `za ${days} ${days < 5 ? "dny" : "dní"}`,
     andMore: (count: number) => `a ${count} další`,
   },
+  households: {
+    title: "Tvoje domácnosti",
+    switch: "Přepnout domácnost",
+    add: "Vytvořit nebo připojit další domácnost",
+    addTitle: "Další domácnost",
+    addIntroduction: (count: number, limit: number) =>
+      `Máš ${count} z ${limit} ${limit === 1 ? "domácnosti" : "domácností"}.`,
+    limitReached: "Víc domácností mít nemůžeš. Ve verzi zdarma jde mít 1 domácnost, s Premium až 3.",
+    premiumLimitReached: "Máš nejvyšší možný počet domácností (3).",
+    morePremium:
+      "Ve verzi zdarma můžeš mít jednu domácnost. S Premium můžeš mít až tři, třeba byt, chatu a domácnost rodičů.",
+    morePremiumShort: "Až 3 domácnosti s Premium",
+    alreadyMember: "V této domácnosti už jsi.",
+    cannotBeShared: "Tuto domácnost nejde sdílet.",
+    lockedShort: "uzamčená",
+    lockedTitle: "Domácnost je uzamčená",
+    lockedOwner: (count: number, limit: number) =>
+      `Domácnost má ${count} členů, ale bez Premium jich může mít nejvýš ${limit}. Dokud si znovu nezapneš Premium nebo neodebereš členy, nejde nic přidávat, skenovat ani měnit. Data si můžeš prohlížet a stáhnout do CSV.`,
+    lockedMember: (count: number, limit: number) =>
+      `Domácnost má ${count} členů, ale tarif vlastníka dovoluje nejvýš ${limit}. Dokud vlastník znovu nezapne Premium nebo neubude členů, nejde nic přidávat, skenovat ani měnit. Data si můžeš prohlížet a stáhnout do CSV.`,
+    lockedAction:
+      "Domácnost je uzamčená, protože má víc členů, než dovoluje tarif vlastníka. Změny teď nejdou uložit.",
+    storageLocationCount: (count: number, limit: number) => `${count} z ${limit} úložišť`,
+    storageLimitReached:
+      "Víc úložišť ve verzi zdarma mít nejde. S Premium vlastníka domácnosti jich může být až 9.",
+    storageLimitReachedPremium: "Domácnost má nejvyšší možný počet úložišť (9).",
+    exportTitle: "Export dat",
+    exportDescription:
+      "Stáhni si zásoby nebo položky z účtenek jako tabulku CSV. Otevře ji Excel i Tabulky Google.",
+    exportStock: "Zásoby",
+    exportReceipts: "Účtenky",
+    exportFailed: "Export se nepodařil. Zkus to znovu.",
+    stockFileName: "zasoby",
+    receiptsFileName: "uctenky",
+    stockColumns: [
+      "Potravina",
+      "Druh",
+      "Kategorie",
+      "Množství",
+      "Jednotka",
+      "Rezervováno",
+      "Úložiště",
+      "Spotřebovat do",
+    ],
+    receiptColumns: [
+      "Datum",
+      "Obchod",
+      "Text na účtence",
+      "Potravina",
+      "Kategorie",
+      "Množství",
+      "Jednotka",
+      "Cena",
+      "Sleva",
+    ],
+  },
+  guest: {
+    tryWithoutAccount: "Vyzkoušet bez účtu",
+    tryHint: "Bez e-mailu a hesla. Účet si můžeš vytvořit později a o nic nepřijdeš.",
+    householdName: "Moje domácnost",
+    planName: "Bez účtu",
+    bannerTitle: "Používáš aplikaci bez účtu",
+    bannerText:
+      "Když smažeš data prohlížeče nebo ztratíš telefon, přijdeš o zásoby. Po 60 dnech bez použití se data smažou.",
+    createAccount: "Vytvořit účet",
+    upgradeTitle: "Vytvoř si účet",
+    upgradeText: "Všechno, co už v aplikaci máš, zůstane zachované.",
+    upgraded: "Účet je vytvořený. Příště se přihlásíš e-mailem a heslem.",
+    emailTaken: "Tento e-mail už je registrovaný. Použij jiný.",
+    cannotJoin: "Bez účtu se nejde připojit k jiné domácnosti. Nejdřív si vytvoř účet.",
+    householdsNeedAccount: "Další domácnosti a sdílení domácnosti jsou dostupné s účtem.",
+    sharingNeedsAccount: "Pozvat další členy můžeš, až si vytvoříš účet.",
+    photosNeedAccount: "Fotky potravin jsou dostupné s účtem.",
+    recipeScanNeedsAccount: "Recept z fotky je dostupný s účtem. S účtem máš 3 skeny receptů zdarma.",
+    receiptTrialUsed: "Zkušební sken účtenky je využitý. S účtem máš 10 skenů měsíčně.",
+    tooManyGuests:
+      "Z tohoto připojení dnes vzniklo příliš mnoho zkušebních účtů. Zkus to zítra, nebo si vytvoř účet.",
+    logOutWarning:
+      "Bez účtu se po odhlášení už ke svým datům nedostaneš. Nejdřív si vytvoř účet, pokud chceš data zachovat.",
+    deleteData: "Smazat data",
+    deleteDataText: "Smaže zásoby, recepty i účtenky z tohoto zkušebního účtu. Nejde to vrátit.",
+    deleteDataConfirm: "Smazat všechno",
+  },
+  ads: {
+    label: "Reklama",
+    placeholderTitle: "Místo pro reklamu",
+    placeholderText: "Tady se bude zobrazovat reklama. S Premium reklamy nejsou.",
+    removeAds: "Bez reklam",
+    rewardedOffer: "Podívej se na krátkou reklamu a získej 1 sken navíc.",
+    rewardedButton: "Sken navíc za reklamu",
+    rewardedLeft: (count: number) => `Dnes ještě ${count}×`,
+    rewardedTitle: "Reklama",
+    rewardedPlaying: "Tady poběží krátká reklama. Zatím jde jen o ukázku místa.",
+    rewardedSeconds: (seconds: number) => `Odměna za ${seconds} s`,
+    rewardedClaim: "Získat sken",
+    rewardedDone: "Máš 1 sken navíc.",
+    rewardedFailed: "Odměnu se nepodařilo připsat. Dnešní reklamy za odměnu jsou možná vyčerpané.",
+  },
   premium: {
     title: "Premium",
     free: "Zdarma",
@@ -610,6 +709,8 @@ export const texts = {
       ["Skeny účtenek", "10 měsíčně", "60 měsíčně"],
       ["Recepty z fotky", "3 celkem", "20 měsíčně"],
       ["Členové domácnosti", "až 6", "až 12"],
+      ["Domácnosti", "1", "až 3"],
+      ["Úložiště v domácnosti", "3", "až 9"],
       ["Historie útrat", "6 měsíců", "celá"],
       ["Reklamy", "ano", "bez reklam"],
     ] as [string, string, string][],
@@ -620,6 +721,8 @@ export const texts = {
     activateTest: "Vyzkoušet premium na 30 dní",
     cancelTest: "Ukončit testovací premium",
     lockedHint: "V Premium",
+    guestNeedsAccount:
+      "Premium si můžeš zapnout, až si vytvoříš účet. Všechno, co už máš, zůstane zachované.",
     olderSpendingInPremium: "Starší útraty a pohled na celý rok jsou v Premium.",
     receiptScansLeft: (left: number) =>
       left === 1
@@ -712,6 +815,8 @@ export const texts = {
           "Účet: e-mail, jméno, které zadáš, a heslo uložené pouze jako bezpečný otisk (hash), ze kterého nejde zpětně zjistit.",
           "Domácnost: název domácnosti, její členy, místa uložení, potraviny, zásoby, jejich úbytky a rezervace, recepty, historii vaření a společný nákupní seznam. Osobní nákupní seznam, oblíbené recepty a nastavení upozornění patří jen tobě.",
           "Účtenky: obchod, datum, celková částka a přečtené položky s cenami.",
+          "Tarif: jestli a do kdy máš Premium, počet skenů účtenek a receptů a počet reklam za odměnu. Potřebujeme to kvůli limitům tarifu.",
+          "Zkušební použití bez účtu: ukládáme stejná data domácnosti, ale žádný e-mail ani jméno. Proti hromadnému zakládání zkušebních účtů ukládáme otisk (hash) IP adresy, ze kterého adresu nejde zpětně zjistit. Otisk se smaže, když si vytvoříš účet.",
           "Tyto údaje potřebujeme k tomu, aby aplikace fungovala (plnění smlouvy). Nepoužíváme je k reklamě a neprodáváme je.",
         ],
       },
@@ -742,13 +847,14 @@ export const texts = {
         heading: "Jak dlouho údaje uchováváme",
         paragraphs: [
           "Údaje uchováváme, dokud máš účet. Přihlášení na zařízení vyprší nejpozději po 60 dnech, kdy aplikaci nepoužíváš.",
+          "Zkušební účet bez e-mailu, který 60 dní nepoužiješ, se automaticky smaže i se svou domácností a všemi daty. Smazat ho můžeš i sám v Profilu v části Účet, a to hned, bez čekací doby.",
           "Když účet smažeš, hned se odhlásíš na všech zařízeních a účet se trvale smaže po 14 dnech. Během této doby ho můžeš obnovit tím, že se znovu přihlásíš. Po smazání zmizí tvůj účet, rezervace a přihlášení. Zásoby, úbytky a účtenky zůstanou domácnosti, ale už bez vazby na tebe. Pokud jsi poslední člen domácnosti, smaže se celá domácnost se všemi daty.",
         ],
       },
       {
         heading: "Tvoje práva",
         paragraphs: [
-          "Máš právo na přístup ke svým údajům, jejich opravu a výmaz, na omezení zpracování, na přenositelnost a na odvolání souhlasu. Účet můžeš kdykoli smazat sám v Profilu v části Účet, ostatní žádosti pošli na uvedený e-mail.",
+          "Máš právo na přístup ke svým údajům, jejich opravu a výmaz, na omezení zpracování, na přenositelnost a na odvolání souhlasu. Účet můžeš kdykoli smazat sám v Profilu v části Účet. Zásoby a položky z účtenek si můžeš stáhnout jako tabulku CSV v záložce Domácnost. Ostatní žádosti pošli na uvedený e-mail.",
           "Pokud si myslíš, že s údaji nakládáme v rozporu se zákonem, můžeš podat stížnost u Úřadu pro ochranu osobních údajů (www.uoou.gov.cz).",
         ],
       },
@@ -756,6 +862,7 @@ export const texts = {
         heading: "Cookies",
         paragraphs: [
           "Používáme jedinou cookie, která je nutná pro přihlášení. Nepoužíváme reklamní ani analytické cookies.",
+          "Ve verzi zdarma jsou v aplikaci zatím jen vyhrazená místa pro reklamu. Žádná reklamní síť není zapojená a žádné údaje reklamním firmám nepředáváme. Než skutečné reklamy zapneme, tyto zásady upravíme a požádáme tě o souhlas.",
         ],
       },
       {

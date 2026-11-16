@@ -1,4 +1,4 @@
-import { Button, Stack, Typography } from "@mui/material";
+import { Alert, Button, Stack, Typography } from "@mui/material";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router";
@@ -9,6 +9,7 @@ import { ConfirmationDialog } from "../components/ConfirmationDialog";
 import { InviteCodeCard } from "../households/InviteCodeCard";
 import { JoinRequestsSection } from "../households/JoinRequestsSection";
 import { MembersSection, membersQueryKey } from "../households/MembersSection";
+import { ExportSection } from "../households/ExportSection";
 import { StorageLocationsSection } from "../households/StorageLocationsSection";
 import { householdsQueryKey, useCurrentHousehold } from "../households/useCurrentHousehold";
 import { texts } from "../translations/cs";
@@ -41,10 +42,17 @@ function HouseholdDetails({ household, user }: { household: Household; user: Use
       <Typography variant="h5" component="h2">
         {household.name}
       </Typography>
-      <InviteCodeCard household={household} />
+      {household.canShare ? (
+        <InviteCodeCard household={household} />
+      ) : (
+        <Alert severity="info" sx={{ mt: 2 }}>
+          {texts.guest.sharingNeedsAccount}
+        </Alert>
+      )}
       {household.role === "owner" && <JoinRequestsSection householdId={household.id} />}
       <MembersSection household={household} currentUserId={user.id} />
-      <StorageLocationsSection householdId={household.id} />
+      <StorageLocationsSection household={household} />
+      <ExportSection household={household} />
       <Stack className="section" spacing={1} sx={{ alignItems: "flex-start" }}>
         <Button
           color="error"

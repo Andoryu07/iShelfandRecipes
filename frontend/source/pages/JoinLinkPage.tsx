@@ -4,27 +4,26 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { ApiError } from "../api/apiClient";
 import { joinHouseholdByLink } from "../api/householdsApi";
-import { describeError } from "../errorMessages";
-import { householdsQueryKey, useCurrentHousehold } from "../households/useCurrentHousehold";
+import { describeHouseholdError } from "../households/householdErrors";
+import { householdsQueryKey, selectHousehold, useCurrentHousehold } from "../households/useCurrentHousehold";
 import { texts } from "../translations/cs";
-
-const householdFullDetail = "The household is full";
 
 export function JoinLinkPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const location = useLocation();
   const [token] = useState(() => new URLSearchParams(location.hash.slice(1)).get("token") ?? "");
-  const { household, isPending } = useCurrentHousehold();
+  const { isPending } = useCurrentHousehold();
   const joinMutation = useMutation({
     mutationFn: () => joinHouseholdByLink(token),
-    onSuccess: async () => {
+    onSuccess: async (joinedHousehold) => {
       window.history.replaceState(null, "", window.location.pathname);
+      selectHousehold(joinedHousehold.id);
       await queryClient.invalidateQueries({ queryKey: householdsQueryKey });
       navigate("/overview", { replace: true });
     },
   });
-  const canJoin = Boolean(token) && !isPending && !household;
+  const canJoin = Boolean(token) && !isPending;
   const { mutate, isIdle } = joinMutation;
 
   useEffect(() => {
@@ -36,15 +35,11 @@ export function JoinLinkPage() {
   let message: string | null = null;
   if (!token) {
     message = texts.householdSetup.linkWithoutToken;
-  } else if (!isPending && household && !joinMutation.isSuccess) {
-    message = texts.householdSetup.alreadyMember;
   } else if (joinMutation.error) {
     message =
       joinMutation.error instanceof ApiError && joinMutation.error.status === 410
         ? texts.householdSetup.linkInvalid
-        : joinMutation.error instanceof ApiError && joinMutation.error.detail === householdFullDetail
-          ? texts.premium.householdFullForApplicant
-          : describeError(joinMutation.error, { 409: texts.householdSetup.alreadyMember });
+        : describeHouseholdError(joinMutation.error);
   }
 
   return (

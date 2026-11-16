@@ -23,7 +23,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-import { useDeferredValue, useState } from "react";
+import { Fragment, useDeferredValue, useState } from "react";
 import { useNavigate } from "react-router";
 import { listRecipes } from "../api/recipesApi";
 import { describeError } from "../errorMessages";
@@ -43,6 +43,7 @@ import { formatMoney } from "../receipts/money";
 import { RecipeEditorDialog } from "../recipes/RecipeEditorDialog";
 import { RecipeScanSheet } from "../recipes/RecipeScanSheet";
 import { formValuesFromScan, type RecipeFormValues } from "../recipes/recipeForm";
+import { AdSlot } from "../ads/AdSlot";
 import { texts } from "../translations/cs";
 
 const quickFilters: { value: QuickFilter; label: string }[] = [
@@ -52,6 +53,8 @@ const quickFilters: { value: QuickFilter; label: string }[] = [
   { value: "vegetarian", label: texts.recipes.filterVegetarian },
   { value: "own", label: texts.recipes.filterOwn },
 ];
+
+const adPosition = 3;
 
 export function RecipesPage() {
   const { household } = useCurrentHousehold();
@@ -218,63 +221,70 @@ function RecipeList({ householdId }: { householdId: number }) {
         </Stack>
       )}
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 1.5 }}>
-        {recipes.map((recipe) => (
-          <Card key={recipe.id} sx={{ position: "relative" }}>
-            <CardActionArea
-              onClick={() => navigate(`/recipes/${recipe.id}`)}
-              sx={{ display: "flex", p: 1.5, gap: 1.5 }}
-            >
-              <Avatar
-                variant="rounded"
-                sx={{ width: 64, height: 64, fontSize: 32, bgcolor: "action.hover", borderRadius: 3 }}
+        {recipes.map((recipe, index) => (
+          <Fragment key={recipe.id}>
+            {index === adPosition && (
+              <Box sx={{ gridColumn: "1 / -1" }}>
+                <AdSlot />
+              </Box>
+            )}
+            <Card sx={{ position: "relative" }}>
+              <CardActionArea
+                onClick={() => navigate(`/recipes/${recipe.id}`)}
+                sx={{ display: "flex", p: 1.5, gap: 1.5 }}
               >
-                {recipeIcon(recipe)}
-              </Avatar>
-              <Box sx={{ flex: 1, minWidth: 0, pr: 4 }}>
-                <Typography sx={{ fontWeight: 650 }} noWrap>
-                  {recipe.name}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" noWrap>
-                  {[
-                    recipe.preparationMinutes ? texts.recipes.minutes(recipe.preparationMinutes) : null,
-                    recipe.estimatedPrice ? `~${formatMoney(recipe.estimatedPrice)}` : null,
-                    texts.recipes.servingCount(recipe.servings),
-                  ]
-                    .filter(Boolean)
-                    .join(" · ")}
-                </Typography>
-                <Stack direction="row" sx={{ gap: 0.5, flexWrap: "wrap", mt: 0.75 }}>
-                  <Chip
-                    size="small"
-                    color={recipe.missingCount === 0 ? "success" : "warning"}
-                    label={
-                      recipe.missingCount === 0
-                        ? texts.recipes.haveEverything
-                        : texts.recipes.missingCount(recipe.missingCount)
-                    }
-                  />
-                  {(recipe.expiringIngredientCount ?? 0) > 0 && (
+                <Avatar
+                  variant="rounded"
+                  sx={{ width: 64, height: 64, fontSize: 32, bgcolor: "action.hover", borderRadius: 3 }}
+                >
+                  {recipeIcon(recipe)}
+                </Avatar>
+                <Box sx={{ flex: 1, minWidth: 0, pr: 4 }}>
+                  <Typography sx={{ fontWeight: 650 }} noWrap>
+                    {recipe.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" noWrap>
+                    {[
+                      recipe.preparationMinutes ? texts.recipes.minutes(recipe.preparationMinutes) : null,
+                      recipe.estimatedPrice ? `~${formatMoney(recipe.estimatedPrice)}` : null,
+                      texts.recipes.servingCount(recipe.servings),
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </Typography>
+                  <Stack direction="row" sx={{ gap: 0.5, flexWrap: "wrap", mt: 0.75 }}>
                     <Chip
                       size="small"
-                      variant="outlined"
-                      color="warning"
-                      label={`⏳ ${texts.recipes.usesExpiring(recipe.expiringIngredientCount ?? 0)}`}
+                      color={recipe.missingCount === 0 ? "success" : "warning"}
+                      label={
+                        recipe.missingCount === 0
+                          ? texts.recipes.haveEverything
+                          : texts.recipes.missingCount(recipe.missingCount)
+                      }
                     />
-                  )}
-                  {recipe.isVegetarian && (
-                    <Chip size="small" variant="outlined" label={`🌱 ${texts.recipes.vegetarian}`} />
-                  )}
-                </Stack>
+                    {(recipe.expiringIngredientCount ?? 0) > 0 && (
+                      <Chip
+                        size="small"
+                        variant="outlined"
+                        color="warning"
+                        label={`⏳ ${texts.recipes.usesExpiring(recipe.expiringIngredientCount ?? 0)}`}
+                      />
+                    )}
+                    {recipe.isVegetarian && (
+                      <Chip size="small" variant="outlined" label={`🌱 ${texts.recipes.vegetarian}`} />
+                    )}
+                  </Stack>
+                </Box>
+              </CardActionArea>
+              <Box sx={{ position: "absolute", top: 4, right: 4 }}>
+                <FavouriteButton
+                  householdId={householdId}
+                  recipeId={recipe.id}
+                  isFavourite={recipe.isFavourite === true}
+                />
               </Box>
-            </CardActionArea>
-            <Box sx={{ position: "absolute", top: 4, right: 4 }}>
-              <FavouriteButton
-                householdId={householdId}
-                recipeId={recipe.id}
-                isFavourite={recipe.isFavourite === true}
-              />
-            </Box>
-          </Card>
+            </Card>
+          </Fragment>
         ))}
       </Box>
       <Box sx={{ height: 72 }} />

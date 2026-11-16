@@ -31,6 +31,8 @@ import { spendingQueryKey } from "../spending/SpendingView";
 import { ExpirationChip } from "../stock/ExpirationChip";
 import { formatQuantity } from "../stock/quantities";
 import { stockItemsQueryKey } from "../stock/stockQueries";
+import { AdSlot } from "../ads/AdSlot";
+import { GuestBanner } from "../guest/GuestBanner";
 import { texts } from "../translations/cs";
 
 export function OverviewPage() {
@@ -80,9 +82,12 @@ function Overview({ householdId }: { householdId: number }) {
       <Typography variant="h5" component="h2" sx={{ mt: 1 }}>
         {texts.overview.greeting(
           greetingFor(new Date().getHours()),
-          vocative(user?.displayName.trim().split(/\s+/)[0] ?? ""),
+          user?.isGuest ? "" : vocative(user?.displayName.trim().split(/\s+/)[0] ?? ""),
         )}
       </Typography>
+      <Box sx={{ mt: 2 }}>
+        <GuestBanner />
+      </Box>
       <Stack direction="row" spacing={1} useFlexGap sx={{ mt: 2 }}>
         <Button
           variant="contained"
@@ -177,6 +182,7 @@ function Overview({ householdId }: { householdId: number }) {
           ))}
         </Box>
       )}
+      <AdSlot />
     </>
   );
 }

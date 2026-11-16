@@ -9,7 +9,8 @@ export interface TokenResponse {
 
 export interface User {
   id: number;
-  email: string;
+  email: string | null;
+  isGuest: boolean;
   displayName: string;
   receiptConsentGivenAt: string | null;
   recipePhotoConsentGivenAt?: string | null;
@@ -24,6 +25,12 @@ export interface Household {
   notificationHour: number;
   expirationWarningDays: number;
   createdAt: string;
+  memberCount: number;
+  memberLimit: number;
+  storageLocationCount: number;
+  storageLocationLimit: number;
+  isLocked: boolean;
+  canShare: boolean;
 }
 
 export interface JoinRequest {
@@ -373,11 +380,33 @@ export interface ScanAllowance {
 }
 
 export interface PlanSummary {
-  plan: "free" | "premium";
+  plan: "guest" | "free" | "premium";
   premiumUntil: string | null;
   testActivationAvailable: boolean;
   receiptScans: ScanAllowance;
   recipeScans: ScanAllowance;
+  householdCount: number;
+  householdLimit: number;
   householdMemberLimit: number;
+  storageLocationLimit: number;
   spendingMonths: number | null;
+  canShareHousehold: boolean;
+  canUploadFoodPhotos: boolean;
+  showsAds: boolean;
+  rewardedAdsLeftToday: number;
+}
+
+export type RewardKind = "receiptScan" | "recipeScan";
+
+export interface ReceiptItemExportRow {
+  purchasedOn: string;
+  storeName: string | null;
+  receiptTotal: number;
+  originalText: string;
+  name: string;
+  category: string | null;
+  quantity: number | null;
+  unit: MeasurementUnit | null;
+  price: number;
+  discount: number;
 }

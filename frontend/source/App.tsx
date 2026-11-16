@@ -36,6 +36,7 @@ const NotificationsSettingsPage = lazyPage(
 );
 const PrivacySettingsPage = lazyPage(() => import("./profile/ProfilePages"), "PrivacySettingsPage");
 const PremiumPage = lazyPage(() => import("./profile/ProfilePages"), "PremiumPage");
+const AddHouseholdPage = lazyPage(() => import("./pages/AddHouseholdPage"), "AddHouseholdPage");
 const ProfilePage = lazyPage(() => import("./profile/ProfilePages"), "ProfilePage");
 
 const router = createBrowserRouter([
@@ -76,6 +77,7 @@ const router = createBrowserRouter([
               { path: "/profile/privacy", element: <PrivacySettingsPage /> },
               { path: "/profile/about", element: <AboutPage /> },
               { path: "/profile/premium", element: <PremiumPage /> },
+              { path: "/households/add", element: <AddHouseholdPage /> },
             ],
           },
         ],

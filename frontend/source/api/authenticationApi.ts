@@ -54,3 +54,11 @@ export function restoreAccount(): Promise<User> {
 export function deleteAccount(password: string): Promise<void> {
   return apiRequest<void>("/auth/me", { method: "DELETE", body: { password } });
 }
+
+export function startAsGuest(householdName: string): Promise<TokenResponse> {
+  return apiRequest<TokenResponse>("/auth/guest", { method: "POST", body: { householdName } });
+}
+
+export function upgradeGuest(email: string, password: string, displayName: string): Promise<User> {
+  return apiRequest<User>("/auth/me/upgrade", { method: "POST", body: { email, password, displayName } });
+}

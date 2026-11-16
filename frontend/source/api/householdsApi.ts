@@ -1,5 +1,6 @@
 import { apiRequest } from "./apiClient";
 import type {
+  ReceiptItemExportRow,
   Household,
   InviteLink,
   JoinRequest,
@@ -114,4 +115,8 @@ export function getStorageLocationHistory(storageLocationId: number): Promise<St
 
 export function deleteStorageLocation(storageLocationId: number): Promise<void> {
   return apiRequest<void>(`/storage-locations/${storageLocationId}`, { method: "DELETE" });
+}
+
+export function exportReceiptItems(householdId: number): Promise<ReceiptItemExportRow[]> {
+  return apiRequest<ReceiptItemExportRow[]>(`/households/${householdId}/exports/receipt-items`);
 }

@@ -16,6 +16,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link as RouterLink } from "react-router";
 import { activateTestPremium, cancelTestPremium } from "../api/plansApi";
 import type { ScanAllowance } from "../api/types";
 import { describeError } from "../errorMessages";
@@ -59,6 +60,21 @@ export function PremiumPage() {
     return <LinearProgress sx={{ mt: 2 }} />;
   }
   const isPremium = plan.plan === "premium";
+  if (plan.plan === "guest") {
+    return (
+      <Alert
+        severity="info"
+        sx={{ mt: 2 }}
+        action={
+          <Button color="inherit" size="small" component={RouterLink} to="/profile/account">
+            {texts.guest.createAccount}
+          </Button>
+        }
+      >
+        {texts.premium.guestNeedsAccount}
+      </Alert>
+    );
+  }
   return (
     <>
       <Card sx={{ mt: 2 }}>

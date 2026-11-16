@@ -2,6 +2,7 @@ import PhotoCameraRoundedIcon from "@mui/icons-material/PhotoCameraRounded";
 import UploadFileRoundedIcon from "@mui/icons-material/UploadFileRounded";
 import {
   Alert,
+  Box,
   Avatar,
   Button,
   Card,
@@ -25,6 +26,8 @@ import {
 } from "@mui/material";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { planQueryKey, usePlan } from "../plans/usePlan";
+import { RewardedAdButton } from "../ads/RewardedAdButton";
+import { AdSlot } from "../ads/AdSlot";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Link as RouterLink, useSearchParams } from "react-router";
 import { giveReceiptConsent } from "../api/authenticationApi";
@@ -241,18 +244,25 @@ function Receipts({ householdId }: { householdId: number }) {
           sx={{ mt: 1, textAlign: "center" }}
         >
           {receiptScansLeft === 0
-            ? texts.premium.receiptLimitReached
+            ? user?.isGuest
+              ? texts.guest.receiptTrialUsed
+              : texts.premium.receiptLimitReached
             : texts.premium.receiptScansLeft(receiptScansLeft)}{" "}
-          <Link component={RouterLink} to="/profile/premium">
-            {texts.premium.showPremium}
+          <Link component={RouterLink} to={user?.isGuest ? "/profile/account" : "/profile/premium"}>
+            {user?.isGuest ? texts.guest.createAccount : texts.premium.showPremium}
           </Link>
         </Typography>
+      )}
+      {receiptScansLeft === 0 && (
+        <Box sx={{ textAlign: "center" }}>
+          <RewardedAdButton kind="receiptScan" />
+        </Box>
       )}
       {scanMutation.error && (
         <Alert severity="error" sx={{ mt: 2 }}>
           {describeError(scanMutation.error, {
             413: texts.receipts.imageTooLarge,
-            429: texts.premium.receiptLimitReached,
+            429: user?.isGuest ? texts.guest.receiptTrialUsed : texts.premium.receiptLimitReached,
             415: texts.receipts.unsupportedFile,
             502: texts.receipts.readFailed,
             503: texts.receipts.notConfigured,
@@ -288,6 +298,7 @@ function Receipts({ householdId }: { householdId: number }) {
           </ListItemButton>
         ))}
       </List>
+      {(receiptsQuery.data?.length ?? 0) > 0 && <AdSlot />}
 
       <Dialog open={isConsentOpen} onClose={() => setIsConsentOpen(false)}>
         <DialogTitle>{texts.receipts.consentTitle}</DialogTitle>

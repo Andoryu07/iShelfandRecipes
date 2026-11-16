@@ -13,8 +13,10 @@ import {
   ListItemAvatar,
   ListItemButton,
   ListItemText,
+  Link,
   Typography,
 } from "@mui/material";
+import { Link as RouterLink } from "react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import {
@@ -24,7 +26,8 @@ import {
   renameStorageLocation,
 } from "../api/householdsApi";
 import { ApiError } from "../api/apiClient";
-import type { StorageLocation } from "../api/types";
+import type { Household, StorageLocation } from "../api/types";
+import { householdsQueryKey } from "./useCurrentHousehold";
 import { IconPickerSheet } from "../components/IconPicker";
 import { StorageLocationHistorySheet } from "./StorageLocationHistorySheet";
 import { storageLocationIcon, storageLocationIcons } from "../components/icons";
@@ -43,7 +46,8 @@ function describeDeletionError(error: unknown): string {
   return describeError(error);
 }
 
-export function StorageLocationsSection({ householdId }: { householdId: number }) {
+export function StorageLocationsSection({ household }: { household: Household }) {
+  const householdId = household.id;
   const queryClient = useQueryClient();
   const queryKey = storageLocationsQueryKey(householdId);
   const [isCreating, setIsCreating] = useState(false);
@@ -53,7 +57,12 @@ export function StorageLocationsSection({ householdId }: { householdId: number }
   const [storageLocationForHistory, setStorageLocationForHistory] = useState<StorageLocation | null>(null);
 
   const storageLocationsQuery = useStorageLocations(householdId);
-  const onSuccess = () => queryClient.invalidateQueries({ queryKey });
+  const onSuccess = () =>
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey }),
+      queryClient.invalidateQueries({ queryKey: householdsQueryKey }),
+    ]);
+  const isAtLimit = household.storageLocationCount >= household.storageLocationLimit;
   const createMutation = useMutation({
     mutationFn: (name: string) => createStorageLocation(householdId, name, "custom"),
     onSuccess,
@@ -79,7 +88,11 @@ export function StorageLocationsSection({ householdId }: { householdId: number }
   return (
     <section>
       <Typography className="listSectionTitle" component="h2">
-        {texts.household.storageLocationsTitle}
+        {texts.household.storageLocationsTitle} ·{" "}
+        {texts.households.storageLocationCount(
+          household.storageLocationCount,
+          household.storageLocationLimit,
+        )}
       </Typography>
       {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
       <Card>
@@ -139,9 +152,22 @@ export function StorageLocationsSection({ householdId }: { householdId: number }
           ))}
         </List>
       </Card>
-      <Button startIcon={<AddRoundedIcon />} onClick={() => setIsCreating(true)}>
-        {texts.household.newStorageLocation}
-      </Button>
+      {isAtLimit ? (
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          {household.storageLocationLimit >= 9
+            ? texts.households.storageLimitReachedPremium
+            : texts.households.storageLimitReached}{" "}
+          {household.storageLocationLimit < 9 && (
+            <Link component={RouterLink} to="/profile/premium">
+              {texts.premium.showPremium}
+            </Link>
+          )}
+        </Typography>
+      ) : (
+        <Button startIcon={<AddRoundedIcon />} onClick={() => setIsCreating(true)}>
+          {texts.household.newStorageLocation}
+        </Button>
+      )}
 
       {isCreating && (
         <TextInputDialog

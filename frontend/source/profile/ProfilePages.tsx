@@ -32,6 +32,9 @@ import { formatTimestamp, texts } from "../translations/cs";
 import { NotificationSettingsCard } from "../households/NotificationSettingsCard";
 import { useCurrentHousehold } from "../households/useCurrentHousehold";
 import { usePlan } from "../plans/usePlan";
+import { DeleteGuestDataButton } from "../guest/DeleteGuestDataButton";
+import { GuestBanner } from "../guest/GuestBanner";
+import { UpgradeGuestCard } from "../guest/UpgradeGuestCard";
 import { ChangePasswordCard } from "./ChangePasswordCard";
 import { DeleteAccountButton } from "./DeleteAccountButton";
 import { SettingsList } from "./SettingsList";
@@ -40,6 +43,7 @@ export function ProfilePage() {
   const { user, logOut } = useAuthentication();
   const navigate = useNavigate();
   const isPremium = usePlan().data?.plan === "premium";
+  const [isGuestLogOutOpen, setIsGuestLogOutOpen] = useState(false);
   if (!user) {
     return null;
   }
@@ -54,8 +58,11 @@ export function ProfilePage() {
         <Typography variant="h6" sx={{ mt: 1 }}>
           {user.displayName}
         </Typography>
-        <Typography color="text.secondary">{user.email}</Typography>
+        <Typography color="text.secondary">{user.email ?? texts.guest.planName}</Typography>
       </Stack>
+      <Box sx={{ mt: 2 }}>
+        <GuestBanner />
+      </Box>
       <SettingsList
         items={[
           {
@@ -96,15 +103,40 @@ export function ProfilePage() {
           },
         ]}
       />
-      <Button variant="outlined" fullWidth size="large" sx={{ mt: 3 }} onClick={logOut}>
+      <Button
+        variant="outlined"
+        fullWidth
+        size="large"
+        sx={{ mt: 3 }}
+        onClick={() => (user.isGuest ? setIsGuestLogOutOpen(true) : logOut())}
+      >
         {texts.authentication.logOut}
       </Button>
+      <ConfirmationDialog
+        message={isGuestLogOutOpen ? texts.guest.logOutWarning : null}
+        confirmLabel={texts.authentication.logOut}
+        onConfirm={() => {
+          setIsGuestLogOutOpen(false);
+          void logOut();
+        }}
+        onClose={() => setIsGuestLogOutOpen(false)}
+      />
     </>
   );
 }
 
 export function AccountSettingsPage() {
   const { user } = useAuthentication();
+  if (user?.isGuest) {
+    return (
+      <>
+        <UpgradeGuestCard />
+        <Box className="section">
+          <DeleteGuestDataButton />
+        </Box>
+      </>
+    );
+  }
   return (
     <>
       <Card sx={{ mt: 2 }}>

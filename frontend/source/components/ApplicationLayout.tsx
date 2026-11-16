@@ -24,11 +24,13 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { Outlet, useLocation, useNavigate } from "react-router";
-import { useCurrentHousehold } from "../households/useCurrentHousehold";
+import { Outlet, useLocation, useNavigate, useSearchParams } from "react-router";
+import { HouseholdSwitcher } from "../households/HouseholdSwitcher";
+import { LockedHouseholdBanner } from "../households/LockedHouseholdBanner";
+import { selectHousehold, useCurrentHousehold } from "../households/useCurrentHousehold";
 import { useShoppingList } from "../shopping/useShoppingList";
 import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { useAuthentication } from "../authentication/AuthenticationContext";
 import { texts } from "../translations/cs";
 
@@ -62,6 +64,9 @@ export function pageInformation(pathname: string): PageInformation {
   if (pathname === "/profile") {
     return { title: texts.profile.title, backTo: "/overview" };
   }
+  if (pathname === "/households/add") {
+    return { title: texts.households.addTitle, backTo: "/household" };
+  }
   if (pathname === "/shopping-list") {
     return { title: texts.shoppingList.title, backTo: "/overview" };
   }
@@ -80,6 +85,25 @@ export function ApplicationLayout() {
   const isWide = useMediaQuery(theme.breakpoints.up("md"));
   const activePath = navigationItems.find((item) => location.pathname.startsWith(item.path))?.path ?? false;
   const page = pageInformation(location.pathname);
+  const { household, households } = useCurrentHousehold();
+  const [searchParameters, setSearchParameters] = useSearchParams();
+  const requestedHouseholdId = Number(searchParameters.get("household"));
+
+  useEffect(() => {
+    if (!requestedHouseholdId) {
+      return;
+    }
+    if (households.some((candidate) => candidate.id === requestedHouseholdId)) {
+      selectHousehold(requestedHouseholdId);
+    }
+    setSearchParameters(
+      (parameters) => {
+        parameters.delete("household");
+        return parameters;
+      },
+      { replace: true },
+    );
+  }, [requestedHouseholdId, households, setSearchParameters]);
 
   return (
     <Box sx={{ display: "flex", minHeight: "100dvh" }}>
@@ -131,9 +155,12 @@ export function ApplicationLayout() {
             ) : (
               <Box sx={{ width: 8 }} />
             )}
-            <Typography variant="h6" component="h1" sx={{ flex: 1 }} noWrap>
-              {page.title}
-            </Typography>
+            <Box sx={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
+              <Typography variant="h6" component="h1" noWrap sx={{ lineHeight: 1.2 }}>
+                {page.title}
+              </Typography>
+              <HouseholdSwitcher />
+            </Box>
             <ShoppingCartButton />
             <IconButton aria-label={texts.profile.title} onClick={() => navigate("/profile")}>
               <Avatar
@@ -151,8 +178,9 @@ export function ApplicationLayout() {
           </Toolbar>
         </AppBar>
         <main className="page">
+          {household?.isLocked && <LockedHouseholdBanner />}
           <Suspense fallback={<PageLoading />}>
-            <Outlet />
+            <Outlet key={household?.id} />
           </Suspense>
         </main>
       </Box>

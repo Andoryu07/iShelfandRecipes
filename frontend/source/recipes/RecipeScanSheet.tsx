@@ -24,6 +24,7 @@ import { ApiError } from "../api/apiClient";
 import { giveReceiptConsent } from "../api/authenticationApi";
 import { getRecipeScanAllowance, scanRecipe } from "../api/recipesApi";
 import type { ScanPeriod, ScannedRecipe } from "../api/types";
+import { RewardedAdButton } from "../ads/RewardedAdButton";
 import { useAuthentication } from "../authentication/AuthenticationContext";
 import { BottomSheet } from "../components/BottomSheet";
 import { objectUrlFor, releaseObjectUrl } from "../components/objectUrls";
@@ -116,6 +117,7 @@ export function RecipeScanSheet({ householdId, onClose, onScanned }: RecipeScanS
   });
   const limit = allowanceQuery.data?.scanLimit ?? 3;
   const period = allowanceQuery.data?.scanPeriod ?? "total";
+  const isGuest = Boolean(user?.isGuest);
   const isLimitReached = allowanceQuery.data
     ? allowanceQuery.data.usedScans >= allowanceQuery.data.scanLimit
     : false;
@@ -182,10 +184,13 @@ export function RecipeScanSheet({ householdId, onClose, onScanned }: RecipeScanS
         {allowanceQuery.data && (
           <Typography variant="body2" color={isLimitReached ? "error" : "text.secondary"} sx={{ mt: 1 }}>
             {isLimitReached
-              ? texts.recipes.scanLimitReached(limit, period)
+              ? isGuest
+                ? texts.guest.recipeScanNeedsAccount
+                : texts.recipes.scanLimitReached(limit, period)
               : texts.recipes.scanAllowance(allowanceQuery.data.usedScans, limit, period)}
           </Typography>
         )}
+        {isLimitReached && !isGuest && <RewardedAdButton kind="recipeScan" />}
         {pages.length > 0 && (
           <Stack direction="row" sx={{ gap: 1, mt: 2, flexWrap: "wrap" }}>
             {pages.map((page, index) => (

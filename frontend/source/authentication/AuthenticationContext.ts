@@ -8,6 +8,7 @@ export interface AuthenticationState {
   user: User | null;
   logIn: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, displayName: string) => Promise<void>;
+  startAsGuest: () => Promise<void>;
   logOut: () => Promise<void>;
   replaceUser: (user: User) => void;
 }

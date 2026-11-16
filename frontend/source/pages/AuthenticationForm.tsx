@@ -1,4 +1,4 @@
-import { Alert, Button, Link, TextField, Typography } from "@mui/material";
+import { Alert, Button, Divider, Link, TextField, Typography } from "@mui/material";
 import { useState, type FormEvent } from "react";
 import { Link as RouterLink, useLocation } from "react-router";
 import { useAuthentication } from "../authentication/AuthenticationContext";
@@ -6,7 +6,7 @@ import { describeError } from "../errorMessages";
 import { texts } from "../translations/cs";
 
 export function AuthenticationForm({ mode }: { mode: "logIn" | "register" }) {
-  const { logIn, register } = useAuthentication();
+  const { logIn, register, startAsGuest } = useAuthentication();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -32,6 +32,17 @@ export function AuthenticationForm({ mode }: { mode: "logIn" | "register" }) {
           409: texts.authentication.emailAlreadyRegistered,
         }),
       );
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleGuest() {
+    setErrorMessage(null);
+    setIsSubmitting(true);
+    try {
+      await startAsGuest();
+    } catch (error) {
+      setErrorMessage(describeError(error, { 429: texts.guest.tooManyGuests }));
       setIsSubmitting(false);
     }
   }
@@ -109,6 +120,13 @@ export function AuthenticationForm({ mode }: { mode: "logIn" | "register" }) {
       >
         {isRegistration ? texts.authentication.alreadyHaveAccount : texts.authentication.noAccountYet}
       </Link>
+      <Divider sx={{ my: 3 }}>{texts.common.or}</Divider>
+      <Button variant="outlined" size="large" fullWidth onClick={handleGuest} disabled={isSubmitting}>
+        {texts.guest.tryWithoutAccount}
+      </Button>
+      <Typography variant="body2" color="text.secondary" sx={{ mt: 1, textAlign: "center" }}>
+        {texts.guest.tryHint}
+      </Typography>
     </main>
   );
 }
