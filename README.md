@@ -72,9 +72,12 @@ Status: **done** endpoints exist, the others are planned.
 | `DELETE /auth/me/receipt-consent` | Withdraw the consent; saved items stay | done |
 | `DELETE /auth/me` | Schedule the account for deletion after confirming the password (`{"password": "..."}`) | done |
 | `POST /auth/me/restore` | Cancel a scheduled deletion | done |
-| `GET /auth/me/plan` | The user's plan (`free` or `premium`, per user), premium end, used and allowed receipt and recipe scans, household member limit and months of spending history | done |
+| `POST /auth/guest` | Start without an account (`{"householdName": "..."}`): creates a guest user with its own household and signs in; at most 5 guests per IP address a day (`429`), only a hash of the address is stored | done |
+| `POST /auth/me/upgrade` | Turn a guest into a full account with name, e-mail and password; all data stays (`409` for a taken e-mail or a non-guest) | done |
+| `GET /auth/me/plan` | The user's plan (`guest`, `free` or `premium`, per user), premium end, used and allowed scans (bonus scans from rewarded ads included), household count and limit, member and storage location limits, months of spending history, sharing and food photos allowed, whether ads show and how many rewarded ads are left today | done |
 | `POST /auth/me/premium/test-activation` | Turn on 30 days of premium without paying (only with `PREMIUM_TEST_ACTIVATION=true`, otherwise 404) | done |
 | `DELETE /auth/me/premium/test-activation` | Turn the test premium off | done |
+| `POST /auth/me/rewarded-ads` | Record a watched rewarded ad (`{"kind": "receiptScan" | "recipeScan"}`): +1 scan in the current period, at most 3 a day, not for guests or premium, off with `ADS_ENABLED=false` (`429`); the placeholder is not verified by an ad network yet | done |
 
 Deleting an account signs the user out everywhere and schedules the deletion; signing in within 14 days offers to restore the account (other endpoints answer `403` until then), and the daily job then deletes it. Deletion removes the user, their reservations and sessions; stock, movements and receipts stay with the household without the link to the user, and a household whose last member leaves is deleted.
 
@@ -83,6 +86,8 @@ Access tokens are valid for 30 minutes and the client keeps them only in memory.
 Password reset links point to `APPLICATION_URL/reset-password#token=…`; the token is after `#`, so it never reaches the server logs, and only its hash is stored. E-mails (reset link, password changed, account deletion notice) are sent in the background through SMTP behind `EmailSender`; without `SMTP_HOST` they are only written to the log.
 
 ### Households
+
+A user can belong to several households: free accounts and guests 1, premium 3 (own and joined together; `409` "The household limit is reached", `409` "User already belongs to this household"). Members and storage locations are limited by the best plan among the owners (members 6/12, storage locations 3/9; `409` when full). A household with more members than its owners' plan allows is locked: every change in it answers `403` "The household is locked" (checked centrally in `findMembership` for POST, PUT, PATCH and DELETE requests), except removing members, notification settings, rejecting join requests and revoking invite links; reading and the export keep working. Guests cannot share their household or join others (`403`).
 
 | Endpoint | Purpose | Status |
 | --- | --- | --- |
@@ -100,6 +105,7 @@ Password reset links point to `APPLICATION_URL/reset-password#token=…`; the to
 | `GET /households/{householdId}/invite-links` | Unused, valid links (owner only) | done |
 | `DELETE /invite-links/{linkId}` | Revoke a link (owner only) | done |
 | `POST /households/join-by-link` | Join right away with a link's token (`410` when used, revoked or expired) | done |
+| `GET /households/{householdId}/exports/receipt-items` | All receipt items of the household with date and store, for the CSV export in the app (also works in a locked household) | done |
 | `POST /households/{householdId}/invite-code` | Generate a new invite code (owner) | done |
 | `GET /households/{householdId}/members` | List members | done |
 | `DELETE /households/{householdId}/members/{userId}` | Remove a member (owner) or leave the household (self) | done |
