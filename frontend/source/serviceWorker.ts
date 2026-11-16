@@ -37,7 +37,7 @@ self.addEventListener("push", (event) => {
       self.registration.showNotification(texts.notifications.joinRequestTitle, {
         body: texts.notifications.joinRequestBody(payload.name),
         icon: "/icons/icon-192.png",
-        badge: "/icons/icon-192.png",
+        badge: "/icons/badge-96.png",
         tag: "joinRequest",
         data: { url: "/household" },
       }),
@@ -49,7 +49,7 @@ self.addEventListener("push", (event) => {
       self.registration.showNotification(texts.notifications.testTitle, {
         body: texts.notifications.testBody,
         icon: "/icons/icon-192.png",
-        badge: "/icons/icon-192.png",
+        badge: "/icons/badge-96.png",
         tag: "test",
         data: { url: "/profile/notifications" },
       }),
@@ -67,7 +67,7 @@ self.addEventListener("push", (event) => {
     self.registration.showNotification(texts.notifications.expirationTitle(payload.count), {
       body,
       icon: "/icons/icon-192.png",
-      badge: "/icons/icon-192.png",
+      badge: "/icons/badge-96.png",
       tag: "expiration",
       data: { url: "/stock" },
     }),
