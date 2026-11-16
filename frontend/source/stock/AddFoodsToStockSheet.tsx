@@ -120,6 +120,7 @@ export function AddFoodsToStockSheet({
                     category={food.category}
                     genericName={food.genericName}
                     icon={food.icon}
+                    photoUrl={food.photoUrl}
                     size={32}
                   />
                   <Box

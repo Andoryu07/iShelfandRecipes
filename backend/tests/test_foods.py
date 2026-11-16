@@ -29,6 +29,7 @@ def test_createAndListFoodsSortedByName(client: TestClient) -> None:
         "category": "dairy",
         "baseUnit": "milliliter",
         "icon": None,
+        "photoUrl": None,
     }
     names = [food["name"] for food in client.get(f"/households/{householdId}/foods", headers=headers).json()]
     assert names == ["Banány", "Chléb", "Mléko"]
@@ -91,6 +92,7 @@ def test_updateFoodAndBlockUnitChangeWhenInStock(client: TestClient, databaseSes
         "category": "dryGoods",
         "baseUnit": "piece",
         "icon": None,
+        "photoUrl": None,
     }
     assert client.patch(f"/foods/{food['id']}", json={"category": "other"}, headers=headers).json()["genericName"] == "Rýže"
     assert client.patch(f"/foods/{food['id']}", json={"genericName": None}, headers=headers).json()["genericName"] is None
@@ -114,3 +116,71 @@ def test_strangerCannotSeeOrChangeFoods(client: TestClient) -> None:
     assert client.get(f"/households/{householdId}/foods", headers=strangerHeaders).status_code == 404
     assert createFood(client, strangerHeaders, householdId, "Sýr").status_code == 404
     assert client.patch(f"/foods/{food['id']}", json={"name": "Mine"}, headers=strangerHeaders).status_code == 404
+
+
+def test_uploadShowAndRemoveFoodPhoto(client: TestClient) -> None:
+    headers = registerAndAuthorize(client, "anna@example.com", "Anna")
+    householdId = createHousehold(client, headers)["id"]
+    food = createFood(client, headers, householdId, "Mléko").json()
+    photo = b"RIFF0000WEBPphoto"
+
+    uploaded = client.put(f"/foods/{food['id']}/photo", files={"file": ("photo.webp", photo, "image/webp")}, headers=headers)
+
+    assert uploaded.status_code == 200
+    photoUrl = uploaded.json()["photoUrl"]
+    assert photoUrl.startswith(f"/foods/{food['id']}/photo?version=")
+    listed = client.get(f"/households/{householdId}/foods", headers=headers).json()
+    assert listed[0]["photoUrl"] == photoUrl
+    shown = client.get(photoUrl)
+    assert shown.status_code == 200
+    assert shown.content == photo
+    assert shown.headers["content-type"] == "image/webp"
+    assert "immutable" in shown.headers["cache-control"]
+
+    removed = client.delete(f"/foods/{food['id']}/photo", headers=headers)
+    assert removed.json()["photoUrl"] is None
+    assert client.get(photoUrl).status_code == 404
+
+
+def test_foodPhotoNeedsValidSignatureAndVersion(client: TestClient) -> None:
+    headers = registerAndAuthorize(client, "anna@example.com", "Anna")
+    householdId = createHousehold(client, headers)["id"]
+    food = createFood(client, headers, householdId, "Mléko").json()
+    photoUrl = client.put(
+        f"/foods/{food['id']}/photo", files={"file": ("photo.jpg", b"jpeg", "image/jpeg")}, headers=headers
+    ).json()["photoUrl"]
+    path, query = photoUrl.split("?")
+    version = query.split("&")[0].split("=")[1]
+    signature = query.split("signature=")[1]
+
+    assert client.get(f"{path}?version={version}&signature={'0' * len(signature)}").status_code == 404
+    assert client.get(f"{path}?version={int(version) + 1}&signature={signature}").status_code == 404
+    otherFood = createFood(client, headers, householdId, "Sýr").json()
+    assert client.get(f"/foods/{otherFood['id']}/photo?version={version}&signature={signature}").status_code == 404
+    client.put(f"/foods/{food['id']}/photo", files={"file": ("new.jpg", b"new", "image/jpeg")}, headers=headers)
+    assert client.get(photoUrl).status_code == 404
+
+
+def test_foodPhotoMustBeSmallImage(client: TestClient) -> None:
+    headers = registerAndAuthorize(client, "anna@example.com", "Anna")
+    householdId = createHousehold(client, headers)["id"]
+    food = createFood(client, headers, householdId, "Mléko").json()
+
+    tooLarge = client.put(
+        f"/foods/{food['id']}/photo", files={"file": ("p.webp", b"x" * (100 * 1024 + 1), "image/webp")}, headers=headers
+    )
+    wrongType = client.put(f"/foods/{food['id']}/photo", files={"file": ("p.gif", b"gif", "image/gif")}, headers=headers)
+
+    assert tooLarge.status_code == 413
+    assert wrongType.status_code == 415
+
+
+def test_strangerCannotChangeFoodPhoto(client: TestClient) -> None:
+    annaHeaders = registerAndAuthorize(client, "anna@example.com", "Anna")
+    strangerHeaders = registerAndAuthorize(client, "stranger@example.com", "Stranger")
+    householdId = createHousehold(client, annaHeaders)["id"]
+    food = createFood(client, annaHeaders, householdId, "Mléko").json()
+
+    files = {"file": ("photo.webp", b"webp", "image/webp")}
+    assert client.put(f"/foods/{food['id']}/photo", files=files, headers=strangerHeaders).status_code == 404
+    assert client.delete(f"/foods/{food['id']}/photo", headers=strangerHeaders).status_code == 404

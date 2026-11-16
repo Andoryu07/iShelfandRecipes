@@ -232,7 +232,12 @@ function StockGroupRow({
         sx={{ py: 1 }}
       >
         <ListItemAvatar>
-          <CategoryAvatar category={food.category} genericName={food.genericName} icon={food.icon} />
+          <CategoryAvatar
+            category={food.category}
+            genericName={food.genericName}
+            icon={food.icon}
+            photoUrl={food.photoUrl}
+          />
         </ListItemAvatar>
         <ListItemText
           primary={hasSeveralItems ? `${food.name}  ×${group.items.length}` : food.name}

@@ -1,11 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+import hmac
+from datetime import datetime, timezone
+
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Response, UploadFile, status
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from application.database import getDatabaseSession
-from application.dependencies import getAccessibleFood, getHouseholdMembership
-from application.foods import buildFoodResponse, escapeLikePattern, foodIsInUse
+from application.dependencies import getAccessibleFood, getHouseholdMembership, notFoundError
+from application.foods import buildFoodResponse, escapeLikePattern, foodIsInUse, foodPhotoSignature
 from application.models import Food, HouseholdMember, StockItem, StockMovement
 from application.models.enumerations import StockMovementReason
 from application.schemas.foods import CreateFoodRequest, FoodResponse, LastAddedQuantityResponse, UpdateFoodRequest
@@ -103,3 +106,53 @@ def getLastAddedQuantity(
         )
     )
     return LastAddedQuantityResponse(quantity=stockItem.quantity - changes)
+
+
+maximumPhotoBytes = 100 * 1024
+acceptedPhotoTypes = {"image/webp", "image/jpeg", "image/png"}
+
+
+@router.put("/foods/{foodId}/photo", response_model=FoodResponse)
+def uploadFoodPhoto(
+    file: UploadFile = File(),
+    food: Food = Depends(getAccessibleFood),
+    session: Session = Depends(getDatabaseSession),
+) -> FoodResponse:
+    if file.content_type not in acceptedPhotoTypes:
+        raise HTTPException(status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, detail="Unsupported photo type")
+    content = file.file.read(maximumPhotoBytes + 1)
+    if len(content) > maximumPhotoBytes:
+        raise HTTPException(status_code=status.HTTP_413_CONTENT_TOO_LARGE, detail="The photo is too large")
+    food.photo = content
+    food.photoContentType = file.content_type
+    food.photoUpdatedAt = datetime.now(timezone.utc)
+    session.commit()
+    return buildFoodResponse(food)
+
+
+@router.delete("/foods/{foodId}/photo", response_model=FoodResponse)
+def deleteFoodPhoto(food: Food = Depends(getAccessibleFood), session: Session = Depends(getDatabaseSession)) -> FoodResponse:
+    food.photo = None
+    food.photoContentType = None
+    food.photoUpdatedAt = None
+    session.commit()
+    return buildFoodResponse(food)
+
+
+@router.get("/foods/{foodId}/photo")
+def getFoodPhoto(
+    foodId: int, version: int, signature: str = Query(max_length=64), session: Session = Depends(getDatabaseSession)
+) -> Response:
+    food = session.get(Food, foodId)
+    if (
+        food is None
+        or food.photoUpdatedAt is None
+        or int(food.photoUpdatedAt.timestamp() * 1000) != version
+        or not hmac.compare_digest(signature, foodPhotoSignature(foodId, version))
+    ):
+        raise notFoundError("Food photo")
+    return Response(
+        content=food.photo,
+        media_type=food.photoContentType,
+        headers={"Cache-Control": "private, max-age=31536000, immutable"},
+    )

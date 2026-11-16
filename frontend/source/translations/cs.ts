@@ -421,6 +421,14 @@ export const texts = {
     overviewTitle: (month: string) => `Útraty v ${month}`,
     overviewEmpty: "Útraty se spočítají z uložených účtenek.",
   },
+  foodPhotos: {
+    menuLabel: "Změnit ikonu nebo fotku potraviny",
+    changeIcon: "Změnit ikonu",
+    takePhoto: "Vyfotit",
+    choosePhoto: "Vybrat fotku",
+    removePhoto: "Odebrat fotku",
+    failed: "Fotku se nepodařilo uložit. Zkus to znovu.",
+  },
   icons: {
     title: "Vyber ikonu",
     change: "Změnit",
@@ -645,7 +653,7 @@ export const texts = {
   registrationConsentLink: "zásadami ochrany soukromí",
   privacyPolicy: {
     title: "Zásady ochrany soukromí",
-    effectiveFrom: "Účinné od 15. 11. 2026",
+    effectiveFrom: "Účinné od 16. 11. 2026",
     back: "Zpět",
     sections: [
       {
@@ -668,6 +676,7 @@ export const texts = {
         paragraphs: [
           "Když vyfotíš nebo nahraješ účtenku nebo recept (například stránku kuchařky), odešleme fotky nebo PDF ke zpracování službě Google Gemini, která z nich přečte položky nebo recept. Používáme placenou úroveň této služby, u které Google podle svých podmínek odeslaná data nepoužívá k trénování svých modelů.",
           "Fotku ani PDF nikde neukládáme, zpracují se jen v paměti a hned se zahodí. Uloží se pouze položky nebo recept, které na obrazovce kontroly potvrdíš. Recepty z fotek zůstávají jen ve tvé domácnosti a nikde se nesdílejí.",
+          "Fotky potravin, které si sám přidáš místo ikony, se do Gemini neposílají. Na telefonu se zmenší na malý čtverec, uloží se na našem serveru u potraviny a vidí je jen členové tvé domácnosti. Fotku můžeš kdykoli odebrat, smaže se také se zrušením domácnosti.",
           "Skenování je možné jen s tvým souhlasem, který udělíš před první fotkou. Souhlas můžeš kdykoli odvolat v Profilu v části Soukromí a data. Už uložené položky tím zůstanou zachované.",
         ],
       },

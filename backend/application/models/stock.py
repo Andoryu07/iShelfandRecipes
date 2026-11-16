@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from decimal import Decimal
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, Numeric, Text, func, text
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, LargeBinary, Numeric, Text, func, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from application.models.base import Base, databaseEnum, measurementUnitType
@@ -42,6 +42,9 @@ class Food(Base):
         "base_unit", measurementUnitType
     )
     icon: Mapped[str | None]
+    photo: Mapped[bytes | None] = mapped_column(LargeBinary, deferred=True)
+    photoContentType: Mapped[str | None] = mapped_column("photo_content_type", Text)
+    photoUpdatedAt: Mapped[datetime | None] = mapped_column("photo_updated_at", DateTime(timezone=True))
 
 
 class StockItem(Base):

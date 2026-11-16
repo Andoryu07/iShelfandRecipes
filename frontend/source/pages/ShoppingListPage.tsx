@@ -142,6 +142,7 @@ function ShoppingList({ householdId }: { householdId: number }) {
                 category={item.food.category}
                 genericName={item.food.genericName}
                 icon={item.food.icon}
+                photoUrl={item.food.photoUrl}
                 size={36}
               />
             ) : (

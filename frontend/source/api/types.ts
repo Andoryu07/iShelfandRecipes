@@ -90,6 +90,7 @@ export interface Food {
   category: FoodCategory;
   baseUnit: MeasurementUnit;
   icon?: string | null;
+  photoUrl?: string | null;
 }
 
 export interface StockItem {

@@ -96,3 +96,13 @@ export function updateFood(
 ): Promise<Food> {
   return apiRequest<Food>(`/foods/${foodId}`, { method: "PATCH", body: changes });
 }
+
+export function uploadFoodPhoto(foodId: number, photo: Blob): Promise<Food> {
+  const body = new FormData();
+  body.append("file", photo, photo.type === "image/webp" ? "photo.webp" : "photo.jpg");
+  return apiRequest<Food>(`/foods/${foodId}/photo`, { method: "PUT", body });
+}
+
+export function deleteFoodPhoto(foodId: number): Promise<Food> {
+  return apiRequest<Food>(`/foods/${foodId}/photo`, { method: "DELETE" });
+}

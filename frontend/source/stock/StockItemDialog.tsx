@@ -35,9 +35,7 @@ import {
 import type { FoodCategory } from "../api/types";
 import { BottomSheet } from "../components/BottomSheet";
 import { StorageLocationChips } from "../components/StorageLocationChips";
-import { automaticFoodIcon, CategoryAvatar } from "../components/CategoryAvatar";
-import { IconPicker } from "../components/IconPicker";
-import { foodIcons } from "../components/icons";
+import { FoodAvatarMenu } from "../foods/FoodAvatarMenu";
 import { useAuthentication } from "../authentication/AuthenticationContext";
 import type { StockItem, StorageLocation } from "../api/types";
 import { describeError } from "../errorMessages";
@@ -75,7 +73,6 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [foodCategory, setFoodCategory] = useState<FoodCategory>(stockItem.food.category);
   const [foodGenericName, setFoodGenericName] = useState(stockItem.food.genericName ?? "");
-  const [foodIcon, setFoodIcon] = useState(stockItem.food.icon ?? null);
   const [quantityText, setQuantityText] = useState("");
   const [unitSymbol, setUnitSymbol] = useState(defaultUnitSymbol);
   const [writeOffReason, setWriteOffReason] = useState<WriteOffReason>("eaten");
@@ -164,10 +161,7 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
       }
       correctedQuantity = toBaseQuantity(value, findDisplayUnit(food.baseUnit, correctionUnitSymbol));
     }
-    const foodChanges: { genericName?: string | null; category?: FoodCategory; icon?: string | null } = {};
-    if (foodIcon !== (food.icon ?? null)) {
-      foodChanges.icon = foodIcon;
-    }
+    const foodChanges: { genericName?: string | null; category?: FoodCategory } = {};
     if (foodCategory !== food.category) {
       foodChanges.category = foodCategory;
     }
@@ -211,7 +205,7 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
   return (
     <BottomSheet open onClose={onClose}>
       <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-        <CategoryAvatar category={food.category} genericName={food.genericName} icon={food.icon} />
+        <FoodAvatarMenu householdId={householdId} food={food} />
         {food.name}
       </DialogTitle>
       <form onSubmit={submitCurrentMode} style={{ display: "contents" }}>
@@ -384,12 +378,6 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
                 {texts.stock.category}
               </Typography>
               <CategoryChips value={foodCategory} onChange={setFoodCategory} />
-              <IconPicker
-                value={foodIcon}
-                automaticIcon={automaticFoodIcon(foodCategory, foodGenericName)}
-                icons={foodIcons}
-                onChange={setFoodIcon}
-              />
               <TextField
                 label={texts.stock.genericName}
                 value={foodGenericName}

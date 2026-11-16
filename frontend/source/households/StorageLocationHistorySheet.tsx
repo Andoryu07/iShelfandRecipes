@@ -76,6 +76,7 @@ export function StorageLocationHistorySheet({
                   category={event.food.category}
                   genericName={event.food.genericName}
                   icon={event.food.icon}
+                  photoUrl={event.food.photoUrl}
                   size={36}
                 />
               </ListItemAvatar>

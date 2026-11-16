@@ -1,4 +1,5 @@
 import { Avatar } from "@mui/material";
+import { apiBasePath } from "../api/apiClient";
 import type { FoodCategory } from "../api/types";
 
 export const categoryEmoji: Record<FoodCategory, string> = {
@@ -42,6 +43,7 @@ interface CategoryAvatarProps {
   category: FoodCategory;
   genericName?: string | null;
   icon?: string | null;
+  photoUrl?: string | null;
   size?: number;
 }
 
@@ -49,10 +51,12 @@ export function automaticFoodIcon(category: FoodCategory, genericName?: string |
   return (genericName && kindEmoji[genericName.trim().toLowerCase()]) || categoryEmoji[category];
 }
 
-export function CategoryAvatar({ category, genericName, icon, size = 40 }: CategoryAvatarProps) {
+export function CategoryAvatar({ category, genericName, icon, photoUrl, size = 40 }: CategoryAvatarProps) {
   const emoji = icon || automaticFoodIcon(category, genericName);
   return (
     <Avatar
+      src={photoUrl ? `${apiBasePath}${photoUrl}` : undefined}
+      alt=""
       sx={{
         width: size,
         height: size,

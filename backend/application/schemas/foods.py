@@ -32,6 +32,7 @@ class FoodResponse(BaseModel):
     category: FoodCategory
     baseUnit: MeasurementUnit
     icon: str | None
+    photoUrl: str | None = None
 
 
 class LastAddedQuantityResponse(BaseModel):

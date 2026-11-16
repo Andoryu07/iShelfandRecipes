@@ -123,6 +123,7 @@ function Overview({ householdId }: { householdId: number }) {
                     category={stockItem.food.category}
                     genericName={stockItem.food.genericName}
                     icon={stockItem.food.icon}
+                    photoUrl={stockItem.food.photoUrl}
                   />
                 </ListItemAvatar>
                 <ListItemText

@@ -1,9 +1,25 @@
+import hashlib
+import hmac
+
 from sqlalchemy import exists, select
 from sqlalchemy.orm import Session
 
+from application.configuration import getConfiguration
 from application.models import Food, RecipeIngredient, StockItem
 from application.models.enumerations import FoodCategory
 from application.schemas.foods import FoodResponse, NewFoodRequest
+
+
+def foodPhotoSignature(foodId: int, version: int) -> str:
+    message = f"food-photo:{foodId}:{version}".encode()
+    return hmac.new(getConfiguration().jsonWebTokenSecret.encode(), message, hashlib.sha256).hexdigest()[:32]
+
+
+def foodPhotoUrl(food: Food) -> str | None:
+    if food.photoUpdatedAt is None:
+        return None
+    version = int(food.photoUpdatedAt.timestamp() * 1000)
+    return f"/foods/{food.id}/photo?version={version}&signature={foodPhotoSignature(food.id, version)}"
 
 
 def buildFoodResponse(food: Food) -> FoodResponse:
@@ -14,6 +30,7 @@ def buildFoodResponse(food: Food) -> FoodResponse:
         category=FoodCategory(food.category) if food.category else FoodCategory.other,
         baseUnit=food.baseUnit,
         icon=food.icon,
+        photoUrl=foodPhotoUrl(food),
     )
 
 
