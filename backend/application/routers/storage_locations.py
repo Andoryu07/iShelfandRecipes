@@ -7,6 +7,7 @@ from application.dependencies import getAccessibleStorageLocation, getHouseholdM
 from application.foods import buildFoodResponse
 from application.models import Food, HouseholdMember, StockItem, StockMovement, StorageLocation, User
 from application.models.enumerations import StockMovementReason
+from application.plans import householdLimits, storageLocationCount
 from application.schemas.stock import StorageLocationHistoryEvent
 from application.schemas.storage_locations import (
     CreateStorageLocationRequest,
@@ -74,6 +75,9 @@ def createStorageLocation(
     membership: HouseholdMember = Depends(getHouseholdMembership),
     session: Session = Depends(getDatabaseSession),
 ) -> StorageLocationResponse:
+    householdId = membership.householdId
+    if storageLocationCount(session, householdId) >= householdLimits(session, householdId).storageLocations:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="The storage location limit is reached")
     storageLocation = StorageLocation(
         householdId=membership.householdId, name=request.name, kind=request.kind, icon=request.icon
     )

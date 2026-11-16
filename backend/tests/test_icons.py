@@ -1,11 +1,12 @@
 from fastapi.testclient import TestClient
 
-from tests.helpers import createHousehold, registerAndAuthorize
+from tests.helpers import createHousehold, makePremium, registerAndAuthorize
 
 
 def test_storageLocationIconCanBeSetChangedAndCleared(client: TestClient) -> None:
     headers = registerAndAuthorize(client, "anna@example.com", "Anna")
     household = createHousehold(client, headers)
+    makePremium("anna@example.com")
 
     created = client.post(
         f"/households/{household['id']}/storage-locations", json={"name": "Sklep", "icon": "🍷"}, headers=headers

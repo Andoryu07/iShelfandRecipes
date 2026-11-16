@@ -15,6 +15,7 @@ class Configuration:
     geminiThinkingLevel: str = "low"
     geminiTimeoutSeconds: int = 60
     premiumTestActivation: bool = False
+    adsEnabled: bool = True
     vapidPublicKey: str | None = None
     vapidPrivateKey: str | None = None
     vapidSubject: str = "mailto:admin@example.com"
@@ -37,6 +38,7 @@ def getConfiguration() -> Configuration:
         geminiModel=os.environ.get("GEMINI_MODEL") or "gemini-3.8-flash",
         geminiThinkingLevel=os.environ.get("GEMINI_THINKING_LEVEL") or "low",
         premiumTestActivation=os.environ.get("PREMIUM_TEST_ACTIVATION", "false").lower() == "true",
+        adsEnabled=os.environ.get("ADS_ENABLED", "true").lower() != "false",
         vapidPublicKey=os.environ.get("VAPID_PUBLIC_KEY") or None,
         vapidPrivateKey=os.environ.get("VAPID_PRIVATE_KEY") or None,
         vapidSubject=os.environ.get("VAPID_SUBJECT") or "mailto:admin@example.com",

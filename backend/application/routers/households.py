@@ -9,7 +9,7 @@ from application.households import (
     alreadyInHouseholdError,
     buildHouseholdResponse,
     createDefaultStorageLocations,
-    ensureUserHasNoHousehold,
+    ensureUserCanAddHousehold,
     findMembership,
     generateUniqueInviteCode,
     removeMember,
@@ -28,26 +28,31 @@ from application.schemas.households import (
 router = APIRouter(prefix="/households", tags=["households"])
 
 
-@router.post("", response_model=HouseholdResponse, status_code=status.HTTP_201_CREATED)
-def createHousehold(
-    request: CreateHouseholdRequest,
-    user: User = Depends(getCurrentUser),
-    session: Session = Depends(getDatabaseSession),
-) -> HouseholdResponse:
-    ensureUserHasNoHousehold(session, user.id)
-    household = Household(name=request.name, inviteCode=generateUniqueInviteCode(session))
+def createHouseholdWithDefaults(session: Session, user: User, name: str) -> tuple[Household, HouseholdMember]:
+    household = Household(name=name, inviteCode=generateUniqueInviteCode(session))
     session.add(household)
     session.flush()
     membership = HouseholdMember(userId=user.id, householdId=household.id, role=HouseholdRole.owner)
     session.add(membership)
     createDefaultStorageLocations(session, household.id)
     copyPredefinedRecipes(session, household.id)
+    return household, membership
+
+
+@router.post("", response_model=HouseholdResponse, status_code=status.HTTP_201_CREATED)
+def createHousehold(
+    request: CreateHouseholdRequest,
+    user: User = Depends(getCurrentUser),
+    session: Session = Depends(getDatabaseSession),
+) -> HouseholdResponse:
+    ensureUserCanAddHousehold(session, user)
+    household, membership = createHouseholdWithDefaults(session, user, request.name)
     try:
         session.commit()
     except IntegrityError:
         session.rollback()
         raise alreadyInHouseholdError()
-    return buildHouseholdResponse(household, membership)
+    return buildHouseholdResponse(session, household, membership)
 
 
 @router.get("", response_model=list[HouseholdResponse])
@@ -60,7 +65,7 @@ def listHouseholds(
         .where(HouseholdMember.userId == user.id)
         .order_by(Household.id)
     ).all()
-    return [buildHouseholdResponse(household, membership) for household, membership in rows]
+    return [buildHouseholdResponse(session, household, membership) for household, membership in rows]
 
 
 @router.get("/{householdId}", response_model=HouseholdResponse)
@@ -68,7 +73,7 @@ def getHousehold(
     membership: HouseholdMember = Depends(getHouseholdMembership),
     session: Session = Depends(getDatabaseSession),
 ) -> HouseholdResponse:
-    return buildHouseholdResponse(session.get(Household, membership.householdId), membership)
+    return buildHouseholdResponse(session, session.get(Household, membership.householdId), membership)
 
 
 @router.patch("/{householdId}", response_model=HouseholdResponse)
@@ -80,7 +85,7 @@ def updateHousehold(
     household = session.get(Household, membership.householdId)
     household.name = request.name
     session.commit()
-    return buildHouseholdResponse(household, membership)
+    return buildHouseholdResponse(session, household, membership)
 
 
 @router.post("/{householdId}/invite-code", response_model=HouseholdResponse)
@@ -91,7 +96,7 @@ def regenerateInviteCode(
     household = session.get(Household, membership.householdId)
     household.inviteCode = generateUniqueInviteCode(session)
     session.commit()
-    return buildHouseholdResponse(household, membership)
+    return buildHouseholdResponse(session, household, membership)
 
 
 @router.patch("/{householdId}/notification-settings", response_model=HouseholdResponse)
@@ -105,7 +110,7 @@ def updateNotificationSettings(
     if request.expirationWarningDays is not None:
         membership.expirationWarningDays = request.expirationWarningDays
     session.commit()
-    return buildHouseholdResponse(session.get(Household, membership.householdId), membership)
+    return buildHouseholdResponse(session, session.get(Household, membership.householdId), membership)
 
 
 @router.get("/{householdId}/members", response_model=list[HouseholdMemberResponse])

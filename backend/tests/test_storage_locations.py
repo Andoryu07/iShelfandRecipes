@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from application.models import Food, StockItem
 from application.models.enumerations import MeasurementUnit
-from tests.helpers import createHousehold, joinHousehold, registerAndAuthorize
+from tests.helpers import createHousehold, joinHousehold, makePremium, registerAndAuthorize
 
 
 def listStorageLocations(client: TestClient, headers: dict[str, str], householdId: int) -> list[dict]:
@@ -39,6 +39,7 @@ def test_anyMemberCanCreateRenameAndDeleteStorageLocation(client: TestClient) ->
     petrHeaders = registerAndAuthorize(client, "petr@example.com", "Petr")
     household = createHousehold(client, annaHeaders)
     joinHousehold(client, petrHeaders, household["inviteCode"])
+    makePremium("anna@example.com")
 
     created = client.post(
         f"/households/{household['id']}/storage-locations", json={"name": " Cellar "}, headers=petrHeaders
@@ -130,3 +131,27 @@ def test_lastStorageLocationWithStockHistoryCannotBeDeleted(client: TestClient, 
 
     assert response.status_code == 409
     assert databaseSession.scalar(select(func.count()).select_from(StockItem)) == 1
+
+
+def test_storageLocationsAreLimitedByTheOwnersPlan(client: TestClient) -> None:
+    annaHeaders = registerAndAuthorize(client, "anna@example.com", "Anna")
+    petrHeaders = registerAndAuthorize(client, "petr@example.com", "Petr")
+    household = createHousehold(client, annaHeaders)
+    joinHousehold(client, petrHeaders, household["inviteCode"])
+    url = f"/households/{household['id']}/storage-locations"
+
+    assert client.post(url, json={"name": "Sklep"}, headers=annaHeaders).status_code == 409
+    makePremium("petr@example.com")
+    assert client.post(url, json={"name": "Sklep"}, headers=petrHeaders).status_code == 409
+
+    makePremium("anna@example.com")
+    statuses = [client.post(url, json={"name": f"Box {index}"}, headers=petrHeaders).status_code for index in range(7)]
+    assert statuses == [201] * 6 + [409]
+    householdResponse = client.get(f"/households/{household['id']}", headers=annaHeaders).json()
+    assert (householdResponse["storageLocationCount"], householdResponse["storageLocationLimit"]) == (9, 9)
+
+    makePremium("anna@example.com", days=-1)
+    locations = listStorageLocations(client, annaHeaders, household["id"])
+    assert client.patch(f"/storage-locations/{locations[-1]['id']}", json={"name": "Garáž"}, headers=annaHeaders).status_code == 200
+    assert client.delete(f"/storage-locations/{locations[-1]['id']}", headers=annaHeaders).status_code == 204
+    assert client.post(url, json={"name": "Další"}, headers=annaHeaders).status_code == 409

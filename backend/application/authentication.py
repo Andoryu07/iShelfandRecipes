@@ -36,6 +36,7 @@ def deleteRefreshTokenCookie(response: Response) -> None:
 
 def issueTokens(session: Session, user: User, response: Response) -> TokenResponse:
     configuration = getConfiguration()
+    user.lastActiveAt = datetime.now(timezone.utc)
     refreshToken = generateRefreshToken()
     session.add(
         RefreshToken(

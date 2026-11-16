@@ -8,7 +8,7 @@ from application.database import getDatabaseSession
 from application.dependencies import getCurrentUser, getHouseholdMembership
 from application.foods import buildFoodResponse
 from application.models import HouseholdMember, RecipeScan, User
-from application.plans import ScanPeriod, limitsOf, usedRecipeScans
+from application.plans import ScanPeriod, limitsOf, recipeScanLimit, usedRecipeScans
 from application.receipts.scanning import findMatchingFoods, normalizeWhitespace
 from application.recipes.dependencies import getRecipeReader
 from application.recipes.reading import ExtractedRecipe, RecipeReader, RecipeReadingError
@@ -87,9 +87,10 @@ def getScanAllowance(
     user: User = Depends(getCurrentUser),
     session: Session = Depends(getDatabaseSession),
 ) -> RecipeScanAllowanceResponse:
-    limits = limitsOf(user)
     return RecipeScanAllowanceResponse(
-        usedScans=usedRecipeScans(session, user), scanLimit=limits.recipeScans, scanPeriod=limits.recipeScanPeriod
+        usedScans=usedRecipeScans(session, user),
+        scanLimit=recipeScanLimit(session, user),
+        scanPeriod=limitsOf(user).recipeScanPeriod,
     )
 
 
@@ -105,7 +106,7 @@ def scanRecipe(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Recipe photo consent has not been given")
     if not 1 <= len(files) <= maximumPhotoCount:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Send one to three photos")
-    if usedRecipeScans(session, user) >= limitsOf(user).recipeScans:
+    if usedRecipeScans(session, user) >= recipeScanLimit(session, user):
         raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="The recipe scan limit is used up")
     contents = []
     for file in files:
@@ -143,5 +144,10 @@ def scanRecipe(
     session.commit()
     limits = limitsOf(user)
     return buildScanResponse(
-        session, membership.householdId, result.recipe, usedRecipeScans(session, user), limits.recipeScans, limits.recipeScanPeriod
+        session,
+        membership.householdId,
+        result.recipe,
+        usedRecipeScans(session, user),
+        recipeScanLimit(session, user),
+        limits.recipeScanPeriod,
     )

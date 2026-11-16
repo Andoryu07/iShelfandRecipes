@@ -56,3 +56,8 @@ class DishType(enum.Enum):
     sideDish = "sideDish"
     dessert = "dessert"
     breakfast = "breakfast"
+
+
+class RewardKind(enum.Enum):
+    receiptScan = "receiptScan"
+    recipeScan = "recipeScan"

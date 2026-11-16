@@ -17,7 +17,7 @@ from application.notifications.generate_vapid_keys import encode
 from application.main import application
 from application.notifications.push import WebPushSender, getPushSender
 from application.stock import householdTimeZone
-from tests.helpers import createHousehold, joinHousehold, registerAndAuthorize
+from tests.helpers import createHousehold, defaultPassword, joinHousehold, makePremium, registerAndAuthorize
 from tests.test_foods import createFood
 
 today = date(2026, 11, 20)
@@ -111,6 +111,8 @@ def test_eachMemberGetsOneSummaryPerDay(client: TestClient, databaseSession: Ses
         "type": "expiration",
         "count": 3,
         "items": [{"name": "Mléko", "daysLeft": 0}, {"name": "Jogurt", "daysLeft": 1}, {"name": "Šunka", "daysLeft": 2}],
+        "householdId": household["id"],
+        "householdName": None,
     }
     assert sorted(sender.sent, key=lambda entry: entry[0]) == [
         ("https://push.example/anna", expectedPayload),
@@ -272,3 +274,18 @@ def test_testNotificationGoesOnlyToTheOwnSubscription(client: TestClient, vapidK
 def test_testNotificationNeedsVapidKeys(client: TestClient) -> None:
     anna = registerAndAuthorize(client, "anna@example.com", "Anna")
     assert sendTest(client, anna, "https://push.example/anna").status_code == 503
+
+
+def test_notificationNamesTheHouseholdWhenTheMemberHasSeveral(client: TestClient, databaseSession: Session) -> None:
+    household = prepareHousehold(client)
+    petr = client.post("/auth/login", json={"email": "petr@example.com", "password": defaultPassword})
+    petrHeaders = {"Authorization": f"Bearer {petr.json()['accessToken']}"}
+    makePremium("petr@example.com")
+    createHousehold(client, petrHeaders, "Chata")
+    sender = FakeSender()
+
+    sendExpirationNotifications(databaseSession, sender, morning)
+
+    names = {endpoint: payload["householdName"] for endpoint, payload in sender.sent}
+    assert names == {"https://push.example/anna": None, "https://push.example/petr": "Home"}
+    assert {payload["householdId"] for _, payload in sender.sent} == {household["id"]}

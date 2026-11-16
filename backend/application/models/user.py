@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, UniqueConstraint, func
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Text, UniqueConstraint, false, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from application.models.base import Base, databaseEnum
@@ -22,6 +22,11 @@ class User(Base):
     )
     deletionRequestedAt: Mapped[datetime | None] = mapped_column("deletion_requested_at", DateTime(timezone=True))
     premiumUntil: Mapped[datetime | None] = mapped_column("premium_until", DateTime(timezone=True))
+    isGuest: Mapped[bool] = mapped_column("is_guest", default=False, server_default=false())
+    guestAddressHash: Mapped[str | None] = mapped_column("guest_address_hash", Text)
+    lastActiveAt: Mapped[datetime] = mapped_column(
+        "last_active_at", DateTime(timezone=True), server_default=func.now()
+    )
     createdAt: Mapped[datetime] = mapped_column(
         "created_at", DateTime(timezone=True), server_default=func.now()
     )
@@ -41,7 +46,7 @@ class Household(Base):
 class HouseholdMember(Base):
     __tablename__ = "household_members"
     __table_args__ = (
-        UniqueConstraint("user_id", name="uq_household_members_user_id_single_household"),
+        UniqueConstraint("user_id", "household_id", name="uq_household_members_user_id_household_id"),
         CheckConstraint("notification_hour BETWEEN 0 AND 23", name="notification_hour_valid"),
         CheckConstraint("expiration_warning_days BETWEEN 0 AND 14", name="expiration_warning_days_valid"),
     )

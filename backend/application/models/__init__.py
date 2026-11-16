@@ -3,6 +3,7 @@ from application.models.base import Base
 from application.models.joining import InviteLink, JoinRequest
 from application.models.notification import PushSubscription
 from application.models.receipt import Receipt, ReceiptItem, ReceiptScan
+from application.models.rewards import RewardedAdView
 from application.models.recipe import FavouriteRecipe, Recipe, RecipeCooking, RecipeIngredient, RecipeScan
 from application.models.shopping import ShoppingListItem
 from application.models.stock import Food, Reservation, StockItem, StockMovement, StorageLocation
@@ -21,6 +22,7 @@ __all__ = [
     "Receipt",
     "ReceiptItem",
     "ReceiptScan",
+    "RewardedAdView",
     "Recipe",
     "RecipeCooking",
     "RecipeIngredient",

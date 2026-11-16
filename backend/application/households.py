@@ -4,7 +4,24 @@ from fastapi import HTTPException, status
 from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
-from application.models import Household, HouseholdMember, Reservation, ShoppingListItem, StockItem, StorageLocation
+from application.models import (
+    Household,
+    HouseholdMember,
+    Reservation,
+    ShoppingListItem,
+    StockItem,
+    StorageLocation,
+    User,
+)
+from application.requestContext import requestChangesData
+from application.plans import (
+    householdIsLocked,
+    householdCount,
+    householdLimits,
+    householdMemberCount,
+    limitsOf,
+    storageLocationCount,
+)
 from application.models.enumerations import HouseholdRole, ReservationStatus, StorageLocationKind
 from application.schemas.households import HouseholdResponse
 
@@ -34,20 +51,29 @@ def generateUniqueInviteCode(session: Session) -> str:
 
 
 def findMembership(session: Session, userId: int, householdId: int) -> HouseholdMember | None:
-    return session.scalar(
+    membership = session.scalar(
         select(HouseholdMember).where(
             HouseholdMember.userId == userId, HouseholdMember.householdId == householdId
         )
     )
+    if membership is not None and requestChangesData() and householdIsLocked(session, householdId):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="The household is locked")
+    return membership
 
 
 def alreadyInHouseholdError() -> HTTPException:
-    return HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already belongs to a household")
+    return HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already belongs to this household")
 
 
-def ensureUserHasNoHousehold(session: Session, userId: int) -> None:
-    if session.scalar(select(HouseholdMember.id).where(HouseholdMember.userId == userId)) is not None:
+def householdLimitError() -> HTTPException:
+    return HTTPException(status_code=status.HTTP_409_CONFLICT, detail="The household limit is reached")
+
+
+def ensureUserCanAddHousehold(session: Session, user: User, householdId: int | None = None) -> None:
+    if householdId is not None and findMembership(session, user.id, householdId) is not None:
         raise alreadyInHouseholdError()
+    if householdCount(session, user) >= limitsOf(user).households:
+        raise householdLimitError()
 
 
 def createDefaultStorageLocations(session: Session, householdId: int) -> None:
@@ -55,8 +81,16 @@ def createDefaultStorageLocations(session: Session, householdId: int) -> None:
         session.add(StorageLocation(householdId=householdId, name=name, kind=kind))
 
 
-def buildHouseholdResponse(household: Household, membership: HouseholdMember) -> HouseholdResponse:
+def buildHouseholdResponse(session: Session, household: Household, membership: HouseholdMember) -> HouseholdResponse:
+    limits = householdLimits(session, household.id)
+    memberCount = householdMemberCount(session, household.id)
     return HouseholdResponse(
+        memberCount=memberCount,
+        memberLimit=limits.householdMembers,
+        storageLocationCount=storageLocationCount(session, household.id),
+        storageLocationLimit=limits.storageLocations,
+        isLocked=memberCount > limits.householdMembers,
+        canShare=limits.canShareHousehold,
         id=household.id,
         name=household.name,
         inviteCode=formatInviteCode(household.inviteCode),

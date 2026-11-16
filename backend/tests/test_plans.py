@@ -41,8 +41,15 @@ def test_newUserHasTheFreePlan(client: TestClient) -> None:
         "testActivationAvailable": False,
         "receiptScans": {"used": 0, "limit": 10, "period": "month"},
         "recipeScans": {"used": 0, "limit": 3, "period": "total"},
+        "householdCount": 0,
+        "householdLimit": 1,
         "householdMemberLimit": 6,
+        "storageLocationLimit": 3,
         "spendingMonths": 6,
+        "canShareHousehold": True,
+        "canUploadFoodPhotos": True,
+        "showsAds": True,
+        "rewardedAdsLeftToday": 3,
     }
     assert client.post("/auth/me/premium/test-activation", headers=headers).status_code == 404
 
@@ -101,3 +108,34 @@ def test_membersOfAFreeHouseholdAreLimited(client: TestClient) -> None:
 
     makePremium("owner@example.com")
     assert client.post(f"/join-requests/{request['id']}/approve", headers=ownerHeaders).status_code == 204
+
+
+def test_rewardedAdsAddScansAtMostThreeTimesADay(client: TestClient, receiptReader: FakeReceiptReader) -> None:
+    household = ScanningHousehold(client)
+    headers = household.headers
+
+    first = client.post("/auth/me/rewarded-ads", json={"kind": "receiptScan"}, headers=headers).json()
+    assert (first["receiptScans"]["limit"], first["rewardedAdsLeftToday"]) == (11, 2)
+    second = client.post("/auth/me/rewarded-ads", json={"kind": "recipeScan"}, headers=headers).json()
+    assert (second["recipeScans"]["limit"], second["receiptScans"]["limit"]) == (4, 11)
+    client.post("/auth/me/rewarded-ads", json={"kind": "receiptScan"}, headers=headers)
+    assert client.post("/auth/me/rewarded-ads", json={"kind": "receiptScan"}, headers=headers).status_code == 429
+    assert [household.scan().status_code for _ in range(13)] == [200] * 12 + [429]
+
+
+def test_premiumUsersAndDisabledAdsHaveNoRewardedAds(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
+    headers = registerAndAuthorize(client, "anna@example.com", "Anna")
+    makePremium("anna@example.com")
+    plan = client.get("/auth/me/plan", headers=headers).json()
+    assert (plan["showsAds"], plan["rewardedAdsLeftToday"]) == (False, 0)
+    assert client.post("/auth/me/rewarded-ads", json={"kind": "receiptScan"}, headers=headers).status_code == 429
+
+    makePremium("anna@example.com", days=-1)
+    monkeypatch.setenv("ADS_ENABLED", "false")
+    getConfiguration.cache_clear()
+    try:
+        plan = client.get("/auth/me/plan", headers=headers).json()
+        assert (plan["showsAds"], plan["rewardedAdsLeftToday"]) == (False, 0)
+    finally:
+        monkeypatch.delenv("ADS_ENABLED")
+        getConfiguration.cache_clear()

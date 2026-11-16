@@ -2,8 +2,11 @@ import os
 
 from fastapi import FastAPI
 
+from application.requestContext import currentRequest
+
 from application.routers import (
     authentication,
+    exports,
     foods,
     households,
     joining,
@@ -26,6 +29,24 @@ application = FastAPI(
     redoc_url="/redoc" if apiDocumentationEnabled else None,
     openapi_url="/openapi.json" if apiDocumentationEnabled else None,
 )
+
+
+class RequestContextMiddleware:
+    def __init__(self, application) -> None:
+        self.application = application
+
+    async def __call__(self, scope, receive, send) -> None:
+        if scope["type"] != "http":
+            await self.application(scope, receive, send)
+            return
+        token = currentRequest.set((scope["method"], scope["path"]))
+        try:
+            await self.application(scope, receive, send)
+        finally:
+            currentRequest.reset(token)
+
+
+application.add_middleware(RequestContextMiddleware)
 application.include_router(plans.router)
 application.include_router(authentication.router)
 application.include_router(joining.router)
@@ -39,6 +60,7 @@ application.include_router(recipe_scans.router)
 application.include_router(recipes.router)
 application.include_router(notifications.router)
 application.include_router(statistics.router)
+application.include_router(exports.router)
 application.include_router(shopping_list.router)
 
 

@@ -6,13 +6,13 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from application.plans import householdMemberCount, householdMemberLimit
+from application.plans import householdLimits, householdMemberCount, householdMemberLimit
 from application.database import getDatabaseSession, getSessionFactory
 from application.dependencies import getCurrentUser, getHouseholdOwnership, notFoundError
 from application.households import (
     alreadyInHouseholdError,
     buildHouseholdResponse,
-    ensureUserHasNoHousehold,
+    ensureUserCanAddHousehold,
     normalizeInviteCode,
 )
 from application.models import Household, HouseholdMember, InviteLink, JoinRequest, PushSubscription, User
@@ -62,8 +62,20 @@ def notifyOwners(sender: PushSender, householdId: int, displayName: str) -> None
             session.commit()
 
 
+def ensureHouseholdCanBeShared(session: Session, householdId: int) -> None:
+    if not householdLimits(session, householdId).canShareHousehold:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="This household cannot be shared")
+
+
+def ensureUserIsNotGuest(user: User) -> None:
+    if user.isGuest:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Guests cannot join households")
+
+
 def joinAsMember(session: Session, user: User, householdId: int) -> HouseholdMember:
-    ensureUserHasNoHousehold(session, user.id)
+    ensureUserIsNotGuest(user)
+    ensureUserCanAddHousehold(session, user, householdId)
+    ensureHouseholdCanBeShared(session, householdId)
     if householdMemberCount(session, householdId) >= householdMemberLimit(session, householdId):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="The household is full")
     membership = HouseholdMember(userId=user.id, householdId=householdId, role=HouseholdRole.member)
@@ -87,7 +99,9 @@ def requestToJoin(
     )
     if household is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid invite code")
-    ensureUserHasNoHousehold(session, user.id)
+    ensureUserIsNotGuest(user)
+    ensureUserCanAddHousehold(session, user, household.id)
+    ensureHouseholdCanBeShared(session, household.id)
     joinRequest = session.scalar(select(JoinRequest).where(JoinRequest.userId == user.id))
     if joinRequest is None:
         joinRequest = JoinRequest(userId=user.id, householdId=household.id)
@@ -207,6 +221,7 @@ def activeInviteLinks(session: Session, householdId: int):
 def createInviteLink(
     membership: HouseholdMember = Depends(getHouseholdOwnership), session: Session = Depends(getDatabaseSession)
 ) -> CreatedInviteLinkResponse:
+    ensureHouseholdCanBeShared(session, membership.householdId)
     token = secrets.token_urlsafe(24)
     link = InviteLink(
         householdId=membership.householdId,
@@ -274,4 +289,4 @@ def joinByLink(
     except IntegrityError:
         session.rollback()
         raise alreadyInHouseholdError()
-    return buildHouseholdResponse(session.get(Household, link.householdId), membership)
+    return buildHouseholdResponse(session, session.get(Household, link.householdId), membership)

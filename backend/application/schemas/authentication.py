@@ -2,6 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
+from application.schemas.common import RequiredName
+
 
 class RegisterRequest(BaseModel):
     email: EmailStr
@@ -46,9 +48,18 @@ class TokenResponse(BaseModel):
     accessTokenExpiresInSeconds: int
 
 
+class UpgradeGuestRequest(RegisterRequest):
+    pass
+
+
+class GuestRequest(BaseModel):
+    householdName: RequiredName
+
+
 class UserResponse(BaseModel):
     id: int
-    email: str
+    email: str | None
+    isGuest: bool
     displayName: str
     receiptConsentGivenAt: datetime | None
     recipePhotoConsentGivenAt: datetime | None

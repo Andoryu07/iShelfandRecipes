@@ -31,6 +31,12 @@ class HouseholdResponse(BaseModel):
     notificationHour: int
     expirationWarningDays: int
     createdAt: datetime
+    memberCount: int
+    memberLimit: int
+    storageLocationCount: int
+    storageLocationLimit: int
+    isLocked: bool
+    canShare: bool
 
 
 class HouseholdMemberResponse(BaseModel):

@@ -1,9 +1,9 @@
 from datetime import date, datetime, timedelta
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from application.models import Food, HouseholdMember, PushSubscription, StockItem, StorageLocation
+from application.models import Food, Household, HouseholdMember, PushSubscription, StockItem, StorageLocation
 from application.notifications.push import PushSender, sendToSubscriptions
 
 maximumListedItems = 5
@@ -23,6 +23,13 @@ def expiringItems(session: Session, householdId: int, today: date, warningDays: 
         .order_by(StockItem.expirationDate, Food.name)
     ).all()
     return [{"name": name, "daysLeft": (expirationDate - today).days} for name, expirationDate in rows]
+
+
+def householdNameIfSeveral(session: Session, membership: HouseholdMember) -> str | None:
+    householdCount = session.scalar(
+        select(func.count()).select_from(HouseholdMember).where(HouseholdMember.userId == membership.userId)
+    )
+    return session.get(Household, membership.householdId).name if householdCount > 1 else None
 
 
 def sendExpirationNotifications(session: Session, sender: PushSender, now: datetime, force: bool = False) -> int:
@@ -49,7 +56,13 @@ def sendExpirationNotifications(session: Session, sender: PushSender, now: datet
             session.scalars(select(PushSubscription).where(PushSubscription.userId == membership.userId))
         )
         if items and subscriptions:
-            payload = {"type": "expiration", "count": len(items), "items": items[:maximumListedItems]}
+            payload = {
+                "type": "expiration",
+                "count": len(items),
+                "items": items[:maximumListedItems],
+                "householdId": membership.householdId,
+                "householdName": householdNameIfSeveral(session, membership),
+            }
             if sendToSubscriptions(session, sender, subscriptions, payload):
                 notifiedMembers += 1
         session.commit()

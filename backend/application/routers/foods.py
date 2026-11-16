@@ -7,9 +7,10 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from application.database import getDatabaseSession
-from application.dependencies import getAccessibleFood, getHouseholdMembership, notFoundError
+from application.dependencies import getAccessibleFood, getCurrentUser, getHouseholdMembership, notFoundError
+from application.plans import limitsOf
 from application.foods import buildFoodResponse, escapeLikePattern, foodIsInUse, foodPhotoSignature
-from application.models import Food, HouseholdMember, StockItem, StockMovement
+from application.models import Food, HouseholdMember, StockItem, StockMovement, User
 from application.models.enumerations import StockMovementReason
 from application.schemas.foods import CreateFoodRequest, FoodResponse, LastAddedQuantityResponse, UpdateFoodRequest
 
@@ -116,8 +117,11 @@ acceptedPhotoTypes = {"image/webp", "image/jpeg", "image/png"}
 def uploadFoodPhoto(
     file: UploadFile = File(),
     food: Food = Depends(getAccessibleFood),
+    user: User = Depends(getCurrentUser),
     session: Session = Depends(getDatabaseSession),
 ) -> FoodResponse:
+    if not limitsOf(user).canUploadFoodPhotos:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Food photos need an account")
     if file.content_type not in acceptedPhotoTypes:
         raise HTTPException(status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, detail="Unsupported photo type")
     content = file.file.read(maximumPhotoBytes + 1)

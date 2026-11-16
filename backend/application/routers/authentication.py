@@ -1,7 +1,9 @@
-from datetime import datetime, timezone
+import hashlib
+import secrets
+from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, BackgroundTasks, Cookie, Depends, HTTPException, Response, status
-from sqlalchemy import select
+from fastapi import APIRouter, BackgroundTasks, Cookie, Depends, HTTPException, Request, Response, status
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -17,17 +19,20 @@ from application.database import getDatabaseSession
 from application.emails.messages import accountDeletionEmail, passwordChangedEmail, passwordResetEmail
 from application.emails.sending import EmailSender, getEmailSender, sendSafely
 from application.passwords import createPasswordResetToken, findUsablePasswordResetToken, setNewPassword
-from application.accounts import requestAccountDeletion, scheduledDeletionTime
+from application.accounts import deleteAccountNow, requestAccountDeletion, scheduledDeletionTime
 from application.dependencies import getCurrentUser, getCurrentUserEvenIfPendingDeletion
 from application.models import User
+from application.routers.households import createHouseholdWithDefaults
 from application.schemas.authentication import (
     ChangePasswordRequest,
     DeleteAccountRequest,
+    GuestRequest,
     LoginRequest,
     PasswordResetConfirmation,
     PasswordResetRequest,
     RegisterRequest,
     TokenResponse,
+    UpgradeGuestRequest,
     UserResponse,
 )
 from application.security import hashPassword, placeholderPasswordHash, verifyPassword
@@ -61,12 +66,65 @@ def register(
 def login(
     request: LoginRequest, response: Response, session: Session = Depends(getDatabaseSession)
 ) -> TokenResponse:
-    user = session.scalar(select(User).where(User.email == request.email.lower()))
+    user = session.scalar(select(User).where(User.email == request.email.lower(), User.isGuest.is_(False)))
     passwordHash = user.passwordHash if user else placeholderPasswordHash
     passwordMatches = verifyPassword(request.password, passwordHash)
     if user is None or not passwordMatches:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect email or password")
     return issueTokens(session, user, response)
+
+
+guestDisplayName = "Host"
+guestsPerAddressPerDay = 5
+
+
+def hashClientAddress(request: Request) -> str:
+    address = request.client.host if request.client else "unknown"
+    return hashlib.sha256(f"{getConfiguration().jsonWebTokenSecret}:{address}".encode()).hexdigest()
+
+
+@router.post("/guest", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
+def startAsGuest(
+    body: GuestRequest, request: Request, response: Response, session: Session = Depends(getDatabaseSession)
+) -> TokenResponse:
+    addressHash = hashClientAddress(request)
+    recentGuests = session.scalar(
+        select(func.count())
+        .select_from(User)
+        .where(User.guestAddressHash == addressHash, User.createdAt >= datetime.now(timezone.utc) - timedelta(days=1))
+    )
+    if recentGuests >= guestsPerAddressPerDay:
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Too many guest accounts")
+    user = User(
+        email=f"guest-{secrets.token_hex(12)}@guest.invalid",
+        passwordHash=hashPassword(secrets.token_urlsafe(32)),
+        displayName=guestDisplayName,
+        isGuest=True,
+        guestAddressHash=addressHash,
+    )
+    session.add(user)
+    session.flush()
+    createHouseholdWithDefaults(session, user, body.householdName)
+    return issueTokens(session, user, response)
+
+
+@router.post("/me/upgrade", response_model=UserResponse)
+def upgradeGuest(
+    request: UpgradeGuestRequest, user: User = Depends(getCurrentUser), session: Session = Depends(getDatabaseSession)
+) -> UserResponse:
+    if not user.isGuest:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="The account is not a guest account")
+    user.email = request.email.lower()
+    user.passwordHash = hashPassword(request.password)
+    user.displayName = request.displayName
+    user.isGuest = False
+    user.guestAddressHash = None
+    try:
+        session.commit()
+    except IntegrityError:
+        session.rollback()
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email is already registered")
+    return buildUserResponse(user)
 
 
 RefreshTokenCookie = Cookie(default=None, alias=refreshTokenCookieName)
@@ -112,7 +170,7 @@ def requestPasswordReset(
     session: Session = Depends(getDatabaseSession),
     emailSender: EmailSender = Depends(getEmailSender),
 ) -> None:
-    user = session.scalar(select(User).where(User.email == request.email.lower()))
+    user = session.scalar(select(User).where(User.email == request.email.lower(), User.isGuest.is_(False)))
     token = createPasswordResetToken(session, user) if user else None
     if user is None or token is None:
         return
@@ -149,7 +207,7 @@ def changePassword(
     session: Session = Depends(getDatabaseSession),
     emailSender: EmailSender = Depends(getEmailSender),
 ) -> TokenResponse:
-    if not verifyPassword(request.currentPassword, user.passwordHash):
+    if user.isGuest or not verifyPassword(request.currentPassword, user.passwordHash):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Incorrect password")
     setNewPassword(session, user, request.newPassword)
     backgroundTasks.add_task(
@@ -161,7 +219,8 @@ def changePassword(
 def buildUserResponse(user: User) -> UserResponse:
     return UserResponse(
         id=user.id,
-        email=user.email,
+        email=None if user.isGuest else user.email,
+        isGuest=user.isGuest,
         displayName=user.displayName,
         receiptConsentGivenAt=user.receiptConsentGivenAt,
         recipePhotoConsentGivenAt=user.recipePhotoConsentGivenAt,
@@ -191,6 +250,12 @@ def deleteAccount(
     session: Session = Depends(getDatabaseSession),
     emailSender: EmailSender = Depends(getEmailSender),
 ) -> Response:
+    if user.isGuest:
+        deleteAccountNow(session, user)
+        session.commit()
+        response = Response(status_code=status.HTTP_204_NO_CONTENT)
+        deleteRefreshTokenCookie(response)
+        return response
     if not verifyPassword(request.password, user.passwordHash):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Incorrect password")
     requestAccountDeletion(session, user)
