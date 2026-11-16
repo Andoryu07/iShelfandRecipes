@@ -1,11 +1,19 @@
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from enum import StrEnum
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from application.models import HouseholdMember, ReceiptScan, RecipeScan, RewardedAdView, StorageLocation, User
+from application.models import (
+    Household,
+    HouseholdMember,
+    ReceiptScan,
+    RecipeScan,
+    RewardedAdView,
+    StorageLocation,
+    User,
+)
 from application.models.enumerations import HouseholdRole, RewardKind
 from application.stock import householdTimeZone
 
@@ -82,6 +90,7 @@ planLimits = {
     ),
 }
 rewardedAdsPerDay = 3
+premiumGracePeriod = timedelta(hours=24)
 
 
 def planOf(user: User) -> Plan:
@@ -94,6 +103,14 @@ def planOf(user: User) -> Plan:
 
 def limitsOf(user: User) -> PlanLimits:
     return planLimits[planOf(user)]
+
+
+def lockingLimitsOf(user: User) -> PlanLimits:
+    if user.isGuest:
+        return planLimits[Plan.guest]
+    if user.premiumUntil is not None and user.premiumUntil + premiumGracePeriod > datetime.now(timezone.utc):
+        return planLimits[Plan.premium]
+    return planLimits[Plan.free]
 
 
 def startOfCurrentMonth() -> datetime:
@@ -175,8 +192,42 @@ def storageLocationCount(session: Session, householdId: int) -> int:
     )
 
 
+def ownedHouseholdIds(session: Session, user: User) -> list[int]:
+    return list(
+        session.scalars(
+            select(Household.id)
+            .join(HouseholdMember, HouseholdMember.householdId == Household.id)
+            .where(HouseholdMember.userId == user.id, HouseholdMember.role == HouseholdRole.owner)
+            .order_by(Household.createdAt, Household.id)
+        )
+    )
+
+
+def householdExceedsLimits(session: Session, householdId: int, limitsFunction) -> bool:
+    owners = householdOwners(session, householdId)
+    if not owners:
+        return False
+    memberLimit = max(limitsFunction(owner).householdMembers for owner in owners)
+    if householdMemberCount(session, householdId) > memberLimit:
+        return True
+    return not any(
+        householdId in ownedHouseholdIds(session, owner)[: limitsFunction(owner).households] for owner in owners
+    )
+
+
 def householdIsLocked(session: Session, householdId: int) -> bool:
-    return householdMemberCount(session, householdId) > householdMemberLimit(session, householdId)
+    return householdExceedsLimits(session, householdId, lockingLimitsOf)
+
+
+def householdLocksAt(session: Session, householdId: int) -> datetime | None:
+    if householdIsLocked(session, householdId) or not householdExceedsLimits(session, householdId, limitsOf):
+        return None
+    graceEnds = [
+        owner.premiumUntil + premiumGracePeriod
+        for owner in householdOwners(session, householdId)
+        if owner.premiumUntil is not None and owner.premiumUntil + premiumGracePeriod > datetime.now(timezone.utc)
+    ]
+    return min(graceEnds, default=None)
 
 
 def householdCount(session: Session, user: User) -> int:

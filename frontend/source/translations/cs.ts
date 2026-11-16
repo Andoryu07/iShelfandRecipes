@@ -611,10 +611,15 @@ export const texts = {
     cannotBeShared: "Tuto domácnost nejde sdílet.",
     lockedShort: "uzamčená",
     lockedTitle: "Domácnost je uzamčená",
-    lockedOwner: (count: number, limit: number) =>
-      `Domácnost má ${count} členů, ale bez Premium jich může mít nejvýš ${limit}. Dokud si znovu nezapneš Premium nebo neodebereš členy, nejde nic přidávat, skenovat ani měnit. Data si můžeš prohlížet a stáhnout do CSV.`,
-    lockedMember: (count: number, limit: number) =>
-      `Domácnost má ${count} členů, ale tarif vlastníka dovoluje nejvýš ${limit}. Dokud vlastník znovu nezapne Premium nebo neubude členů, nejde nic přidávat, skenovat ani měnit. Data si můžeš prohlížet a stáhnout do CSV.`,
+    lockedOwner: (isOverMemberLimit: boolean, limit: number) =>
+      `${isOverMemberLimit ? `Bez Premium může mít domácnost nejvýš ${limit} členů.` : "Bez Premium můžeš mít jen jednu vlastní domácnost, odemčená zůstává ta nejstarší."} Dokud si znovu nezapneš Premium${isOverMemberLimit ? " nebo neodebereš členy" : ""}, nejde tu nic přidávat, skenovat ani měnit. Data si můžeš prohlížet a stáhnout do CSV.`,
+    lockedMember:
+      "Vlastníkovi skončilo Premium a domácnost teď přesahuje limity jeho tarifu. Dokud ho neobnoví, nejde tu nic přidávat, skenovat ani měnit. Data si můžeš prohlížet a stáhnout do CSV.",
+    locksSoonTitle: "Domácnost se brzy uzamkne",
+    locksSoonOwner: (time: string) =>
+      `Tvoje Premium skončilo a domácnost přesahuje limity verze zdarma. Uzamkne se ${time} a pak v ní nepůjde nic měnit. Obnov Premium, nebo odeber členy navíc.`,
+    locksSoonMember: (time: string) =>
+      `Vlastníkovi skončilo Premium. Pokud ho neobnoví, domácnost se uzamkne ${time} a pak v ní nepůjde nic měnit.`,
     lockedAction:
       "Domácnost je uzamčená, protože má víc členů, než dovoluje tarif vlastníka. Změny teď nejdou uložit.",
     storageLocationCount: (count: number, limit: number) => `${count} z ${limit} úložišť`,

@@ -36,6 +36,7 @@ class HouseholdResponse(BaseModel):
     storageLocationCount: int
     storageLocationLimit: int
     isLocked: bool
+    locksAt: datetime | None
     canShare: bool
 
 

@@ -16,6 +16,7 @@ from application.models import (
 from application.requestContext import requestChangesData
 from application.plans import (
     householdIsLocked,
+    householdLocksAt,
     householdCount,
     householdLimits,
     householdMemberCount,
@@ -89,7 +90,8 @@ def buildHouseholdResponse(session: Session, household: Household, membership: H
         memberLimit=limits.householdMembers,
         storageLocationCount=storageLocationCount(session, household.id),
         storageLocationLimit=limits.storageLocations,
-        isLocked=memberCount > limits.householdMembers,
+        isLocked=householdIsLocked(session, household.id),
+        locksAt=householdLocksAt(session, household.id),
         canShare=limits.canShareHousehold,
         id=household.id,
         name=household.name,

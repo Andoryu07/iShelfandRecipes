@@ -178,7 +178,7 @@ export function ApplicationLayout() {
           </Toolbar>
         </AppBar>
         <main className="page">
-          {household?.isLocked && <LockedHouseholdBanner />}
+          <LockedHouseholdBanner />
           <Suspense fallback={<PageLoading />}>
             <Outlet key={household?.id} />
           </Suspense>

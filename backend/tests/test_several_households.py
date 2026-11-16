@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from fastapi.testclient import TestClient
 
 from application.accounts import deleteAccountNow
@@ -65,7 +67,7 @@ def lockedHousehold(client: TestClient) -> tuple[dict, dict[str, str], dict[str,
     for index in range(6):
         memberHeaders = registerAndAuthorize(client, f"member{index}@example.com", "Member")
         joinHousehold(client, memberHeaders, household["inviteCode"])
-    makePremium("owner@example.com", days=-1)
+    makePremium("owner@example.com", days=-2)
     return household, ownerHeaders, memberHeaders
 
 
@@ -108,3 +110,52 @@ def test_receiptItemsCanBeExported(client: TestClient) -> None:
         ("2026-11-03", "Albert", "Mléko", 30),
         ("2026-11-03", "Albert", "Sleva", -5),
     ]
+
+
+def householdDetails(client: TestClient, headers: dict[str, str], householdId: int) -> dict:
+    return client.get(f"/households/{householdId}", headers=headers).json()
+
+
+def test_householdOverTheMemberLimitStaysUsableForADayAfterPremiumEnds(client: TestClient) -> None:
+    household, ownerHeaders, memberHeaders = lockedHousehold(client)
+    makePremium("owner@example.com", days=0)
+    with getSessionFactory()() as session:
+        owner = session.query(User).filter_by(email="owner@example.com").one()
+        owner.premiumUntil = owner.premiumUntil - timedelta(hours=2)
+        session.commit()
+
+    details = householdDetails(client, memberHeaders, household["id"])
+    assert details["isLocked"] is False
+    assert details["locksAt"] is not None
+    created = client.post(f"/households/{household['id']}/foods", json={"name": "Sýr", "baseUnit": "gram"}, headers=memberHeaders)
+    assert created.status_code == 201
+    joining = registerAndAuthorize(client, "late@example.com", "Late")
+    assert requestToJoin(client, joining, household["inviteCode"]).status_code == 202
+
+
+def test_extraOwnedHouseholdsLockADayAfterPremiumEnds(client: TestClient) -> None:
+    annaHeaders = registerAndAuthorize(client, "anna@example.com", "Anna")
+    petrHeaders = registerAndAuthorize(client, "petr@example.com", "Petr")
+    makePremium("anna@example.com")
+    makePremium("petr@example.com")
+    first = createHousehold(client, annaHeaders, "Doma")
+    second = createHousehold(client, annaHeaders, "Chata")
+    petrHousehold = createHousehold(client, petrHeaders, "U Petra")
+    joinHousehold(client, annaHeaders, petrHousehold["inviteCode"])
+    joinHousehold(client, petrHeaders, second["inviteCode"])
+
+    makePremium("anna@example.com", days=-0.5)
+    assert householdDetails(client, petrHeaders, second["id"])["locksAt"] is not None
+    assert householdDetails(client, petrHeaders, second["id"])["isLocked"] is False
+
+    makePremium("anna@example.com", days=-2)
+    assert householdDetails(client, annaHeaders, first["id"])["isLocked"] is False
+    assert householdDetails(client, petrHeaders, second["id"])["isLocked"] is True
+    assert householdDetails(client, annaHeaders, petrHousehold["id"])["isLocked"] is False
+    food = {"name": "Mléko", "baseUnit": "milliliter"}
+    assert client.post(f"/households/{second['id']}/foods", json=food, headers=petrHeaders).status_code == 403
+    assert client.post(f"/households/{first['id']}/foods", json=food, headers=annaHeaders).status_code == 201
+    assert client.post(f"/households/{petrHousehold['id']}/foods", json=food, headers=annaHeaders).status_code == 201
+
+    makePremium("anna@example.com")
+    assert householdDetails(client, petrHeaders, second["id"])["isLocked"] is False

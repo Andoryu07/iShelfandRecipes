@@ -47,7 +47,7 @@ def joinHousehold(client: TestClient, headers: dict[str, str], inviteCode: str):
     return response
 
 
-def makePremium(email: str, days: int = 30) -> None:
+def makePremium(email: str, days: float = 30) -> None:
     with getSessionFactory()() as session:
         user = session.scalar(select(User).where(User.email == email))
         user.premiumUntil = datetime.now(timezone.utc) + timedelta(days=days)

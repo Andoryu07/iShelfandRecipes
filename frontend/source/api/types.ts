@@ -30,6 +30,7 @@ export interface Household {
   storageLocationCount: number;
   storageLocationLimit: number;
   isLocked: boolean;
+  locksAt: string | null;
   canShare: boolean;
 }
 
