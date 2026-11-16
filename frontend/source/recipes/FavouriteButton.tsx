@@ -2,6 +2,7 @@ import StarBorderRoundedIcon from "@mui/icons-material/StarBorderRounded";
 import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import { IconButton } from "@mui/material";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { addFavouriteRecipe, removeFavouriteRecipe } from "../api/recipesApi";
 import type { Recipe, RecipeSummary } from "../api/types";
 import { texts } from "../translations/cs";
@@ -21,6 +22,7 @@ function isRecipeList(data: unknown): data is RecipeSummary[] {
 
 export function FavouriteButton({ householdId, recipeId, isFavourite }: FavouriteButtonProps) {
   const queryClient = useQueryClient();
+  const [wasToggled, setWasToggled] = useState(false);
   const listKey = ["households", householdId, "recipes"];
   const mutation = useMutation({
     mutationFn: (favourite: boolean) =>
@@ -43,11 +45,16 @@ export function FavouriteButton({ householdId, recipeId, isFavourite }: Favourit
       aria-pressed={isFavourite}
       onClick={(event) => {
         event.stopPropagation();
+        setWasToggled(true);
         mutation.mutate(!isFavourite);
       }}
       sx={{ color: isFavourite ? "warning.main" : "text.secondary" }}
     >
-      {isFavourite ? <StarRoundedIcon /> : <StarBorderRoundedIcon />}
+      {isFavourite ? (
+        <StarRoundedIcon className={wasToggled ? "animatePop" : undefined} />
+      ) : (
+        <StarBorderRoundedIcon />
+      )}
     </IconButton>
   );
 }

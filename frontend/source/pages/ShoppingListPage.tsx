@@ -66,6 +66,7 @@ function ShoppingList({ householdId }: { householdId: number }) {
   const queryClient = useQueryClient();
   const [listKind, setListKind] = useState<ListKind>(storedListKind);
   const [pickerKey, setPickerKey] = useState(0);
+  const [lastToggledItemId, setLastToggledItemId] = useState<number | null>(null);
   const [choice, setChoice] = useState<FoodChoice | null>(null);
   const [editedItem, setEditedItem] = useState<ShoppingListItem | null>(null);
   const [isAddingToStock, setIsAddingToStock] = useState(false);
@@ -115,6 +116,7 @@ function ShoppingList({ householdId }: { householdId: number }) {
   }
 
   function toggleChecked(item: ShoppingListItem) {
+    setLastToggledItemId(item.id);
     queryClient.setQueryData<ShoppingListItem[]>(queryKey, (current) =>
       current?.map((other) => (other.id === item.id ? { ...other, isChecked: !item.isChecked } : other)),
     );
@@ -126,9 +128,11 @@ function ShoppingList({ householdId }: { householdId: number }) {
       <ListItem
         key={item.id}
         disablePadding
+        className={item.id === lastToggledItemId ? "animateAppear" : undefined}
         secondaryAction={
           <Checkbox
             edge="end"
+            className={item.id === lastToggledItemId && item.isChecked ? "animatePop" : undefined}
             checked={item.isChecked}
             onChange={() => toggleChecked(item)}
             slotProps={{ input: { "aria-label": item.name } }}

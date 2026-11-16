@@ -227,6 +227,7 @@ function StockGroupRow({
   return (
     <>
       <ListItemButton
+        className="animateAppear"
         divider={!isLast && !isExpanded}
         onClick={() => (hasSeveralItems ? setIsExpanded(!isExpanded) : onOpenItem(group.items[0]))}
         sx={{ py: 1 }}

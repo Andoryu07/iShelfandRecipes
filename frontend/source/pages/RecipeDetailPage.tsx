@@ -28,7 +28,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import {
   cookRecipe,
@@ -56,6 +56,7 @@ import { formatMoney } from "../receipts/money";
 import { formatQuantity } from "../stock/quantities";
 import { stockItemsQueryKey } from "../stock/stockQueries";
 import { texts } from "../translations/cs";
+import { Celebration } from "../components/Celebration";
 
 function quantityOf(ingredient: IngredientAvailability, quantity: number): string {
   return formatQuantity(quantity, ingredient.food.baseUnit);
@@ -110,6 +111,8 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
       setIsReservedMessageOpen(true);
     },
   });
+  const [isCelebrating, setIsCelebrating] = useState(false);
+  const stopCelebrating = useCallback(() => setIsCelebrating(false), []);
   const cookMutation = useMutation({
     mutationFn: () => cookRecipe(recipeId, currentServings),
     onSuccess: async () => {
@@ -120,6 +123,7 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
         queryClient.invalidateQueries({ queryKey: stockItemsQueryKey(householdId) }),
       ]);
       setIsCookedMessageOpen(true);
+      setIsCelebrating(true);
       setIsCooking(false);
     },
   });
@@ -502,6 +506,7 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
           }}
         />
       )}
+      {isCelebrating && <Celebration onDone={stopCelebrating} />}
       <Snackbar
         open={isCookedMessageOpen}
         autoHideDuration={3000}
