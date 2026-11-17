@@ -115,6 +115,7 @@ def test_scanReturnsItemsAndPassesTheImageToTheReader(client: TestClient, fakeRe
             "discount": 0,
             "suggestedFood": None,
             "rememberedFromEarlierReceipt": False,
+            "quantitySource": "receipt",
         }
     ]
 
@@ -156,7 +157,10 @@ def test_unknownQuantityUnitAndDateBecomeNull(client: TestClient, fakeReader: Fa
         storeName=None,
         purchasedOn="yesterday",
         totalAmount=None,
-        items=[extractedItem(quantityPerPackage=None, unit="gram"), extractedItem(quantityPerPackage=250, unit=None)],
+        items=[
+            extractedItem(originalText="NEZNAMA VEC", genericName="Věc", quantityPerPackage=None, unit="gram"),
+            extractedItem(originalText="NEZNAMA VEC", genericName="Věc", quantityPerPackage=250, unit=None),
+        ],
     )
 
     body = household.scan().json()
@@ -377,3 +381,101 @@ def test_receiptsOfAnotherHouseholdAreNotDuplicates(client: TestClient, fakeRead
     )
 
     assert (response.status_code, response.json()["possibleDuplicate"]) == (200, None)
+
+
+def sourcesOf(body: dict) -> list[tuple]:
+    return [(item["quantity"], item["unit"], item["quantitySource"]) for item in body["items"]]
+
+
+def test_missingQuantityIsReadFromTheTextOrEstimated(client: TestClient, fakeReader: FakeReceiptReader) -> None:
+    household = ScanningHousehold(client)
+    fakeReader.receipt = ExtractedReceipt(
+        storeName="Albert",
+        purchasedOn="2026-11-10",
+        totalAmount=100,
+        items=[
+            extractedItem(originalText="JOG.BILY 0,15KG", genericName="Jogurt", quantityPerPackage=None, unit=None),
+            extractedItem(
+                originalText="SMETANA KYS.",
+                genericName="Smetana",
+                quantityPerPackage=None,
+                unit=None,
+                estimatedQuantityPerPackage=200,
+                estimatedUnit="milliliter",
+            ),
+            extractedItem(originalText="MASLO", genericName="Máslo", quantityPerPackage=None, unit=None),
+            extractedItem(originalText="TAJEMNA VEC", genericName="Věc", quantityPerPackage=None, unit=None),
+            extractedItem(originalText="TASKA", isFood=False, quantityPerPackage=None, unit=None, price=0),
+        ],
+    )
+
+    assert sourcesOf(household.scan().json()) == [
+        (150.0, "gram", "text"),
+        (200.0, "milliliter", "estimate"),
+        (250.0, "gram", "typical"),
+        (None, None, None),
+        (None, None, None),
+    ]
+
+
+def test_missingQuantityComesFromHistoryThenFromOtherHouseholds(client: TestClient, fakeReader: FakeReceiptReader) -> None:
+    household = ScanningHousehold(client)
+    unknown = extractedItem(originalText="SYR GOUDA PL.", genericName="Sýr", quantityPerPackage=None, unit=None)
+    fakeReader.receipt = ExtractedReceipt(storeName="Albert", purchasedOn="2026-11-10", totalAmount=24.9, items=[unknown])
+    scanned = household.scan().json()
+    assert sourcesOf(scanned) == [(100.0, "gram", "typical")]
+
+    body = {
+        "storeName": "Albert",
+        "purchasedOn": "2026-11-10",
+        "totalAmount": 24.9,
+        "items": [{"originalText": "SYR GOUDA PL.", "name": "Sýr gouda", "category": "dairy", "quantity": 120, "unit": "gram", "price": 24.9}],
+    }
+    assert client.post(f"/households/{household.id}/receipts", json=body, headers=household.headers).status_code == 201
+    assert sourcesOf(household.scan(b"\xff\xd8\xff second").json()) == [(120.0, "gram", "history")]
+
+    otherHeaders = registerAndAuthorize(client, "petr@example.com", "Petr")
+    otherId = createHousehold(client, otherHeaders)["id"]
+    client.post("/auth/me/receipt-consent", headers=otherHeaders)
+    other = client.post(
+        f"/households/{otherId}/receipts/scan", files={"file": ("r.jpg", b"\xff\xd8\xff other", "image/jpeg")}, headers=otherHeaders
+    ).json()
+    assert sourcesOf(other) == [(120.0, "gram", "catalog")]
+
+
+def test_unconfirmedEstimatesAreNotLearned(client: TestClient, fakeReader: FakeReceiptReader) -> None:
+    household = ScanningHousehold(client)
+    unknown = extractedItem(originalText="SYR GOUDA PL.", genericName="Sýr", quantityPerPackage=None, unit=None)
+    fakeReader.receipt = ExtractedReceipt(storeName="Albert", purchasedOn="2026-11-10", totalAmount=24.9, items=[unknown])
+    body = {
+        "storeName": "Albert",
+        "purchasedOn": "2026-11-10",
+        "totalAmount": 24.9,
+        "items": [
+            {
+                "originalText": "SYR GOUDA PL.",
+                "name": "Sýr gouda",
+                "category": "dairy",
+                "quantity": 130,
+                "unit": "gram",
+                "price": 24.9,
+                "quantityIsEstimate": True,
+            }
+        ],
+    }
+    assert client.post(f"/households/{household.id}/receipts", json=body, headers=household.headers).status_code == 201
+
+    assert sourcesOf(household.scan().json()) == [(100.0, "gram", "typical")]
+
+
+def test_estimateInAnotherUnitThanTheKnownFoodIsSkipped(client: TestClient, fakeReader: FakeReceiptReader) -> None:
+    household = ScanningHousehold(client)
+    createFood(client, household.headers, household.id, "Jogurt bílý", baseUnit="piece")
+    fakeReader.receipt = ExtractedReceipt(
+        storeName="Albert",
+        purchasedOn="2026-11-10",
+        totalAmount=15,
+        items=[extractedItem(originalText="JOGURT", name="Jogurt bílý", genericName="Jogurt", quantityPerPackage=None, unit=None, price=15)],
+    )
+
+    assert sourcesOf(household.scan().json()) == [(None, None, None)]

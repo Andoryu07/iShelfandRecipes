@@ -1,10 +1,13 @@
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
+import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
 import {
+  Alert,
   Box,
   Button,
   Card,
   CardContent,
   Checkbox,
+  Chip,
   FormControlLabel,
   IconButton,
   MenuItem,
@@ -12,13 +15,14 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import { useState } from "react";
 import type { StorageLocation } from "../api/types";
 import { baseUnitOf, FoodPicker, isNewFood, NewFoodFields, type FoodChoice } from "../stock/FoodPicker";
 import { displayUnits } from "../stock/quantities";
 import { QuantityInput } from "../stock/QuantityInput";
 import { displayStorageLocationName, texts } from "../translations/cs";
-import type { ReviewItem } from "./reviewItems";
+import { isUnconfirmedEstimate, type ReviewItem } from "./reviewItems";
 
 interface ReviewItemCardProps {
   householdId: number;
@@ -39,6 +43,7 @@ export function ReviewItemCard({
 }: ReviewItemCardProps) {
   const baseUnit = baseUnitOf(item.food);
   const [isExpanded, setIsExpanded] = useState(item.name === "");
+  const isEstimate = isUnconfirmedEstimate(item);
 
   function changeFood(food: FoodChoice | null) {
     const newBaseUnit = baseUnitOf(food);
@@ -61,11 +66,32 @@ export function ReviewItemCard({
           : null
         : texts.receipts.notToStock,
       item.remembered ? texts.receipts.rememberedHint : null,
+      !isEstimate && item.addToStock && item.quantitySource === "history"
+        ? texts.receipts.quantityFromHistory
+        : null,
+      !isEstimate && item.addToStock && item.quantitySource === "catalog"
+        ? texts.receipts.quantityFromCatalog
+        : null,
     ]
       .filter(Boolean)
       .join(" · ");
     return (
-      <Box sx={{ display: "flex", alignItems: "center", pr: 2, borderBottom: 1, borderColor: "divider" }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          pr: 2,
+          borderBottom: 1,
+          borderColor: "divider",
+          ...(isEstimate
+            ? {
+                bgcolor: (theme) => alpha(theme.palette.warning.main, 0.12),
+                borderLeft: 4,
+                borderLeftColor: "warning.main",
+              }
+            : {}),
+        }}
+      >
         <Checkbox
           checked={item.addToStock}
           disabled={item.food === null}
@@ -77,6 +103,15 @@ export function ReviewItemCard({
             {item.name || item.originalText}
           </Typography>
           <Typography variant="body2" color="text.secondary" noWrap>
+            {isEstimate && (
+              <Chip
+                label={texts.receipts.estimateChip}
+                size="small"
+                color="warning"
+                icon={<WarningAmberRoundedIcon />}
+                sx={{ mr: 0.75, height: 20, fontWeight: 700 }}
+              />
+            )}
             {summary || item.originalText}
           </Typography>
         </Box>
@@ -88,7 +123,10 @@ export function ReviewItemCard({
   }
 
   return (
-    <Card variant="outlined" sx={{ m: 1, borderColor: error ? "error.main" : undefined }}>
+    <Card
+      variant="outlined"
+      sx={{ m: 1, borderColor: error ? "error.main" : isEstimate ? "warning.main" : undefined }}
+    >
       <CardContent>
         <Stack direction="row" sx={{ alignItems: "center", gap: 1 }}>
           <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>
@@ -139,6 +177,25 @@ export function ReviewItemCard({
                 onValueChange={(quantityText) => onChange({ ...item, quantityText })}
                 onUnitSymbolChange={(unitSymbol) => onChange({ ...item, unitSymbol })}
               />
+            )}
+            {isEstimate && (
+              <Alert
+                severity="warning"
+                sx={{ mt: 1 }}
+                action={
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={() => onChange({ ...item, quantityConfirmed: true })}
+                  >
+                    {texts.receipts.estimateConfirm}
+                  </Button>
+                }
+              >
+                {item.quantitySource === "estimate"
+                  ? texts.receipts.estimateFromModel
+                  : texts.receipts.estimateTypical}
+              </Alert>
             )}
             <Stack direction="row" spacing={1} useFlexGap>
               <TextField

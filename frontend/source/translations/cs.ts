@@ -251,6 +251,21 @@ export const texts = {
     sumMatchesShort: (sum: string) => `✓ Součet sedí (${sum})`,
     collapse: "Sbalit",
     rememberedHint: "jako minule",
+    quantityFromHistory: "množství jako minule",
+    quantityFromCatalog: "množství podle ostatních",
+    estimateChip: "ODHAD",
+    estimateFromModel:
+      "Množství není na účtence, je to jen odhad obvyklého balení. Zkontroluj ho na obalu a oprav, nebo potvrď.",
+    estimateTypical:
+      "Množství není na účtence, je to jen obvyklá velikost balení tohoto druhu. Zkontroluj ho na obalu a oprav, nebo potvrď.",
+    estimateConfirm: "Sedí",
+    estimatesBanner: (count: number) =>
+      `${count === 1 ? "1 položka má" : count < 5 ? `${count} položky mají` : `${count} položek má`} jen odhadnuté množství (oranžově). Než účtenku uložíš, zkontroluj je na obalech.`,
+    estimatesConfirmTitle: "Některá množství jsou jen odhad",
+    estimatesConfirmText: (count: number) =>
+      `${count === 1 ? "1 položka má" : count < 5 ? `${count} položky mají` : `${count} položek má`} množství jen odhadnuté. Do zásob se uloží odhad, který nemusí odpovídat skutečnosti.`,
+    estimatesCheck: "Zkontrolovat",
+    estimatesSaveAnyway: "Uložit i tak",
     newFoodShort: "nová potravina",
     notToStock: "nejde do zásob",
     saved: "Účtenka uložena",
@@ -816,7 +831,7 @@ export const texts = {
   registrationConsentLink: "zásadami ochrany soukromí",
   privacyPolicy: {
     title: "Zásady ochrany soukromí",
-    effectiveFrom: "Účinné od 16. 11. 2026",
+    effectiveFrom: "Účinné od 17. 11. 2026",
     back: "Zpět",
     sections: [
       {
@@ -831,6 +846,7 @@ export const texts = {
           "Účet: e-mail, jméno, které zadáš, a heslo uložené pouze jako bezpečný otisk (hash), ze kterého nejde zpětně zjistit.",
           "Domácnost: název domácnosti, její členy, místa uložení, potraviny, zásoby, jejich úbytky a rezervace, recepty, historii vaření a společný nákupní seznam. Osobní nákupní seznam, oblíbené recepty a nastavení upozornění patří jen tobě.",
           "Účtenky: obchod, datum, celková částka a přečtené položky s cenami.",
+          "Společný katalog množství: když u položky z účtenky potvrdíš množství, uložíme do katalogu sdíleného všemi uživateli jen název obchodu, text položky z účtenky a množství (například Albert, „JOG.BILY“, 150 g), bez vazby na tebe nebo tvou domácnost. Ostatním to pak předvyplní množství u stejného produktu.",
           "Tarif: jestli a do kdy máš Premium, počet skenů účtenek a receptů a počet reklam za odměnu. Potřebujeme to kvůli limitům tarifu.",
           "Zkušební použití bez účtu: ukládáme stejná data domácnosti, ale žádný e-mail ani jméno. Proti hromadnému zakládání zkušebních účtů ukládáme otisk (hash) IP adresy, ze kterého adresu nejde zpětně zjistit. Otisk se smaže, když si vytvoříš účet.",
           "Tyto údaje potřebujeme k tomu, aby aplikace fungovala (plnění smlouvy). Nepoužíváme je k reklamě a neprodáváme je.",

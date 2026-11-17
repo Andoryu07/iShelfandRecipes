@@ -8,7 +8,15 @@ from sqlalchemy.orm import Session
 from application.receipts.duplicates import findPossibleDuplicate
 from application.foods import buildFoodResponse
 from application.models import Food, Receipt, ReceiptItem
-from application.models.enumerations import FoodCategory
+from application.models.enumerations import FoodCategory, MeasurementUnit
+from application.receipts.quantities import (
+    QuantitySource,
+    findCatalogQuantity,
+    findEarlierQuantities,
+    normalizeKey,
+    quantityFromText,
+    typicalPackage,
+)
 from application.receipts.reading import ExtractedReceipt, ExtractedReceiptItem, ReceiptReadingResult
 from application.schemas.receipts import ScannedReceiptItem, ScanReceiptResponse
 
@@ -75,6 +83,8 @@ def expandItem(item: ExtractedReceiptItem) -> list[dict]:
             "isFood": item.isFood,
             "quantity": Decimal(str(quantity)).quantize(Decimal("0.001")) if quantity is not None else None,
             "unit": unit,
+            "quantitySource": QuantitySource.receipt if quantity is not None else None,
+            "estimate": (item.estimatedQuantityPerPackage, item.estimatedUnit),
             "price": price,
             "discount": discount,
         }
@@ -120,8 +130,39 @@ def suggestedFoodFor(item: dict, matchingFoods: dict[str, Food]) -> Food | None:
     return item.get("rememberedFood") or matchingFoods.get(item["name"])
 
 
+def fillMissingQuantity(
+    session: Session,
+    item: dict,
+    suggestedFood: Food | None,
+    storeName: str | None,
+    earlierQuantities: dict[str, tuple[Decimal, MeasurementUnit]],
+) -> None:
+    if item["quantity"] is not None or not item["isFood"]:
+        return
+    estimatedQuantity, estimatedUnit = item["estimate"]
+    estimate = (
+        (Decimal(str(estimatedQuantity)).quantize(Decimal("0.001")), estimatedUnit)
+        if estimatedQuantity and estimatedQuantity > 0 and estimatedUnit
+        else None
+    )
+    candidates = [
+        (QuantitySource.text, lambda: quantityFromText(item["originalText"])),
+        (QuantitySource.history, lambda: earlierQuantities.get(normalizeKey(item["originalText"]))),
+        (QuantitySource.catalog, lambda: findCatalogQuantity(session, storeName, item["originalText"])),
+        (QuantitySource.estimate, lambda: estimate),
+        (QuantitySource.typical, lambda: typicalPackage(item["genericName"])),
+    ]
+    for source, find in candidates:
+        found = find()
+        if found is None or (suggestedFood is not None and suggestedFood.baseUnit != found[1]):
+            continue
+        item["quantity"], item["unit"] = found
+        item["quantitySource"] = source
+        return
+
+
 def buildScannedItem(item: dict, suggestedFood: Food | None) -> ScannedReceiptItem:
-    fields = {key: value for key, value in item.items() if key != "rememberedFood"}
+    fields = {key: value for key, value in item.items() if key not in ("rememberedFood", "estimate")}
     return ScannedReceiptItem(**fields, suggestedFood=buildFoodResponse(suggestedFood) if suggestedFood else None)
 
 
@@ -132,6 +173,11 @@ def buildScanResponse(
     expandedItems = [expanded for item in receipt.items for expanded in expandItem(item)]
     rememberEarlierCorrections(expandedItems, findEarlierItems(session, householdId, receipt.storeName))
     matchingFoods = findMatchingFoods(session, householdId, {item["name"] for item in expandedItems if item["name"]})
+    earlierQuantities = findEarlierQuantities(session, householdId, receipt.storeName)
+    for item in expandedItems:
+        fillMissingQuantity(
+            session, item, suggestedFoodFor(item, matchingFoods), receipt.storeName, earlierQuantities
+        )
     itemsSum = sum((toMoney(item.price) for item in receipt.items), Decimal("0.00"))
     totalAmount = toMoney(receipt.totalAmount) if receipt.totalAmount is not None else None
     storeName = formatStoreName(receipt.storeName)

@@ -4,6 +4,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from application.receipts.quantities import rememberConfirmedQuantity
 from application.foods import FoodNotFoundError, FoodResolver
 from application.models import Receipt, ReceiptItem, StockItem, StorageLocation, User
 from application.models.enumerations import FoodCategory
@@ -55,9 +56,12 @@ def saveReceipt(session: Session, householdId: int, user: User, request: SaveRec
             price=item.price,
             discount=item.discount,
             correctedByUser=item.correctedByUser,
+            quantityIsEstimate=item.quantityIsEstimate,
         )
         session.add(receiptItem)
         session.flush()
+        if item.quantity is not None and item.unit is not None and not item.quantityIsEstimate:
+            rememberConfirmedQuantity(session, request.storeName, item.originalText, item.quantity, item.unit)
         if not item.addToStock:
             continue
         if item.storageLocationId not in storageLocationIds:

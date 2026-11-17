@@ -22,6 +22,7 @@ class ScannedReceiptItem(BaseModel):
     discount: QuantityValue
     suggestedFood: FoodResponse | None
     rememberedFromEarlierReceipt: bool = False
+    quantitySource: str | None = None
 
 
 class SavedReceiptReference(BaseModel):
@@ -58,6 +59,7 @@ class SaveReceiptItemRequest(BaseModel):
     price: Money
     discount: NonNegativeMoney = Decimal("0")
     correctedByUser: bool = False
+    quantityIsEstimate: bool = False
     foodId: int | None = None
     newFood: NewFoodRequest | None = None
     addToStock: bool = False

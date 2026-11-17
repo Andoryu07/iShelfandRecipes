@@ -32,6 +32,15 @@ class ExtractedReceiptItem(BaseModel):
         "Null if it cannot be read from the receipt. Never guess."
     )
     unit: MeasurementUnit | None = Field(description="Base unit of quantityPerPackage, null if unknown.")
+    estimatedQuantityPerPackage: float | None = Field(
+        default=None,
+        description="Only when quantityPerPackage is null: your best estimate of the usual size of one package "
+        "of this product in Czech shops, in the base unit (for example 150 gram for a cup of yogurt, "
+        "250 gram for butter). Null for goods sold by weight or when you cannot estimate it.",
+    )
+    estimatedUnit: MeasurementUnit | None = Field(
+        default=None, description="Base unit of estimatedQuantityPerPackage, null when there is no estimate."
+    )
     price: float = Field(description="Final charged price of the whole line in CZK after its discount.")
     discount: float = Field(description="Discount of the line in CZK as a positive number, 0 if none.")
 

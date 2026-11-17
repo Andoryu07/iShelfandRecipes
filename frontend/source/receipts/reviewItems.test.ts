@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { Food, ScannedReceiptItem } from "../api/types";
-import { buildSaveItems, createManualItem, createReviewItem, isCorrected } from "./reviewItems";
+import {
+  buildSaveItems,
+  isUnconfirmedEstimate,
+  createManualItem,
+  createReviewItem,
+  isCorrected,
+} from "./reviewItems";
 
 const milkFood: Food = {
   id: 7,
@@ -55,6 +61,7 @@ describe("review items", () => {
           price: 29.9,
           discount: 0,
           correctedByUser: false,
+          quantityIsEstimate: false,
           foodId: null,
           newFood: { name: "Balkánský sýr", genericName: "Sýr", category: "dairy", baseUnit: "gram" },
           addToStock: true,
@@ -128,5 +135,22 @@ describe("review items", () => {
     expect(
       [flour.food, unknown.food, eggs.food].map((food) => food && "baseUnit" in food && food.baseUnit),
     ).toEqual(["gram", "gram", "piece"]);
+  });
+
+  it("treats an untouched estimate as an estimate until it is changed or confirmed", () => {
+    const item = createReviewItem(
+      scanned({ name: "Smetana", quantity: 200, unit: "milliliter", quantitySource: "estimate" }),
+      3,
+    );
+
+    expect(isUnconfirmedEstimate(item)).toBe(true);
+    expect(buildSaveItems([item]).items[0].quantityIsEstimate).toBe(true);
+    expect(isUnconfirmedEstimate({ ...item, quantityConfirmed: true })).toBe(false);
+    expect(isUnconfirmedEstimate({ ...item, quantityText: "250" })).toBe(false);
+    const fromHistory = createReviewItem(
+      scanned({ name: "Smetana", quantity: 200, unit: "milliliter", quantitySource: "history" }),
+      3,
+    );
+    expect(isUnconfirmedEstimate(fromHistory)).toBe(false);
   });
 });

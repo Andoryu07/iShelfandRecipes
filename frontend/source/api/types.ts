@@ -205,6 +205,7 @@ export interface ScannedReceiptItem {
   discount: number;
   suggestedFood: Food | null;
   rememberedFromEarlierReceipt?: boolean;
+  quantitySource?: QuantitySource | null;
 }
 
 export interface ScannedReceipt {
@@ -237,6 +238,7 @@ export interface SaveReceiptItem {
   price: number;
   discount: number;
   correctedByUser: boolean;
+  quantityIsEstimate?: boolean;
   foodId: number | null;
   newFood: {
     name: string;
@@ -422,3 +424,5 @@ export interface ReceiptItemExportRow {
   price: number;
   discount: number;
 }
+
+export type QuantitySource = "receipt" | "text" | "history" | "catalog" | "estimate" | "typical";

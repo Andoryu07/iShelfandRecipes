@@ -28,6 +28,8 @@ Rules:
 - receiptNumber is the number of the receipt or document (for example "Účtenka č. 1234/567" gives "1234/567").
   It is not the register number, the cashier, the store number, the FIK or BKP code or a card number.
 - Do not invent lines, quantities or dates. Use null when something is not printed or not readable.
+  The only exception is estimatedQuantityPerPackage: when the amount is not printed, estimate the usual
+  package size there (never in quantityPerPackage).
 """
 
 

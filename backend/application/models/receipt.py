@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from decimal import Decimal
 
-from sqlalchemy import DateTime, ForeignKey, Numeric, Text, false, func
+from sqlalchemy import DateTime, ForeignKey, Numeric, Text, UniqueConstraint, false, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from application.models.base import Base, measurementUnitType
@@ -48,6 +48,9 @@ class ReceiptItem(Base):
     correctedByUser: Mapped[bool] = mapped_column(
         "corrected_by_user", default=False, server_default=false()
     )
+    quantityIsEstimate: Mapped[bool] = mapped_column(
+        "quantity_is_estimate", default=False, server_default=false()
+    )
 
 
 class ReceiptScan(Base):
@@ -63,4 +66,19 @@ class ReceiptScan(Base):
     outputTokens: Mapped[int | None] = mapped_column("output_tokens")
     createdAt: Mapped[datetime] = mapped_column(
         "created_at", DateTime(timezone=True), server_default=func.now()
+    )
+
+
+class ProductQuantity(Base):
+    __tablename__ = "product_quantities"
+    __table_args__ = (UniqueConstraint("store_key", "text_key", "quantity", "unit"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    storeKey: Mapped[str] = mapped_column("store_key", Text)
+    textKey: Mapped[str] = mapped_column("text_key", Text, index=True)
+    quantity: Mapped[Decimal] = mapped_column(Numeric(12, 3))
+    unit: Mapped[MeasurementUnit] = mapped_column(measurementUnitType)
+    confirmationCount: Mapped[int] = mapped_column("confirmation_count", default=1, server_default="1")
+    updatedAt: Mapped[datetime] = mapped_column(
+        "updated_at", DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )

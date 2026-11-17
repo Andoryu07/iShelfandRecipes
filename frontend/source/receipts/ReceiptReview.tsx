@@ -1,5 +1,19 @@
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import { Alert, Box, Button, Card, Chip, Stack, TextField, Typography } from "@mui/material";
+import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { saveReceipt } from "../api/receiptsApi";
@@ -16,6 +30,7 @@ import {
   buildSaveItems,
   createManualItem,
   createReviewItem,
+  isUnconfirmedEstimate,
   itemPrice,
   type ReviewItem,
 } from "./reviewItems";
@@ -54,6 +69,7 @@ export function ReceiptReview({
   const sumMatches = difference !== null && Math.abs(difference) <= 1;
 
   const [isDuplicateOpen, setIsDuplicateOpen] = useState(false);
+  const [isEstimateWarningOpen, setIsEstimateWarningOpen] = useState(false);
   const saveMutation = useMutation({
     mutationFn: (saveItems: ReturnType<typeof buildSaveItems>["items"]) =>
       saveReceipt(householdId, {
@@ -84,10 +100,16 @@ export function ReceiptReview({
     setItems((current) => current.map((item) => (item.key === updated.key ? updated : item)));
   }
 
-  function submit() {
+  const estimateCount = items.filter(isUnconfirmedEstimate).length;
+
+  function submit(confirmedEstimates = false) {
     const result = buildSaveItems(items);
     setErrors(result.errors);
     if (Object.keys(result.errors).length > 0 || total === null || items.length === 0 || !purchasedOn) {
+      return;
+    }
+    if (estimateCount > 0 && !confirmedEstimates) {
+      setIsEstimateWarningOpen(true);
       return;
     }
     saveMutation.mutate(result.items);
@@ -116,6 +138,30 @@ export function ReceiptReview({
           )}
         </Alert>
       )}
+      {estimateCount > 0 && (
+        <Alert severity="warning" icon={<WarningAmberRoundedIcon />} sx={{ mt: 1, fontWeight: 600 }}>
+          {texts.receipts.estimatesBanner(estimateCount)}
+        </Alert>
+      )}
+      <Dialog open={isEstimateWarningOpen} onClose={() => setIsEstimateWarningOpen(false)}>
+        <DialogTitle>{texts.receipts.estimatesConfirmTitle}</DialogTitle>
+        <DialogContent>
+          <Typography>{texts.receipts.estimatesConfirmText(estimateCount)}</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setIsEstimateWarningOpen(false);
+              submit(true);
+            }}
+          >
+            {texts.receipts.estimatesSaveAnyway}
+          </Button>
+          <Button variant="contained" onClick={() => setIsEstimateWarningOpen(false)}>
+            {texts.receipts.estimatesCheck}
+          </Button>
+        </DialogActions>
+      </Dialog>
       {isDuplicateOpen && scannedReceipt.possibleDuplicate && (
         <ReceiptDetailDialog
           receiptId={scannedReceipt.possibleDuplicate.receiptId}
@@ -218,7 +264,7 @@ export function ReceiptReview({
             variant="contained"
             size="large"
             sx={{ flex: 1 }}
-            onClick={submit}
+            onClick={() => submit()}
             disabled={saveMutation.isPending || total === null || items.length === 0}
           >
             {texts.receipts.saveWithCount(items.filter((item) => item.addToStock).length)}
