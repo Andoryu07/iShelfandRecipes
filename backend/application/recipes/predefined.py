@@ -8,7 +8,9 @@ from sqlalchemy.orm import Session
 from application.foods import FoodResolver
 from application.models import Recipe, RecipeIngredient
 from application.models.enumerations import DishType, FoodCategory, MeasurementUnit
+from application.nutrition import applyNutrition, nutritionOf
 from application.schemas.foods import NewFoodRequest
+from application.schemas.nutrition import Nutrition
 
 
 class PredefinedFood(BaseModel):
@@ -16,6 +18,8 @@ class PredefinedFood(BaseModel):
     genericName: str
     category: FoodCategory
     baseUnit: MeasurementUnit
+    nutrition: Nutrition | None = None
+    pieceWeightGrams: Decimal | None = None
 
 
 class PredefinedIngredient(BaseModel):
@@ -45,18 +49,31 @@ def loadPredefinedData() -> PredefinedData:
     return PredefinedData.model_validate_json((Path(__file__).parent / "predefined.json").read_text(encoding="utf-8"))
 
 
+def fillPredefinedNutrition(food, predefinedFood: PredefinedFood) -> bool:
+    if nutritionOf(food) is not None or predefinedFood.nutrition is None:
+        return False
+    applyNutrition(food, predefinedFood.nutrition)
+    if food.pieceWeightGrams is None and food.baseUnit == predefinedFood.baseUnit:
+        food.pieceWeightGrams = predefinedFood.pieceWeightGrams
+    return True
+
+
 def copyPredefinedRecipes(session: Session, householdId: int) -> None:
     data = loadPredefinedData()
     foodResolver = FoodResolver(session, householdId)
-    foodsByName = {
-        food.name: foodResolver.resolve(
+    foodsByName = {}
+    for predefinedFood in data.foods:
+        food = foodResolver.resolve(
             None,
             NewFoodRequest(
-                name=food.name, genericName=food.genericName, category=food.category, baseUnit=food.baseUnit
+                name=predefinedFood.name,
+                genericName=predefinedFood.genericName,
+                category=predefinedFood.category,
+                baseUnit=predefinedFood.baseUnit,
             ),
         )
-        for food in data.foods
-    }
+        fillPredefinedNutrition(food, predefinedFood)
+        foodsByName[predefinedFood.name] = food
     for predefined in data.recipes:
         recipe = Recipe(
             householdId=householdId,

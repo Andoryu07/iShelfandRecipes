@@ -2,6 +2,7 @@ import gzip
 import io
 from decimal import Decimal
 
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
@@ -113,3 +114,15 @@ def test_nutritionIsImportedAndCanBeSavedOnFoods(client: TestClient, databaseSes
     assert (cleared["nutrition"], cleared["pieceWeightGrams"]) == (None, 43)
     invalid = client.patch(f"/foods/{created['id']}", json={"nutrition": {"energyKcal": -5}}, headers=headers)
     assert invalid.status_code == 422
+
+
+@pytest.mark.predefinedRecipes
+def test_predefinedFoodsHaveTypicalNutrition(client: TestClient) -> None:
+    headers = registerAndAuthorize(client, "anna@example.com", "Anna")
+    householdId = client.post("/households", json={"name": "Doma"}, headers=headers).json()["id"]
+
+    foods = {food["name"]: food for food in client.get(f"/households/{householdId}/foods", headers=headers).json()}
+
+    assert foods["Eidam"]["nutrition"]["energyKcal"] == 350
+    assert (foods["Vejce"]["nutrition"]["proteins"], foods["Vejce"]["pieceWeightGrams"]) == (12.5, 50)
+    assert all(food["nutrition"] is not None for food in foods.values())
