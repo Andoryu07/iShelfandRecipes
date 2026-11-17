@@ -7,6 +7,7 @@ import {
   parseDecimal,
   toBaseQuantity,
 } from "../stock/quantities";
+import { suggestFood } from "../stock/foodSuggestions";
 import { texts } from "../translations/cs";
 import { moneyText, parseMoney } from "./money";
 
@@ -58,7 +59,7 @@ export function createReviewItem(scanned: ScannedReceiptItem, storageLocationId:
     (scanned.isFood
       ? {
           newFoodName: scanned.name,
-          baseUnit: scanned.unit ?? "piece",
+          baseUnit: scanned.unit ?? suggestFood(scanned.name)?.baseUnit ?? "gram",
           category: scanned.category,
           genericName: scanned.genericName ?? "",
         }

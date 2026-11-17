@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from "react-router";
 import { ApiError } from "../api/apiClient";
 import { joinHouseholdByLink } from "../api/householdsApi";
 import { describeHouseholdError } from "../households/householdErrors";
-import { householdsQueryKey, selectHousehold, useCurrentHousehold } from "../households/useCurrentHousehold";
+import { refreshHouseholds, selectHousehold, useCurrentHousehold } from "../households/useCurrentHousehold";
 import { texts } from "../translations/cs";
 
 export function JoinLinkPage() {
@@ -19,7 +19,7 @@ export function JoinLinkPage() {
     onSuccess: async (joinedHousehold) => {
       window.history.replaceState(null, "", window.location.pathname);
       selectHousehold(joinedHousehold.id);
-      await queryClient.invalidateQueries({ queryKey: householdsQueryKey });
+      await refreshHouseholds(queryClient, joinedHousehold);
       navigate("/overview", { replace: true });
     },
   });

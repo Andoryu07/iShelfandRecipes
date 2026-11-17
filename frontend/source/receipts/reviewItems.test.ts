@@ -119,4 +119,14 @@ describe("review items", () => {
     expect(result.errors[manual.key]).toBe("Zadej cenu, např. 24,90 nebo -20.");
     expect(result.items[1].originalText).toBe("Ruční položka");
   });
+
+  it("gives a new food without a known unit grams unless its kind is counted in pieces", () => {
+    const flour = createReviewItem(scanned({ name: "Mouka speciální", quantity: null, unit: null }), 3);
+    const unknown = createReviewItem(scanned({ name: "Tajemná věc", quantity: null, unit: null }), 3);
+    const eggs = createReviewItem(scanned({ name: "Vejce M", quantity: null, unit: null }), 3);
+
+    expect(
+      [flour.food, unknown.food, eggs.food].map((food) => food && "baseUnit" in food && food.baseUnit),
+    ).toEqual(["gram", "gram", "piece"]);
+  });
 });

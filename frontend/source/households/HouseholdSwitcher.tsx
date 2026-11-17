@@ -13,7 +13,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { BottomSheet } from "../components/BottomSheet";
 import { usePlan } from "../plans/usePlan";
 import { texts } from "../translations/cs";
@@ -21,13 +21,15 @@ import { selectHousehold, useCurrentHousehold } from "./useCurrentHousehold";
 
 export function HouseholdSwitcher() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { household, households } = useCurrentHousehold();
   const plan = usePlan().data;
   const [isOpen, setIsOpen] = useState(false);
   if (!household) {
     return null;
   }
-  const canAdd = plan ? plan.householdCount < plan.householdLimit : true;
+  const canAdd = plan ? households.length < plan.householdLimit : true;
+  const isPremium = plan?.plan === "premium";
   return (
     <>
       <ButtonBase
@@ -51,6 +53,9 @@ export function HouseholdSwitcher() {
                 onClick={() => {
                   selectHousehold(candidate.id);
                   setIsOpen(false);
+                  if (location.pathname === "/households/add") {
+                    navigate("/household");
+                  }
                 }}
                 sx={{ borderRadius: 2 }}
               >
@@ -67,6 +72,7 @@ export function HouseholdSwitcher() {
               </ListItemButton>
             ))}
             <ListItemButton
+              disabled={!canAdd && isPremium}
               onClick={() => {
                 setIsOpen(false);
                 navigate(canAdd ? "/households/add" : "/profile/premium");
@@ -78,7 +84,13 @@ export function HouseholdSwitcher() {
               </ListItemIcon>
               <ListItemText
                 primary={texts.households.add}
-                secondary={canAdd ? null : texts.households.morePremiumShort}
+                secondary={
+                  canAdd
+                    ? null
+                    : isPremium
+                      ? texts.households.premiumLimitReached
+                      : texts.households.morePremiumShort
+                }
               />
             </ListItemButton>
           </List>

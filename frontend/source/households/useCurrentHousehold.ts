@@ -1,6 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, type QueryClient } from "@tanstack/react-query";
 import { useSyncExternalStore } from "react";
 import { listHouseholds } from "../api/householdsApi";
+import type { Household } from "../api/types";
+import { planQueryKey } from "../plans/usePlan";
 import { defaultExpirationWarningDays } from "../stock/expiration";
 
 export const householdsQueryKey = ["households"];
@@ -39,6 +41,20 @@ export function useCurrentHousehold() {
   const households = query.data ?? [];
   const household = households.find((candidate) => candidate.id === selectedId) ?? households[0] ?? null;
   return { ...query, households, household };
+}
+
+export async function refreshHouseholds(queryClient: QueryClient, addedHousehold?: Household) {
+  if (addedHousehold) {
+    queryClient.setQueryData<Household[]>(householdsQueryKey, (current) =>
+      current && !current.some((household) => household.id === addedHousehold.id)
+        ? [...current, addedHousehold]
+        : current,
+    );
+  }
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: householdsQueryKey }),
+    queryClient.invalidateQueries({ queryKey: planQueryKey }),
+  ]);
 }
 
 export function useExpirationWarningDays(): number {

@@ -3,6 +3,7 @@ import { Alert, Button, Card, CardContent, Stack, Typography } from "@mui/materi
 import { useNavigate } from "react-router";
 import { useAuthentication } from "../authentication/AuthenticationContext";
 import { HouseholdSetupForms } from "../households/HouseholdSetupForms";
+import { useCurrentHousehold } from "../households/useCurrentHousehold";
 import { usePlan } from "../plans/usePlan";
 import { texts } from "../translations/cs";
 
@@ -10,6 +11,7 @@ export function AddHouseholdPage() {
   const navigate = useNavigate();
   const { user } = useAuthentication();
   const plan = usePlan().data;
+  const { households } = useCurrentHousehold();
   if (!plan) {
     return null;
   }
@@ -24,11 +26,11 @@ export function AddHouseholdPage() {
       </Alert>
     );
   }
-  const isAtLimit = plan.householdCount >= plan.householdLimit;
+  const isAtLimit = households.length >= plan.householdLimit;
   return (
     <>
       <Typography color="text.secondary" sx={{ mt: 1 }}>
-        {texts.households.addIntroduction(plan.householdCount, plan.householdLimit)}
+        {texts.households.addIntroduction(households.length, plan.householdLimit)}
       </Typography>
       {isAtLimit ? (
         <Card className="section">

@@ -11,7 +11,7 @@ import { JoinRequestsSection } from "../households/JoinRequestsSection";
 import { MembersSection, membersQueryKey } from "../households/MembersSection";
 import { ExportSection } from "../households/ExportSection";
 import { StorageLocationsSection } from "../households/StorageLocationsSection";
-import { householdsQueryKey, useCurrentHousehold } from "../households/useCurrentHousehold";
+import { refreshHouseholds, useCurrentHousehold } from "../households/useCurrentHousehold";
 import { texts } from "../translations/cs";
 
 export function HouseholdPage() {
@@ -32,7 +32,7 @@ function HouseholdDetails({ household, user }: { household: Household; user: Use
     mutationFn: () => removeMember(household.id, user.id),
     onSuccess: async () => {
       queryClient.removeQueries({ queryKey: ["households", household.id] });
-      await queryClient.invalidateQueries({ queryKey: householdsQueryKey });
+      await refreshHouseholds(queryClient);
       navigate("/household/setup", { replace: true });
     },
   });

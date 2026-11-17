@@ -18,7 +18,7 @@ import {
   requestToJoinHousehold,
 } from "../api/householdsApi";
 import type { Household, JoinRequest } from "../api/types";
-import { householdsQueryKey, selectHousehold } from "./useCurrentHousehold";
+import { householdsQueryKey, refreshHouseholds, selectHousehold } from "./useCurrentHousehold";
 import { describeHouseholdError } from "./householdErrors";
 import { texts } from "../translations/cs";
 
@@ -80,9 +80,9 @@ export function HouseholdSetupForms({ onCreated }: HouseholdSetupFormsProps) {
   const createMutation = useMutation({
     mutationFn: createHousehold,
     onSuccess: async (household) => {
-      selectHousehold(household.id);
-      await queryClient.invalidateQueries({ queryKey: householdsQueryKey });
       onCreated(household);
+      selectHousehold(household.id);
+      await refreshHouseholds(queryClient, household);
     },
   });
   const joinRequestQuery = useQuery({
