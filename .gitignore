@@ -6,5 +6,5 @@ __pycache__/
 .idea/
 .vscode/
 node_modules/
-CLAUDE.md
+/CLAUDE.md
 backups/
