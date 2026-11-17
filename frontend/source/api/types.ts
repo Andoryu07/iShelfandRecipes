@@ -426,3 +426,13 @@ export interface ReceiptItemExportRow {
 }
 
 export type QuantitySource = "receipt" | "text" | "history" | "catalog" | "estimate" | "typical";
+
+export interface CatalogProduct {
+  barcode: string;
+  name: string;
+  brand: string | null;
+  quantityText: string | null;
+  quantity: number | null;
+  unit: MeasurementUnit | null;
+  category: FoodCategory;
+}

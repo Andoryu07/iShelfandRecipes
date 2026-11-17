@@ -241,6 +241,15 @@ To send today's notifications right away (ignoring the once-a-day rule):
 docker compose run --rm backend python -m application.jobs.run_daily_jobs --force
 ```
 
+### Food catalog
+
+A shared copy of the Czech products of Open Food Facts (ODbL), imported with `python -m application.catalog.import_open_food_facts` (see `docs/deployment.md`).
+
+| Endpoint | Purpose | Status |
+| --- | --- | --- |
+| `GET /catalog/products?search=mleko madeta&limit=8` | Products whose name and brand contain every word (accents and case ignored), most scanned first; used by the food picker when adding food | done |
+| `GET /catalog/products/{barcode}` | One product by its barcode (for scanning barcodes later) | done |
+
 ### Statistics
 
 | Endpoint | Purpose | Status |

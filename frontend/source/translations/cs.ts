@@ -165,6 +165,9 @@ export const texts = {
     category: "Kategorie",
     quantity: "Množství",
     prefilledFromLastTime: "Předvyplněno podle minula",
+    prefilledFromCatalog: "Předvyplněno podle balení z databáze potravin",
+    yourFoods: "Tvoje potraviny",
+    catalogFoods: "Databáze potravin (Open Food Facts)",
     prefillWarningTitle: "Množství podle minula",
     prefillWarningText: (quantity: string) =>
       `Množství ${quantity} je předvyplněné podle toho, kolik se přidávalo minule. Sedí i tentokrát?`,
@@ -795,6 +798,8 @@ export const texts = {
       "Sdílená evidence potravin pro domácnost: zásoby, účtenky, rezervace a recepty na jednom místě.",
     contact: "Kontakt:",
     contactEmail: "liskaondra2@gmail.com",
+    openFoodFactsCredit: "Databáze potravin obsahuje data z projektu",
+    openFoodFactsLicence: "licence Open Database License, ODbL",
   },
   overview: {
     greeting: (partOfDay: "morning" | "day" | "evening", name: string) =>

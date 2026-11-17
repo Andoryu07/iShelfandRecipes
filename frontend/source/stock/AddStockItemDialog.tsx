@@ -70,7 +70,10 @@ export function AddStockItemDialog({
     enabled: existingFoodId !== null,
     staleTime: 0,
   });
-  const lastQuantity = existingFoodId !== null ? lastQuantityQuery.data?.quantity : null;
+  const catalogProduct = isNewFood(food) ? food.catalogProduct : undefined;
+  const catalogQuantity =
+    catalogProduct?.quantity && catalogProduct.unit === baseUnit ? catalogProduct.quantity : null;
+  const lastQuantity = existingFoodId !== null ? lastQuantityQuery.data?.quantity : catalogQuantity;
   const prefill =
     baseUnit && lastQuantity != null
       ? { ...toQuantityText(lastQuantity, baseUnit), baseQuantity: lastQuantity }
@@ -188,7 +191,13 @@ export function AddStockItemDialog({
               onValueChange={changeQuantityText}
               onUnitSymbolChange={changeUnitSymbol}
               error={quantityError}
-              helperText={isPrefilled ? texts.stock.prefilledFromLastTime : null}
+              helperText={
+                isPrefilled
+                  ? catalogQuantity !== null && existingFoodId === null
+                    ? texts.stock.prefilledFromCatalog
+                    : texts.stock.prefilledFromLastTime
+                  : null
+              }
               inputRef={quantityInputRef}
               showCommonQuantities
             />

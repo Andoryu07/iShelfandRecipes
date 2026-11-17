@@ -1,8 +1,15 @@
 import { Autocomplete, Chip, Stack, TextField, Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { useDeferredValue, useState } from "react";
+import { searchCatalogProducts } from "../api/catalogApi";
 import { searchFoods } from "../api/stockApi";
-import { foodCategories, type Food, type FoodCategory, type MeasurementUnit } from "../api/types";
+import {
+  foodCategories,
+  type CatalogProduct,
+  type Food,
+  type FoodCategory,
+  type MeasurementUnit,
+} from "../api/types";
 import { categoryEmoji } from "../components/CategoryAvatar";
 import { texts } from "../translations/cs";
 import { suggestFood } from "./foodSuggestions";
@@ -12,6 +19,7 @@ export interface NewFood {
   baseUnit: MeasurementUnit;
   category: FoodCategory;
   genericName: string;
+  catalogProduct?: CatalogProduct;
 }
 
 export type FoodChoice = Food | NewFood;
@@ -29,6 +37,30 @@ function labelOf(choice: FoodChoice): string {
 }
 
 const measurementUnits: MeasurementUnit[] = ["gram", "milliliter", "piece"];
+const minimumCatalogSearchLength = 3;
+
+export function catalogFoodName(product: CatalogProduct): string {
+  const hasBrand = product.brand && !product.name.toLowerCase().includes(product.brand.toLowerCase());
+  return hasBrand ? `${product.name} ${product.brand}` : product.name;
+}
+
+export function newFoodFromCatalog(product: CatalogProduct): NewFood {
+  const suggestion = suggestFood(product.name);
+  return {
+    newFoodName: catalogFoodName(product).slice(0, 100),
+    baseUnit: product.unit ?? suggestion?.baseUnit ?? "gram",
+    category: product.category !== "other" ? product.category : (suggestion?.category ?? "other"),
+    genericName: suggestion?.genericName ?? "",
+    catalogProduct: product,
+  };
+}
+
+function optionGroup(option: FoodChoice): string {
+  if (!isNewFood(option)) {
+    return texts.stock.yourFoods;
+  }
+  return option.catalogProduct ? texts.stock.catalogFoods : "";
+}
 
 interface FoodPickerProps {
   householdId: number;
@@ -58,7 +90,17 @@ export function FoodPicker({
     queryFn: () => searchFoods(householdId, searchText),
     enabled: searchText.length > 0,
   });
+  const catalogQuery = useQuery({
+    queryKey: ["catalog", "products", searchText],
+    queryFn: () => searchCatalogProducts(searchText),
+    enabled: allowNewFood && searchText.length >= minimumCatalogSearchLength,
+    staleTime: 5 * 60 * 1000,
+  });
   const foundFoods = foodsQuery.data ?? [];
+  const householdFoodNames = new Set(foundFoods.map((food) => food.name.toLowerCase()));
+  const catalogOptions = (catalogQuery.data ?? [])
+    .map(newFoodFromCatalog)
+    .filter((option) => !householdFoodNames.has(option.newFoodName.toLowerCase()));
   const exactMatch = foundFoods.some((food) => food.name.toLowerCase() === searchText.toLowerCase());
   const suggestion = suggestFood(searchText);
   const newFoodOption: NewFood = {
@@ -68,7 +110,9 @@ export function FoodPicker({
     genericName: newFoodDefaults?.genericName ?? suggestion?.genericName ?? "",
   };
   const options: FoodChoice[] =
-    allowNewFood && searchText && !exactMatch ? [...foundFoods, newFoodOption] : foundFoods;
+    allowNewFood && searchText && !exactMatch
+      ? [...foundFoods, ...catalogOptions, newFoodOption]
+      : [...foundFoods, ...(allowNewFood ? catalogOptions : [])];
 
   function chooseTypedFood() {
     if (!searchText) {
@@ -97,7 +141,14 @@ export function FoodPicker({
       clearOnBlur={false}
       filterOptions={(currentOptions) => currentOptions}
       getOptionLabel={labelOf}
-      getOptionKey={(option) => (isNewFood(option) ? "new" : option.id)}
+      getOptionKey={(option) =>
+        isNewFood(option)
+          ? option.catalogProduct
+            ? `catalog:${option.catalogProduct.barcode}`
+            : "new"
+          : option.id
+      }
+      groupBy={optionGroup}
       isOptionEqualToValue={(option, selected) =>
         isNewFood(option) || isNewFood(selected) ? option === selected : option.id === selected.id
       }
@@ -105,7 +156,20 @@ export function FoodPicker({
         const { key, ...otherProperties } = properties;
         return (
           <li key={key} {...otherProperties}>
-            {isNewFood(option) ? texts.stock.createFoodOption(option.newFoodName) : option.name}
+            {isNewFood(option) && option.catalogProduct ? (
+              <Stack>
+                <Typography>{option.catalogProduct.name}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {[option.catalogProduct.brand, option.catalogProduct.quantityText]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </Typography>
+              </Stack>
+            ) : isNewFood(option) ? (
+              texts.stock.createFoodOption(option.newFoodName)
+            ) : (
+              option.name
+            )}
           </li>
         );
       }}

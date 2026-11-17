@@ -6,6 +6,7 @@ from application.requestContext import currentRequest
 
 from application.routers import (
     authentication,
+    catalog,
     exports,
     foods,
     households,
@@ -61,6 +62,7 @@ application.include_router(recipes.router)
 application.include_router(notifications.router)
 application.include_router(statistics.router)
 application.include_router(exports.router)
+application.include_router(catalog.router)
 application.include_router(shopping_list.router)
 
 

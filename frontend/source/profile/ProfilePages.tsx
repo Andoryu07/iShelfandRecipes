@@ -266,6 +266,13 @@ export function AboutPage() {
           {texts.profile.contact}{" "}
           <Link href={`mailto:${texts.profile.contactEmail}`}>{texts.profile.contactEmail}</Link>
         </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+          {texts.profile.openFoodFactsCredit}{" "}
+          <Link href="https://world.openfoodfacts.org" target="_blank" rel="noopener">
+            Open Food Facts
+          </Link>{" "}
+          ({texts.profile.openFoodFactsLicence})
+        </Typography>
       </CardContent>
     </Card>
   );
