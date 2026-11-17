@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from application.models.enumerations import FoodCategory, MeasurementUnit
 from application.schemas.common import QuantityValue
 from application.schemas.foods import FoodResponse
+from application.schemas.nutrition import Nutrition
 
 
 class CatalogProductResponse(BaseModel):
@@ -13,6 +14,8 @@ class CatalogProductResponse(BaseModel):
     quantity: QuantityValue | None
     unit: MeasurementUnit | None
     category: FoodCategory
+    nutrition: Nutrition | None = None
+    nutriscoreGrade: str | None = None
 
 
 class BarcodeLookupResponse(BaseModel):

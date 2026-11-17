@@ -633,6 +633,41 @@ export const texts = {
             : `za ${days} ${days < 5 ? "dny" : "dní"}`,
     andMore: (count: number) => `a ${count} další`,
   },
+  nutrition: {
+    title: "Výživové hodnoty",
+    summary: (kcal: number, isLiquid: boolean) => `${kcal} kcal na 100 ${isLiquid ? "ml" : "g"}`,
+    per100: (isLiquid: boolean) => `Na 100 ${isLiquid ? "ml" : "g"}`,
+    empty: "Hodnoty zatím nejsou vyplněné. Doplníš je z obalu, nebo se doplní samy u potravin z databáze.",
+    edit: "Upravit hodnoty",
+    fillIn: "Doplnit z obalu",
+    editTitle: (name: string) => `Výživové hodnoty: ${name}`,
+    editHint: (isLiquid: boolean) =>
+      `Opiš hodnoty na 100 ${isLiquid ? "ml" : "g"} z obalu. Prázdná pole zůstanou nevyplněná.`,
+    invalidValue: "Zadej číslo od 0 do 1000.",
+    pieceWeight: "Hmotnost 1 ks (g)",
+    pieceWeightHint: "Podle ní se kusy přepočítají na gramy, třeba u výživy receptu.",
+    pieceWeightValue: (grams: number) => `1 ks váží ${String(grams).replace(".", ",")} g`,
+    nutriscore: (grade: string) => `Nutri-Score ${grade}`,
+    labels: {
+      energyKcal: "Energie",
+      fat: "Tuky",
+      saturatedFat: "z toho nasycené",
+      carbohydrates: "Sacharidy",
+      sugars: "z toho cukry",
+      proteins: "Bílkoviny",
+      fiber: "Vláknina",
+      salt: "Sůl",
+    },
+    recipeTitle: "Výživa na porci",
+    recipeKcal: (kcal: number) => `~${kcal} kcal`,
+    recipeMacros: (proteins: string, fat: string, carbohydrates: string) =>
+      `bílkoviny ${proteins} · tuky ${fat} · sacharidy ${carbohydrates}`,
+    recipeKnown: (known: number, total: number) =>
+      known === total
+        ? "Spočítáno ze všech surovin."
+        : `Spočítáno z ${known} z ${total} surovin, u ostatních hodnoty chybí.`,
+    recipeUnknown: "Výživu nejde spočítat, suroviny zatím nemají vyplněné hodnoty.",
+  },
   barcodes: {
     scan: "Naskenovat čárový kód",
     title: "Čárový kód",

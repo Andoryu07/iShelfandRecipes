@@ -100,7 +100,23 @@ export interface Food {
   icon?: string | null;
   photoUrl?: string | null;
   barcode?: string | null;
+  nutrition?: Nutrition | null;
+  nutriscoreGrade?: NutriscoreGrade | null;
+  pieceWeightGrams?: number | null;
 }
+
+export interface Nutrition {
+  energyKcal?: number | null;
+  fat?: number | null;
+  saturatedFat?: number | null;
+  carbohydrates?: number | null;
+  sugars?: number | null;
+  proteins?: number | null;
+  fiber?: number | null;
+  salt?: number | null;
+}
+
+export type NutriscoreGrade = "a" | "b" | "c" | "d" | "e";
 
 export interface StockItem {
   id: number;
@@ -436,6 +452,8 @@ export interface CatalogProduct {
   quantity: number | null;
   unit: MeasurementUnit | null;
   category: FoodCategory;
+  nutrition?: Nutrition | null;
+  nutriscoreGrade?: NutriscoreGrade | null;
 }
 
 export interface BarcodeLookup {

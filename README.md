@@ -243,7 +243,7 @@ docker compose run --rm backend python -m application.jobs.run_daily_jobs --forc
 
 ### Food catalog
 
-A shared copy of the Czech products of Open Food Facts (ODbL), imported with `python -m application.catalog.import_open_food_facts` (see `docs/deployment.md`).
+A shared copy of the Czech products of Open Food Facts (ODbL), imported with `python -m application.catalog.import_open_food_facts` (see `docs/deployment.md`). Products carry `nutrition` per 100 g or 100 ml (`energyKcal`, `fat`, `saturatedFat`, `carbohydrates`, `sugars`, `proteins`, `fiber`, `salt`) and `nutriscoreGrade` (a-e) when Open Food Facts has them. Foods take the same optional `nutrition`, `nutriscoreGrade` and `pieceWeightGrams` in `POST /households/{id}/foods` and `PATCH /foods/{id}` (`nutrition: null` clears the values); the app sums them per serving on the recipe detail.
 
 | Endpoint | Purpose | Status |
 | --- | --- | --- |

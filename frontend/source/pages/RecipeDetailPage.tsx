@@ -57,6 +57,7 @@ import { formatQuantity } from "../stock/quantities";
 import { stockItemsQueryKey } from "../stock/stockQueries";
 import { texts } from "../translations/cs";
 import { Celebration } from "../components/Celebration";
+import { RecipeNutritionSummary } from "../recipes/RecipeNutritionSummary";
 import { vibrate } from "../components/haptics";
 
 function quantityOf(ingredient: IngredientAvailability, quantity: number): string {
@@ -225,6 +226,7 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
                 )}
               </Typography>
             )}
+          <RecipeNutritionSummary availability={availabilityQuery.data} />
         </>
       )}
 

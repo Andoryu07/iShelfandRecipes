@@ -6,6 +6,7 @@ from application.database import getDatabaseSession
 from application.dependencies import getCurrentUser, getHouseholdMembership, notFoundError
 from application.foods import buildFoodResponse, escapeLikePattern
 from application.models import CatalogProduct, Food, HouseholdMember, User
+from application.nutrition import nutritionOf
 from application.receipts.quantities import normalizeKey
 from application.schemas.catalog import BarcodeLookupResponse, CatalogProductResponse
 
@@ -21,6 +22,8 @@ def buildCatalogProductResponse(product: CatalogProduct) -> CatalogProductRespon
         quantity=product.quantity,
         unit=product.unit,
         category=product.category,
+        nutrition=nutritionOf(product),
+        nutriscoreGrade=product.nutriscoreGrade,
     )
 
 

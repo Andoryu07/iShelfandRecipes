@@ -36,6 +36,7 @@ import type { FoodCategory } from "../api/types";
 import { BottomSheet } from "../components/BottomSheet";
 import { StorageLocationChips } from "../components/StorageLocationChips";
 import { FoodAvatarMenu } from "../foods/FoodAvatarMenu";
+import { NutritionSection } from "../foods/NutritionSection";
 import { useAuthentication } from "../authentication/AuthenticationContext";
 import type { StockItem, StorageLocation } from "../api/types";
 import { describeError } from "../errorMessages";
@@ -395,8 +396,10 @@ export function StockItemDialog({ householdId, stockItem, storageLocations, onCl
           )}
 
           <Divider sx={{ my: 2 }} />
+          {mode === "overview" && <NutritionSection householdId={householdId} food={food} />}
           <Button
             variant="outlined"
+            sx={{ mt: 1 }}
             startIcon={<HistoryRoundedIcon />}
             endIcon={isHistoryOpen ? <ExpandLessRoundedIcon /> : <ExpandMoreRoundedIcon />}
             onClick={() => setIsHistoryOpen(!isHistoryOpen)}

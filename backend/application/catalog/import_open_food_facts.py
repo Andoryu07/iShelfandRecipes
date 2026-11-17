@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from application.catalog.openFoodFacts import ImportedProduct, openDump, productKey, readProducts
 from application.database import getSessionFactory
 from application.models import CatalogProduct
+from application.models.nutrition import nutritionFieldNames
 
 dumpUrl = "https://static.openfoodfacts.org/data/en.openfoodfacts.org.products.csv.gz"
 userAgent = "iShelf/1.0 (household food inventory; Open Food Facts import)"
@@ -32,6 +33,8 @@ def importProducts(session: Session, products: Iterable[ImportedProduct]) -> int
                 "unit": product.unit,
                 "category": product.category.value,
                 "popularity": product.popularity,
+                "nutriscoreGrade": product.nutriscoreGrade,
+                **{name: product.nutrition.get(name) for name in nutritionFieldNames},
             }
         )
         if len(batch) >= batchSize:

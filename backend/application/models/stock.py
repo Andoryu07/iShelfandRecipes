@@ -4,6 +4,7 @@ from decimal import Decimal
 from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, LargeBinary, Numeric, Text, func, text
 from sqlalchemy.orm import Mapped, mapped_column
 
+from application.models.nutrition import NutritionColumns
 from application.models.base import Base, databaseEnum, measurementUnitType
 from application.models.enumerations import (
     MeasurementUnit,
@@ -27,7 +28,7 @@ class StorageLocation(Base):
     icon: Mapped[str | None]
 
 
-class Food(Base):
+class Food(Base, NutritionColumns):
     __tablename__ = "foods"
     __table_args__ = (
         Index("uq_foods_household_id_lower_name", "household_id", text("lower(name)"), unique=True),
@@ -50,6 +51,7 @@ class Food(Base):
     baseUnit: Mapped[MeasurementUnit] = mapped_column(
         "base_unit", measurementUnitType
     )
+    pieceWeightGrams: Mapped[Decimal | None] = mapped_column("piece_weight_grams", Numeric(8, 2))
     barcode: Mapped[str | None] = mapped_column(Text)
     icon: Mapped[str | None]
     photo: Mapped[bytes | None] = mapped_column(LargeBinary, deferred=True)

@@ -249,5 +249,9 @@ export function newFoodRequest(choice: NewFood) {
     category: choice.category,
     baseUnit: choice.baseUnit,
     ...(barcode ? { barcode } : {}),
+    ...(choice.catalogProduct?.nutrition ? { nutrition: choice.catalogProduct.nutrition } : {}),
+    ...(choice.catalogProduct?.nutriscoreGrade
+      ? { nutriscoreGrade: choice.catalogProduct.nutriscoreGrade }
+      : {}),
   };
 }

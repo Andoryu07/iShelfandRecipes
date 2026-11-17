@@ -5,6 +5,7 @@ from sqlalchemy import exists, select, update
 from sqlalchemy.orm import Session
 
 from application.configuration import getConfiguration
+from application.nutrition import nutritionOf
 from application.models import Food, RecipeIngredient, StockItem
 from application.models.enumerations import FoodCategory
 from application.schemas.foods import FoodResponse, NewFoodRequest
@@ -43,6 +44,9 @@ def buildFoodResponse(food: Food) -> FoodResponse:
         icon=food.icon,
         photoUrl=foodPhotoUrl(food),
         barcode=food.barcode,
+        nutrition=nutritionOf(food),
+        nutriscoreGrade=food.nutriscoreGrade,
+        pieceWeightGrams=float(food.pieceWeightGrams) if food.pieceWeightGrams is not None else None,
     )
 
 

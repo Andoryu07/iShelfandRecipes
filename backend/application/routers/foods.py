@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from application.database import getDatabaseSession
 from application.dependencies import getAccessibleFood, getCurrentUser, getHouseholdMembership, notFoundError
 from application.plans import limitsOf
+from application.nutrition import applyNutrition
 from application.foods import assignBarcode, buildFoodResponse, escapeLikePattern, foodIsInUse, foodPhotoSignature
 from application.models import Food, HouseholdMember, StockItem, StockMovement, User
 from application.models.enumerations import StockMovementReason
@@ -51,6 +52,9 @@ def createFood(
         baseUnit=request.baseUnit,
         icon=request.icon,
     )
+    applyNutrition(food, request.nutrition)
+    food.nutriscoreGrade = request.nutriscoreGrade
+    food.pieceWeightGrams = request.pieceWeightGrams
     session.add(food)
     if request.barcode:
         session.flush()
@@ -84,6 +88,12 @@ def updateFood(
         food.icon = request.icon
     if "barcode" in request.model_fields_set:
         assignBarcode(session, food, request.barcode)
+    if "nutrition" in request.model_fields_set:
+        applyNutrition(food, request.nutrition)
+    if "nutriscoreGrade" in request.model_fields_set:
+        food.nutriscoreGrade = request.nutriscoreGrade
+    if "pieceWeightGrams" in request.model_fields_set:
+        food.pieceWeightGrams = request.pieceWeightGrams
     if request.category is not None:
         food.category = request.category.value
     try:

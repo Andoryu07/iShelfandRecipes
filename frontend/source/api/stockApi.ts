@@ -1,5 +1,14 @@
 import { apiRequest } from "./apiClient";
-import type { Food, FoodCategory, MeasurementUnit, Reservation, StockItem, StockMovement } from "./types";
+import type {
+  Food,
+  FoodCategory,
+  MeasurementUnit,
+  NutriscoreGrade,
+  Nutrition,
+  Reservation,
+  StockItem,
+  StockMovement,
+} from "./types";
 
 export function searchFoods(householdId: number, search: string): Promise<Food[]> {
   return apiRequest<Food[]>(`/households/${householdId}/foods?${new URLSearchParams({ search })}`);
@@ -17,6 +26,8 @@ export function createFood(
     category: FoodCategory;
     baseUnit: MeasurementUnit;
     barcode?: string | null;
+    nutrition?: Nutrition | null;
+    nutriscoreGrade?: NutriscoreGrade | null;
   },
 ): Promise<Food> {
   return apiRequest<Food>(`/households/${householdId}/foods`, { method: "POST", body: food });
@@ -104,6 +115,8 @@ export function updateFood(
     category?: FoodCategory;
     icon?: string | null;
     barcode?: string | null;
+    nutrition?: Nutrition | null;
+    pieceWeightGrams?: number | null;
   },
 ): Promise<Food> {
   return apiRequest<Food>(`/foods/${foodId}`, { method: "PATCH", body: changes });

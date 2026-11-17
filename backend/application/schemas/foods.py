@@ -4,6 +4,7 @@ from pydantic import BaseModel, StringConstraints
 
 from application.models.enumerations import FoodCategory, MeasurementUnit
 from application.schemas.common import FoodName, Icon, QuantityValue
+from application.schemas.nutrition import NutriscoreGrade, Nutrition, PieceWeight
 
 
 OptionalName = Annotated[str, StringConstraints(strip_whitespace=True, max_length=100)]
@@ -18,6 +19,9 @@ class CreateFoodRequest(BaseModel):
     baseUnit: MeasurementUnit
     icon: Icon | None = None
     barcode: Barcode | None = None
+    nutrition: Nutrition | None = None
+    nutriscoreGrade: NutriscoreGrade | None = None
+    pieceWeightGrams: PieceWeight | None = None
 
 
 class UpdateFoodRequest(BaseModel):
@@ -27,6 +31,9 @@ class UpdateFoodRequest(BaseModel):
     baseUnit: MeasurementUnit | None = None
     icon: Icon | None = None
     barcode: Barcode | None = None
+    nutrition: Nutrition | None = None
+    nutriscoreGrade: NutriscoreGrade | None = None
+    pieceWeightGrams: PieceWeight | None = None
 
 
 class FoodResponse(BaseModel):
@@ -38,6 +45,9 @@ class FoodResponse(BaseModel):
     icon: str | None
     photoUrl: str | None = None
     barcode: str | None = None
+    nutrition: Nutrition | None = None
+    nutriscoreGrade: str | None = None
+    pieceWeightGrams: float | None = None
 
 
 class LastAddedQuantityResponse(BaseModel):

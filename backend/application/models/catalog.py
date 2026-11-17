@@ -6,9 +6,10 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from application.models.base import Base, measurementUnitType
 from application.models.enumerations import MeasurementUnit
+from application.models.nutrition import NutritionColumns
 
 
-class CatalogProduct(Base):
+class CatalogProduct(Base, NutritionColumns):
     __tablename__ = "catalog_products"
 
     id: Mapped[int] = mapped_column(primary_key=True)

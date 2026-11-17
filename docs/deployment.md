@@ -412,7 +412,7 @@ The app sends e-mails for password reset, after a password change and when someo
 
 ## 14. Food database (Open Food Facts)
 
-The add-food sheet suggests products from a local copy of the Czech products of [Open Food Facts](https://world.openfoodfacts.org) (licence ODbL, credited in Profil → O aplikaci). The import streams the whole dump (about 1.5 GB compressed), keeps only products sold in the Czech Republic (tens of thousands) and replaces the `catalog_products` table in one transaction, so the app keeps working meanwhile. Nothing big is stored on the disk. It takes roughly 10-30 minutes; run it once after deploying and then about once a month:
+The add-food sheet suggests products from a local copy of the Czech products of [Open Food Facts](https://world.openfoodfacts.org) (licence ODbL, credited in Profil → O aplikaci). The import streams the whole dump (about 1.5 GB compressed), keeps only products sold in the Czech Republic (tens of thousands) and replaces the `catalog_products` table in one transaction, so the app keeps working meanwhile. Nothing big is stored on the disk. It takes roughly 10-30 minutes; run it once after deploying (and again after updates that add new product data, such as the nutrition values) and then about once a month:
 
 ```
 cd ~/iShelfandRecipes && docker compose -f docker-compose.production.yml exec backend python -m application.catalog.import_open_food_facts

@@ -2,7 +2,7 @@ import csv
 import gzip
 import io
 from collections.abc import Iterable, Iterator
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from decimal import Decimal
 
 from application.models.enumerations import FoodCategory, MeasurementUnit
@@ -44,6 +44,8 @@ class ImportedProduct:
     unit: MeasurementUnit | None
     category: FoodCategory
     popularity: int
+    nutrition: dict[str, Decimal | None] = field(default_factory=dict)
+    nutriscoreGrade: str | None = None
 
 
 def categoryFromTags(tags: str) -> FoodCategory:
@@ -52,6 +54,37 @@ def categoryFromTags(tags: str) -> FoodCategory:
         if tagSet.intersection(ruleTags):
             return category
     return FoodCategory.other
+
+
+nutritionColumns = {
+    "energyKcal": "energy-kcal_100g",
+    "fat": "fat_100g",
+    "saturatedFat": "saturated-fat_100g",
+    "carbohydrates": "carbohydrates_100g",
+    "sugars": "sugars_100g",
+    "proteins": "proteins_100g",
+    "fiber": "fiber_100g",
+    "salt": "salt_100g",
+}
+
+
+def nutritionValue(text: str | None) -> Decimal | None:
+    try:
+        value = Decimal((text or "").strip())
+    except ArithmeticError:
+        return None
+    if not value.is_finite() or value < 0 or value > 1000:
+        return None
+    return value.quantize(Decimal("0.01"))
+
+
+def nutritionFromRow(row: dict[str, str]) -> dict[str, Decimal | None]:
+    return {name: nutritionValue(row.get(column)) for name, column in nutritionColumns.items()}
+
+
+def nutriscoreGradeOf(text: str | None) -> str | None:
+    grade = (text or "").strip().lower()
+    return grade if grade in ("a", "b", "c", "d", "e") else None
 
 
 def cleanText(text: str, maximumLength: int) -> str | None:
@@ -82,6 +115,8 @@ def productFromRow(row: dict[str, str]) -> ImportedProduct | None:
         unit=parsed[1] if parsed else None,
         category=categoryFromTags(row.get("categories_tags") or ""),
         popularity=popularity,
+        nutrition=nutritionFromRow(row),
+        nutriscoreGrade=nutriscoreGradeOf(row.get("nutriscore_grade")),
     )
 
 
