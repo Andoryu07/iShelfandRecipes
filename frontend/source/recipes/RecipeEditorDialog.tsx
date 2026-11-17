@@ -217,6 +217,15 @@ export function RecipeEditorDialog({
                 }
                 label={texts.recipes.isOptional}
               />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={row.isForFrying}
+                    onChange={(event) => updateRow({ ...row, isForFrying: event.target.checked })}
+                  />
+                }
+                label={texts.recipes.isForFrying}
+              />
             </Stack>
           );
         })}

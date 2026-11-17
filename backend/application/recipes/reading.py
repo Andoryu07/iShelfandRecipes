@@ -21,6 +21,11 @@ class ExtractedIngredient(BaseModel):
     )
     unit: MeasurementUnit | None = Field(description="Base unit of quantity, null if the quantity is null.")
     isOptional: bool = Field(description="True for 'podle chuti', 'na ozdobu', 'případně' and similar.")
+    isForFrying: bool = Field(
+        default=False,
+        description="True for fat or oil used only to fry or deep-fry in, for example 'olej na smažení', "
+        "'sádlo na smažení', most of which stays in the pan.",
+    )
 
 
 class ExtractedRecipe(BaseModel):

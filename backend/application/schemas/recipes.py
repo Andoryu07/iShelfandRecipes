@@ -19,6 +19,7 @@ class RecipeIngredientRequest(BaseModel):
     quantity: PositiveQuantity
     acceptsAnyOfKind: bool = True
     isOptional: bool = False
+    isForFrying: bool = False
 
     @model_validator(mode="after")
     def checkFood(self) -> Self:
@@ -55,6 +56,7 @@ class RecipeIngredientResponse(BaseModel):
     quantity: QuantityValue
     acceptsAnyOfKind: bool
     isOptional: bool
+    isForFrying: bool = False
 
 
 class RecipeSummaryResponse(BaseModel):
@@ -83,6 +85,7 @@ class IngredientAvailabilityResponse(BaseModel):
     food: FoodResponse
     acceptsAnyOfKind: bool
     isOptional: bool
+    isForFrying: bool = False
     requiredQuantity: QuantityValue
     availableQuantity: QuantityValue
     missingQuantity: QuantityValue
@@ -149,6 +152,7 @@ class ScannedIngredient(BaseModel):
     quantity: QuantityValue | None
     unit: MeasurementUnit | None
     isOptional: bool
+    isForFrying: bool = False
     suggestedFood: FoodResponse | None
 
 

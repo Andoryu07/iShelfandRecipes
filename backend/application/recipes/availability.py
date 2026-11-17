@@ -161,6 +161,7 @@ class AvailabilityCalculator:
                     food=buildFoodResponse(food),
                     acceptsAnyOfKind=ingredient.acceptsAnyOfKind,
                     isOptional=ingredient.isOptional,
+                    isForFrying=ingredient.isForFrying,
                     requiredQuantity=required,
                     availableQuantity=available,
                     missingQuantity=max(required - available, Decimal(0)),

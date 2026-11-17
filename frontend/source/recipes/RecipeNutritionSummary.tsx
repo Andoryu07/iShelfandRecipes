@@ -29,6 +29,7 @@ export function RecipeNutritionSummary({ availability }: { availability: RecipeA
       </Typography>
       <Typography variant="body2" color="text.secondary">
         {texts.nutrition.recipeKnown(nutrition.knownCount, nutrition.ingredientCount)}
+        {nutrition.hasFryingFat ? ` ${texts.nutrition.fryingNote}` : ""}
       </Typography>
     </>
   );

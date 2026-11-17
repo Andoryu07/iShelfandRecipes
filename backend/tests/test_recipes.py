@@ -489,3 +489,28 @@ def test_expiringIngredientsFollowTheUsersWarningDays(client: TestClient) -> Non
     )
     assert client.get(url, headers=kitchen.anna).json()[0]["expiringIngredientCount"] == 2
     assert client.get(url, headers=petr).json()[0]["expiringIngredientCount"] == 2
+
+
+def test_ingredientCanBeMarkedAsFryingFat(client: TestClient) -> None:
+    kitchen = Kitchen(client)
+    oil = kitchen.food("Olej", "Olej")
+    flour = kitchen.food("Mouka", "Mouka", baseUnit="gram")
+
+    created = kitchen.recipe(
+        [{"foodId": oil, "quantity": 500, "isForFrying": True}, {"foodId": flour, "quantity": 100}]
+    ).json()
+
+    assert {item["food"]["name"]: item["isForFrying"] for item in created["ingredients"]} == {"Olej": True, "Mouka": False}
+    frying = {item["food"]["name"]: item["isForFrying"] for item in kitchen.availability(created["id"])["ingredients"]}
+    assert frying == {"Olej": True, "Mouka": False}
+
+
+@pytest.mark.predefinedRecipes
+def test_predefinedFriedCheeseFriesInOil(client: TestClient) -> None:
+    kitchen = Kitchen(client)
+    recipes = client.get(f"/households/{kitchen.householdId}/recipes", headers=kitchen.anna).json()
+    friedCheese = next(recipe for recipe in recipes if recipe["name"] == "Smažený sýr")
+
+    detail = client.get(f"/recipes/{friedCheese['id']}", headers=kitchen.anna).json()
+
+    assert {item["food"]["name"]: item["isForFrying"] for item in detail["ingredients"]}["Olej slunečnicový"] is True

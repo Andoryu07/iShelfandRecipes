@@ -430,6 +430,8 @@ export const texts = {
     removeIngredient: "Odebrat surovinu",
     acceptsAnyOfKind: "Stačí jakákoli stejného druhu",
     isOptional: "Podle chuti (nepovinné)",
+    isForFrying: "Na smažení (do výživy jen 10 %)",
+    forFrying: "na smažení",
     needsFoodAndQuantity: "U každé suroviny vyber potravinu a zadej množství.",
     duplicateFood: "Každá potravina může být v receptu jen jednou.",
     predefined: "předpřipravený",
@@ -682,6 +684,7 @@ export const texts = {
       known === total
         ? "Spočítáno ze všech surovin."
         : `Spočítáno z ${known} z ${total} surovin, u ostatních hodnoty chybí.`,
+    fryingNote: "Tuk na smažení se počítá jen z 10 %, kolik ho jídlo nasaje.",
     recipeUnknown: "Výživu nejde spočítat, suroviny zatím nemají vyplněné hodnoty.",
   },
   barcodes: {

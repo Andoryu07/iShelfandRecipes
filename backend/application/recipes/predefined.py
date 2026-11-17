@@ -27,6 +27,7 @@ class PredefinedIngredient(BaseModel):
     quantity: Decimal
     acceptsAnyOfKind: bool = True
     isOptional: bool = False
+    isForFrying: bool = False
 
 
 class PredefinedRecipe(BaseModel):
@@ -95,6 +96,7 @@ def copyPredefinedRecipes(session: Session, householdId: int) -> None:
                     quantity=ingredient.quantity,
                     acceptsAnyOfKind=ingredient.acceptsAnyOfKind,
                     isOptional=ingredient.isOptional,
+                    isForFrying=ingredient.isForFrying,
                 )
             )
     session.flush()

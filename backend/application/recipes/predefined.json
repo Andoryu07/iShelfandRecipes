@@ -94,7 +94,7 @@
         {"food": "Vejce", "quantity": 2},
         {"food": "Mouka hladká", "quantity": 60},
         {"food": "Strouhanka", "quantity": 150},
-        {"food": "Olej slunečnicový", "quantity": 500},
+        {"food": "Olej slunečnicový", "quantity": 500, "isForFrying": true},
         {"food": "Brambory", "quantity": 800},
         {"food": "Tatarská omáčka", "quantity": 200, "isOptional": true},
         {"food": "Sůl", "quantity": 10, "isOptional": true}

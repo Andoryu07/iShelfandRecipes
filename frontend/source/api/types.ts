@@ -194,6 +194,7 @@ export interface ScannedIngredient {
   quantity: number | null;
   unit: MeasurementUnit | null;
   isOptional: boolean;
+  isForFrying?: boolean;
   suggestedFood: Food | null;
 }
 
@@ -338,6 +339,7 @@ export interface RecipeIngredient {
   quantity: number;
   acceptsAnyOfKind: boolean;
   isOptional: boolean;
+  isForFrying?: boolean;
 }
 
 export interface Recipe extends RecipeSummary {
@@ -350,6 +352,7 @@ export interface IngredientAvailability {
   food: Food;
   acceptsAnyOfKind: boolean;
   isOptional: boolean;
+  isForFrying?: boolean;
   requiredQuantity: number;
   availableQuantity: number;
   missingQuantity: number;
@@ -380,6 +383,7 @@ export interface RecipeIngredientRequest {
   quantity: number;
   acceptsAnyOfKind: boolean;
   isOptional: boolean;
+  isForFrying: boolean;
 }
 
 export interface RecipeRequest {

@@ -16,6 +16,7 @@ export interface IngredientRow {
   unitSymbol: string;
   acceptsAnyOfKind: boolean;
   isOptional: boolean;
+  isForFrying: boolean;
 }
 
 export interface RecipeFormValues {
@@ -39,6 +40,7 @@ export function emptyIngredientRow(): IngredientRow {
     unitSymbol: "g",
     acceptsAnyOfKind: true,
     isOptional: false,
+    isForFrying: false,
   };
 }
 
@@ -72,6 +74,7 @@ export function formValuesFromRecipe(recipe: Recipe | null): RecipeFormValues {
         unitSymbol: unit.symbol,
         acceptsAnyOfKind: ingredient.acceptsAnyOfKind,
         isOptional: ingredient.isOptional,
+        isForFrying: ingredient.isForFrying ?? false,
       };
     }),
   };
@@ -113,6 +116,7 @@ export function buildRecipeRequest(values: RecipeFormValues): {
       quantity,
       acceptsAnyOfKind: row.acceptsAnyOfKind,
       isOptional: row.isOptional,
+      isForFrying: row.isForFrying,
     });
   }
   return {
@@ -155,6 +159,7 @@ export function formValuesFromScan(scan: ScannedRecipe): RecipeFormValues {
         unitSymbol: display?.unitSymbol ?? displayUnits[baseUnit][0].symbol,
         acceptsAnyOfKind: true,
         isOptional: ingredient.isOptional,
+        isForFrying: ingredient.isForFrying ?? false,
       };
     }),
   };

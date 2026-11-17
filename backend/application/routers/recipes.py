@@ -88,6 +88,7 @@ def buildRecipeResponse(
                 quantity=ingredient.quantity,
                 acceptsAnyOfKind=ingredient.acceptsAnyOfKind,
                 isOptional=ingredient.isOptional,
+                isForFrying=ingredient.isForFrying,
             )
             for ingredient, food in ingredients
         ],
@@ -145,6 +146,7 @@ def replaceIngredients(session: Session, recipe: Recipe, requests: list[RecipeIn
                 quantity=request.quantity,
                 acceptsAnyOfKind=request.acceptsAnyOfKind,
                 isOptional=request.isOptional,
+                isForFrying=request.isForFrying,
             )
         )
     session.flush()

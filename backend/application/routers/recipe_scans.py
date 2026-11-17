@@ -61,6 +61,7 @@ def buildScanResponse(
                 quantity=quantity,
                 unit=unit,
                 isOptional=ingredient.isOptional,
+                isForFrying=ingredient.isForFrying,
                 suggestedFood=buildFoodResponse(suggestedFood) if suggestedFood else None,
             )
         )

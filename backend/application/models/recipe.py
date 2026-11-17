@@ -42,6 +42,7 @@ class RecipeIngredient(Base):
     quantity: Mapped[Decimal] = mapped_column(Numeric(12, 3))
     acceptsAnyOfKind: Mapped[bool] = mapped_column("accepts_any_of_kind", default=True, server_default=true())
     isOptional: Mapped[bool] = mapped_column("is_optional", default=False, server_default=false())
+    isForFrying: Mapped[bool] = mapped_column("is_for_frying", default=False, server_default=false())
 
 
 class RecipeCooking(Base):

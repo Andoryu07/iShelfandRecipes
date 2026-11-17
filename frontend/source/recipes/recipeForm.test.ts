@@ -44,7 +44,14 @@ describe("recipe form", () => {
         dishType: null,
         isVegetarian: false,
         ingredients: [
-          { foodId: 3, newFood: null, quantity: 1500, acceptsAnyOfKind: false, isOptional: false },
+          {
+            foodId: 3,
+            newFood: null,
+            quantity: 1500,
+            acceptsAnyOfKind: false,
+            isOptional: false,
+            isForFrying: false,
+          },
         ],
       },
     });
@@ -71,6 +78,7 @@ describe("recipe form", () => {
         quantity: 500,
         acceptsAnyOfKind: true,
         isOptional: false,
+        isForFrying: false,
       },
     ]);
     expect(request.preparationMinutes).toBeNull();
@@ -110,6 +118,7 @@ describe("recipe from a photo", () => {
           quantity: 1500,
           unit: "gram",
           isOptional: false,
+          isForFrying: false,
           suggestedFood: flour,
         },
         {
@@ -120,6 +129,7 @@ describe("recipe from a photo", () => {
           quantity: 2,
           unit: "piece",
           isOptional: false,
+          isForFrying: false,
           suggestedFood: null,
         },
         {
@@ -130,6 +140,7 @@ describe("recipe from a photo", () => {
           quantity: null,
           unit: null,
           isOptional: true,
+          isForFrying: false,
           suggestedFood: null,
         },
       ],

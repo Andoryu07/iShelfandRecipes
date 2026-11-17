@@ -13,10 +13,13 @@ export const nutritionKeys = [
 
 export type NutritionKey = (typeof nutritionKeys)[number];
 
+export const fryingAbsorbedShare = 0.1;
+
 export interface RecipeNutrition {
   perServing: Record<NutritionKey, number>;
   knownCount: number;
   ingredientCount: number;
+  hasFryingFat: boolean;
 }
 
 export function hasNutrition(nutrition: Nutrition | null | undefined): nutrition is Nutrition {
@@ -41,8 +44,9 @@ export function recipeNutrition(ingredients: IngredientAvailability[], servings:
       continue;
     }
     knownCount += 1;
+    const countedGrams = ingredient.isForFrying ? grams * fryingAbsorbedShare : grams;
     for (const key of nutritionKeys) {
-      totals[key] += ((nutrition[key] ?? 0) * grams) / 100;
+      totals[key] += ((nutrition[key] ?? 0) * countedGrams) / 100;
     }
   }
   const divisor = Math.max(servings, 1);
@@ -50,7 +54,8 @@ export function recipeNutrition(ingredients: IngredientAvailability[], servings:
     NutritionKey,
     number
   >;
-  return { perServing, knownCount, ingredientCount: required.length };
+  const hasFryingFat = required.some((ingredient) => ingredient.isForFrying);
+  return { perServing, knownCount, ingredientCount: required.length, hasFryingFat };
 }
 
 export function formatNutritionValue(key: NutritionKey, value: number): string {

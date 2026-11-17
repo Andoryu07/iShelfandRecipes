@@ -6,11 +6,13 @@ function ingredient(
   food: Partial<Food>,
   requiredQuantity: number,
   isOptional = false,
+  isForFrying = false,
 ): IngredientAvailability {
   return {
     food: { id: 1, name: "x", genericName: null, category: "other", baseUnit: "gram", ...food },
     requiredQuantity,
     isOptional,
+    isForFrying,
   } as IngredientAvailability;
 }
 
@@ -34,5 +36,19 @@ describe("recipeNutrition", () => {
     expect(result.ingredientCount).toBe(4);
     expect(result.perServing.energyKcal).toBe(425);
     expect(result.perServing.proteins).toBe(16);
+  });
+
+  it("counts only a tenth of frying fat", () => {
+    const result = recipeNutrition(
+      [
+        ingredient({ baseUnit: "milliliter", nutrition: { energyKcal: 828, fat: 92 } }, 500, false, true),
+        ingredient({ nutrition: { energyKcal: 350, fat: 26 } }, 100),
+      ],
+      1,
+    );
+
+    expect(result.perServing.energyKcal).toBe(764);
+    expect(result.perServing.fat).toBe(72);
+    expect(result.hasFryingFat).toBe(true);
   });
 });

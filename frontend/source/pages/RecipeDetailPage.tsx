@@ -332,6 +332,7 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
                   ingredient.reservedForRecipe > 0
                     ? texts.recipes.statusReserved(quantityOf(ingredient, ingredient.reservedForRecipe))
                     : null,
+                  ingredient.isForFrying ? texts.recipes.forFrying : null,
                   ingredient.estimatedPrice !== null ? formatMoney(ingredient.estimatedPrice) : null,
                 ]
                   .filter(Boolean)
