@@ -33,6 +33,8 @@ def saveReceipt(session: Session, householdId: int, user: User, request: SaveRec
         totalAmount=request.totalAmount,
         itemsSumMatchesTotal=abs(itemsSum - request.totalAmount) <= sumTolerance,
         processingMilliseconds=request.processingMilliseconds,
+        receiptNumber=request.receiptNumber or None,
+        fileHash=request.fileHash,
     )
     session.add(receipt)
     session.flush()

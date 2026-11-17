@@ -5,6 +5,7 @@ from decimal import ROUND_HALF_UP, Decimal
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from application.receipts.duplicates import findPossibleDuplicate
 from application.foods import buildFoodResponse
 from application.models import Food, Receipt, ReceiptItem
 from application.models.enumerations import FoodCategory
@@ -124,16 +125,26 @@ def buildScannedItem(item: dict, suggestedFood: Food | None) -> ScannedReceiptIt
     return ScannedReceiptItem(**fields, suggestedFood=buildFoodResponse(suggestedFood) if suggestedFood else None)
 
 
-def buildScanResponse(session: Session, householdId: int, result: ReceiptReadingResult) -> ScanReceiptResponse:
+def buildScanResponse(
+    session: Session, householdId: int, result: ReceiptReadingResult, fileHash: str | None = None
+) -> ScanReceiptResponse:
     receipt: ExtractedReceipt = result.receipt
     expandedItems = [expanded for item in receipt.items for expanded in expandItem(item)]
     rememberEarlierCorrections(expandedItems, findEarlierItems(session, householdId, receipt.storeName))
     matchingFoods = findMatchingFoods(session, householdId, {item["name"] for item in expandedItems if item["name"]})
     itemsSum = sum((toMoney(item.price) for item in receipt.items), Decimal("0.00"))
     totalAmount = toMoney(receipt.totalAmount) if receipt.totalAmount is not None else None
+    storeName = formatStoreName(receipt.storeName)
+    purchasedOn = parsePurchaseDate(receipt.purchasedOn)
+    receiptNumber = (receipt.receiptNumber or "").strip()[:50] or None
     return ScanReceiptResponse(
-        storeName=formatStoreName(receipt.storeName),
-        purchasedOn=parsePurchaseDate(receipt.purchasedOn),
+        storeName=storeName,
+        purchasedOn=purchasedOn,
+        receiptNumber=receiptNumber,
+        fileHash=fileHash,
+        possibleDuplicate=findPossibleDuplicate(
+            session, householdId, receiptNumber, storeName, purchasedOn, totalAmount
+        ),
         totalAmount=totalAmount,
         itemsSum=itemsSum,
         itemsSumMatchesTotal=totalAmount is not None and abs(itemsSum - totalAmount) <= sumTolerance,

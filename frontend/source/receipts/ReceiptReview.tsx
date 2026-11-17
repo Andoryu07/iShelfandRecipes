@@ -4,6 +4,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { saveReceipt } from "../api/receiptsApi";
 import type { ScannedReceipt, StorageLocation } from "../api/types";
+import { ReceiptDetailDialog } from "./ReceiptDetailDialog";
+import { describeSavedReceipt } from "./savedReceipts";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
 import { describeError } from "../errorMessages";
 import { localDateText } from "../stock/expiration";
@@ -51,6 +53,7 @@ export function ReceiptReview({
   const difference = total === null ? null : sumMoney([itemsSum, -total]);
   const sumMatches = difference !== null && Math.abs(difference) <= 1;
 
+  const [isDuplicateOpen, setIsDuplicateOpen] = useState(false);
   const saveMutation = useMutation({
     mutationFn: (saveItems: ReturnType<typeof buildSaveItems>["items"]) =>
       saveReceipt(householdId, {
@@ -58,6 +61,8 @@ export function ReceiptReview({
         purchasedOn,
         totalAmount: total!,
         processingMilliseconds: scannedReceipt.processingMilliseconds,
+        receiptNumber: scannedReceipt.receiptNumber ?? null,
+        fileHash: scannedReceipt.fileHash ?? null,
         items: saveItems,
       }),
     onSuccess: async () => {
@@ -95,6 +100,28 @@ export function ReceiptReview({
       <Typography variant="h5" component="h1">
         {texts.receipts.reviewTitle}
       </Typography>
+      {scannedReceipt.possibleDuplicate && (
+        <Alert
+          severity="warning"
+          sx={{ mt: 1 }}
+          action={
+            <Button color="inherit" size="small" onClick={() => setIsDuplicateOpen(true)}>
+              {texts.receipts.showSavedReceipt}
+            </Button>
+          }
+        >
+          {texts.receipts.possibleDuplicate(
+            scannedReceipt.possibleDuplicate.matchedBy,
+            describeSavedReceipt(scannedReceipt.possibleDuplicate),
+          )}
+        </Alert>
+      )}
+      {isDuplicateOpen && scannedReceipt.possibleDuplicate && (
+        <ReceiptDetailDialog
+          receiptId={scannedReceipt.possibleDuplicate.receiptId}
+          onClose={() => setIsDuplicateOpen(false)}
+        />
+      )}
       <TextField
         label={texts.receipts.storeName}
         value={storeName}

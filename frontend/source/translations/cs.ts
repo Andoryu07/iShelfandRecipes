@@ -209,6 +209,15 @@ export const texts = {
     unknownUser: "bývalý člen",
   },
   receipts: {
+    showSavedReceipt: "Zobrazit",
+    possibleDuplicate: (matchedBy: "file" | "receiptNumber" | "storeDateTotal", description: string) =>
+      matchedBy === "receiptNumber"
+        ? `Účtenka se stejným číslem už je uložená (${description}). Zkontroluj, jestli ji neukládáš podruhé.`
+        : `Účtenka se stejným obchodem, datem a částkou už je uložená (${description}). Může jít o dva stejné nákupy.`,
+    sameFileTitle: "Tahle účtenka už je načtená",
+    sameFileText: (description: string) =>
+      `Stejný soubor už je uložený jako účtenka ${description}. Když ho načteš znovu, spotřebuje se jeden sken.`,
+    scanAnyway: "Přesto načíst",
     sharedTitle: "Přidat potraviny z této účtenky?",
     sharedText: "Účtenku přečteme a položky si před uložením zkontroluješ.",
     sharedConfirm: "Načíst účtenku",

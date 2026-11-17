@@ -303,3 +303,77 @@ def test_sameStoreCorrectionWinsOverAnotherStore(client: TestClient, fakeReader:
     )
 
     assert household.scan().json()["items"][0]["suggestedFood"]["id"] == albertFood["id"]
+
+
+def saveFromScan(household: ScanningHousehold, scanned: dict) -> dict:
+    body = {
+        "storeName": scanned["storeName"],
+        "purchasedOn": scanned["purchasedOn"],
+        "totalAmount": scanned["totalAmount"],
+        "receiptNumber": scanned["receiptNumber"],
+        "fileHash": scanned["fileHash"],
+        "items": [{"originalText": "MLEKO", "name": "Mléko", "category": "dairy", "price": scanned["totalAmount"]}],
+    }
+    response = household.client.post(f"/households/{household.id}/receipts", json=body, headers=household.headers)
+    assert response.status_code == 201
+    return response.json()
+
+
+def test_sameFileIsRecognisedBeforeReading(client: TestClient, fakeReader: FakeReceiptReader) -> None:
+    household = ScanningHousehold(client)
+    saved = saveFromScan(household, household.scan().json())
+
+    again = household.scan()
+
+    assert again.status_code == 409
+    assert again.json()["detail"]["code"] == "sameFile"
+    assert again.json()["detail"]["receipt"]["receiptId"] == saved["id"]
+    assert len(fakeReader.calls) == 1
+    forced = client.post(
+        f"/households/{household.id}/receipts/scan?ignoreSameFile=true",
+        files={"file": ("receipt.jpg", fakeImage, "image/jpeg")},
+        headers=household.headers,
+    )
+    assert forced.status_code == 200
+    assert len(fakeReader.calls) == 2
+    assert household.scan(b"\xff\xd8\xff another photo").status_code == 200
+
+
+def test_receiptNumberMarksAPossibleDuplicate(client: TestClient, fakeReader: FakeReceiptReader) -> None:
+    household = ScanningHousehold(client)
+    fakeReader.receipt = fakeReader.receipt.model_copy(update={"receiptNumber": "Účtenka 1234/56"})
+    first = household.scan().json()
+    assert (first["receiptNumber"], first["possibleDuplicate"]) == ("Účtenka 1234/56", None)
+    saved = saveFromScan(household, first)
+
+    fakeReader.receipt = fakeReader.receipt.model_copy(update={"receiptNumber": "UCTENKA 1234-56", "totalAmount": 99.0})
+    duplicate = household.scan(b"\xff\xd8\xff second photo").json()["possibleDuplicate"]
+    assert (duplicate["receiptId"], duplicate["matchedBy"]) == (saved["id"], "receiptNumber")
+
+    fakeReader.receipt = fakeReader.receipt.model_copy(update={"receiptNumber": "1234/57"})
+    assert household.scan(b"\xff\xd8\xff third photo").json()["possibleDuplicate"] is None
+
+
+def test_sameStoreDateAndTotalMarkAPossibleDuplicateWithoutNumber(client: TestClient, fakeReader: FakeReceiptReader) -> None:
+    household = ScanningHousehold(client)
+    saved = saveFromScan(household, household.scan().json())
+
+    duplicate = household.scan(b"\xff\xd8\xff second photo").json()["possibleDuplicate"]
+    assert (duplicate["receiptId"], duplicate["matchedBy"], duplicate["storeName"]) == (saved["id"], "storeDateTotal", "Albert")
+
+    fakeReader.receipt = fakeReader.receipt.model_copy(update={"totalAmount": 30.0})
+    assert household.scan(b"\xff\xd8\xff third photo").json()["possibleDuplicate"] is None
+
+
+def test_receiptsOfAnotherHouseholdAreNotDuplicates(client: TestClient, fakeReader: FakeReceiptReader) -> None:
+    household = ScanningHousehold(client)
+    saveFromScan(household, household.scan().json())
+    otherHeaders = registerAndAuthorize(client, "petr@example.com", "Petr")
+    otherId = createHousehold(client, otherHeaders)["id"]
+    client.post("/auth/me/receipt-consent", headers=otherHeaders)
+
+    response = client.post(
+        f"/households/{otherId}/receipts/scan", files={"file": ("receipt.jpg", fakeImage, "image/jpeg")}, headers=otherHeaders
+    )
+
+    assert (response.status_code, response.json()["possibleDuplicate"]) == (200, None)

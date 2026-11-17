@@ -1,3 +1,4 @@
+import hashlib
 import logging
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
@@ -9,6 +10,7 @@ from application.households import findMembership
 from application.models import HouseholdMember, Receipt, ReceiptScan, User
 from application.plans import receiptScanLimit, usedReceiptScans
 from application.receipts.dependencies import getReceiptReader
+from application.receipts.duplicates import buildReference, findReceiptWithSameFile
 from application.receipts.reading import ReceiptReader, ReceiptReadingError
 from application.receipts.saving import buildReceiptSummary, loadReceiptResponse, receiptSummariesQuery, saveReceipt
 from application.receipts.scanning import buildScanResponse
@@ -23,6 +25,7 @@ acceptedFileTypes = {"image/jpeg", "image/png", "image/webp", "image/heic", "ima
 @router.post("/households/{householdId}/receipts/scan", response_model=ScanReceiptResponse)
 def scanReceipt(
     file: UploadFile = File(),
+    ignoreSameFile: bool = False,
     membership: HouseholdMember = Depends(getHouseholdMembership),
     user: User = Depends(getCurrentUser),
     session: Session = Depends(getDatabaseSession),
@@ -37,6 +40,13 @@ def scanReceipt(
     fileBytes = file.file.read(maximumFileBytes + 1)
     if len(fileBytes) > maximumFileBytes:
         raise HTTPException(status_code=status.HTTP_413_CONTENT_TOO_LARGE, detail="The file is too large")
+    fileHash = hashlib.sha256(fileBytes).hexdigest()
+    sameFileReceipt = findReceiptWithSameFile(session, membership.householdId, fileHash)
+    if sameFileReceipt is not None and not ignoreSameFile:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={"code": "sameFile", "receipt": buildReference(sameFileReceipt, "file").model_dump(mode="json")},
+        )
     try:
         result = receiptReader.readReceipt(fileBytes, file.content_type)
     except ReceiptReadingError as error:
@@ -60,7 +70,7 @@ def scanReceipt(
         )
     )
     session.commit()
-    return buildScanResponse(session, membership.householdId, result)
+    return buildScanResponse(session, membership.householdId, result, fileHash)
 
 
 @router.post("/households/{householdId}/receipts", response_model=ReceiptResponse, status_code=status.HTTP_201_CREATED)

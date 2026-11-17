@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from decimal import Decimal
 
-from sqlalchemy import DateTime, ForeignKey, Numeric, false, func
+from sqlalchemy import DateTime, ForeignKey, Numeric, Text, false, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from application.models.base import Base, measurementUnitType
@@ -21,6 +21,8 @@ class Receipt(Base):
     totalAmount: Mapped[Decimal] = mapped_column("total_amount", Numeric(12, 2))
     itemsSumMatchesTotal: Mapped[bool] = mapped_column("items_sum_matches_total")
     processingMilliseconds: Mapped[int | None] = mapped_column("processing_milliseconds")
+    receiptNumber: Mapped[str | None] = mapped_column("receipt_number", Text)
+    fileHash: Mapped[str | None] = mapped_column("file_hash", Text, index=True)
     createdAt: Mapped[datetime] = mapped_column(
         "created_at", DateTime(timezone=True), server_default=func.now()
     )

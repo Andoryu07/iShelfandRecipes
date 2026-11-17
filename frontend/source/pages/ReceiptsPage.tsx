@@ -28,6 +28,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { planQueryKey, usePlan } from "../plans/usePlan";
 import { RewardedAdButton } from "../ads/RewardedAdButton";
 import { AdSlot } from "../ads/AdSlot";
+import { describeSavedReceipt, sameFileReceipt } from "../receipts/savedReceipts";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Link as RouterLink, useSearchParams } from "react-router";
 import { giveReceiptConsent } from "../api/authenticationApi";
@@ -106,14 +107,15 @@ function Receipts({ householdId }: { householdId: number }) {
     },
   });
   const scanMutation = useMutation({
-    mutationFn: async (file: File) => {
+    mutationFn: async ({ file, ignoreSameFile = false }: { file: File; ignoreSameFile?: boolean }) => {
       const content = await resizeImage(file);
       const fileName = content === file ? file.name : "receipt.jpg";
-      return scanReceipt(householdId, content, fileName);
+      return scanReceipt(householdId, content, fileName, ignoreSameFile);
     },
     onSuccess: setScannedReceipt,
     onSettled: () => queryClient.invalidateQueries({ queryKey: planQueryKey }),
   });
+  const sameFile = sameFileReceipt(scanMutation.error);
   const planQuery = usePlan();
   const receiptScans = planQuery.data?.receiptScans;
   const receiptScansLeft = receiptScans ? Math.max(0, receiptScans.limit - receiptScans.used) : null;
@@ -129,7 +131,7 @@ function Receipts({ householdId }: { householdId: number }) {
 
   function scanSharedFile() {
     if (sharedFile) {
-      scanMutation.mutate(sharedFile);
+      scanMutation.mutate({ file: sharedFile });
       setSharedFile(null);
       void clearSharedReceipt();
     }
@@ -153,7 +155,7 @@ function Receipts({ householdId }: { householdId: number }) {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (file) {
-      scanMutation.mutate(file);
+      scanMutation.mutate({ file });
     }
   }
 
@@ -258,7 +260,34 @@ function Receipts({ householdId }: { householdId: number }) {
           <RewardedAdButton kind="receiptScan" />
         </Box>
       )}
-      {scanMutation.error && (
+      {sameFile && scanMutation.variables && (
+        <Dialog open onClose={() => scanMutation.reset()}>
+          <DialogTitle>{texts.receipts.sameFileTitle}</DialogTitle>
+          <DialogContent>
+            <Typography>{texts.receipts.sameFileText(describeSavedReceipt(sameFile))}</Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => scanMutation.reset()}>{texts.common.cancel}</Button>
+            <Button
+              onClick={() => {
+                setSelectedReceiptId(sameFile.receiptId);
+                scanMutation.reset();
+              }}
+            >
+              {texts.receipts.showSavedReceipt}
+            </Button>
+            <Button
+              variant="contained"
+              onClick={() =>
+                scanMutation.mutate({ file: scanMutation.variables!.file, ignoreSameFile: true })
+              }
+            >
+              {texts.receipts.scanAnyway}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
+      {scanMutation.error && !sameFile && (
         <Alert severity="error" sx={{ mt: 2 }}>
           {describeError(scanMutation.error, {
             413: texts.receipts.imageTooLarge,

@@ -40,6 +40,11 @@ class ExtractedReceipt(BaseModel):
     storeName: str | None = Field(description="Store chain, for example 'Albert', 'Lidl', 'Tesco'.")
     purchasedOn: str | None = Field(description="Date of purchase as YYYY-MM-DD, null if not printed.")
     totalAmount: float | None = Field(description="Total amount paid in CZK.")
+    receiptNumber: str | None = Field(
+        default=None,
+        description="The receipt or document number exactly as printed, usually near the bottom "
+        "('Účtenka č.', 'Číslo účtenky', 'Doklad', 'Č. dokladu', 'BKP' is not it). Null if not printed.",
+    )
     items: list[ExtractedReceiptItem] = Field(
         description="All purchased lines in printed order. A discount for the whole purchase (loyalty card) "
         "is a separate line with a negative price and isFood false."

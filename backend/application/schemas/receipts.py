@@ -24,9 +24,20 @@ class ScannedReceiptItem(BaseModel):
     rememberedFromEarlierReceipt: bool = False
 
 
+class SavedReceiptReference(BaseModel):
+    receiptId: int
+    storeName: str | None
+    purchasedOn: date
+    totalAmount: QuantityValue
+    matchedBy: str
+
+
 class ScanReceiptResponse(BaseModel):
     storeName: str | None
     purchasedOn: date | None
+    receiptNumber: str | None = None
+    fileHash: str | None = None
+    possibleDuplicate: SavedReceiptReference | None = None
     totalAmount: QuantityValue | None
     itemsSum: QuantityValue
     itemsSumMatchesTotal: bool
@@ -70,6 +81,8 @@ class SaveReceiptRequest(BaseModel):
     purchasedOn: date
     totalAmount: Money
     processingMilliseconds: int | None = Field(default=None, ge=0)
+    receiptNumber: Annotated[str, StringConstraints(strip_whitespace=True, max_length=50)] | None = None
+    fileHash: Annotated[str, StringConstraints(pattern=r"^[0-9a-f]{64}$")] | None = None
     items: list[SaveReceiptItemRequest] = Field(min_length=1, max_length=300)
 
 

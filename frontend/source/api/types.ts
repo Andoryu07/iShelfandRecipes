@@ -214,7 +214,18 @@ export interface ScannedReceipt {
   itemsSum: number;
   itemsSumMatchesTotal: boolean;
   processingMilliseconds: number;
+  receiptNumber?: string | null;
+  fileHash?: string | null;
+  possibleDuplicate?: SavedReceiptReference | null;
   items: ScannedReceiptItem[];
+}
+
+export interface SavedReceiptReference {
+  receiptId: number;
+  storeName: string | null;
+  purchasedOn: string;
+  totalAmount: number;
+  matchedBy: "file" | "receiptNumber" | "storeDateTotal";
 }
 
 export interface SaveReceiptItem {

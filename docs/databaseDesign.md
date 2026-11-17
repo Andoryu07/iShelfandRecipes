@@ -38,7 +38,7 @@ erDiagram
 - **stock_items**: id, storage_location_id, food_id, quantity (remaining), expiration_date (nullable), receipt_item_id (nullable), created_by_user_id (nullable, who added it), created_at
 - **stock_movements**: id, stock_item_id, user_id, quantity_change, reason (eaten, spoiled, destroyed, cooked, correction, moved), storage_location_id (where it happened; for a move the source), target_storage_location_id (only for a move), created_at. A move has quantity_change 0.
 - **reservations**: id, stock_item_id, user_id, recipe_id (nullable), quantity, note, status (active, fulfilled, cancelled), created_at
-- **receipts**: id, household_id, user_id, store_name, purchased_on, total_amount, items_sum_matches_total, processing_milliseconds, created_at. The photo is never stored.
+- **receipts**: id, household_id, user_id, store_name, purchased_on, total_amount, items_sum_matches_total, processing_milliseconds, receipt_number (nullable, as printed, for spotting duplicates), file_hash (nullable SHA-256 of the scanned file, never the file itself; the same file is recognised before it is sent to the model), created_at. The photo is never stored.
 - **receipt_items**: id, receipt_id, food_id (nullable until confirmed), original_text, name, category, quantity, unit, price, discount, corrected_by_user
 - **recipes**: id, household_id, name, instructions, servings, preparation_minutes, is_predefined, icon (nullable emoji), dish_type (nullable: soup, mainCourse, sideDish, dessert, breakfast), is_vegetarian, created_at. Predefined recipes are copied into a household when it is created.
 - **recipe_ingredients**: id, recipe_id, food_id, quantity, accepts_any_of_kind (any food with the same generic name and unit counts), is_optional (never counted as missing)
