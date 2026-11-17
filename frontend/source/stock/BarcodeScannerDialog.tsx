@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { texts } from "../translations/cs";
+import { vibrate } from "../components/haptics";
 import { createBarcodeReader, isProductBarcode } from "./barcodeDetection";
 
 interface BarcodeScannerDialogProps {
@@ -57,7 +58,7 @@ export function BarcodeScannerDialog({ onDetected, onClose }: BarcodeScannerDial
           try {
             const found = (await reader.detect(video)).find((barcode) => isProductBarcode(barcode.rawValue));
             if (found) {
-              navigator.vibrate?.(80);
+              vibrate(60);
               isStopped = true;
               detectedRef.current(found.rawValue.trim());
               return;

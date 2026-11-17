@@ -57,6 +57,7 @@ import { formatQuantity } from "../stock/quantities";
 import { stockItemsQueryKey } from "../stock/stockQueries";
 import { texts } from "../translations/cs";
 import { Celebration } from "../components/Celebration";
+import { vibrate } from "../components/haptics";
 
 function quantityOf(ingredient: IngredientAvailability, quantity: number): string {
   return formatQuantity(quantity, ingredient.food.baseUnit);
@@ -124,6 +125,7 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
       ]);
       setIsCookedMessageOpen(true);
       setIsCelebrating(true);
+      vibrate([30, 60, 30]);
       setIsCooking(false);
     },
   });

@@ -17,6 +17,7 @@ import {
   RadioGroup,
   Snackbar,
   Stack,
+  Switch,
   Typography,
 } from "@mui/material";
 import { useColorScheme } from "@mui/material/styles";
@@ -26,6 +27,7 @@ import { Link as RouterLink, useNavigate } from "react-router";
 import { withdrawReceiptConsent } from "../api/authenticationApi";
 import { useAuthentication } from "../authentication/AuthenticationContext";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
+import { canVibrate, isVibrationEnabled, setVibrationEnabled, vibrate } from "../components/haptics";
 import { describeError } from "../errorMessages";
 import { NotificationsSection } from "../households/NotificationsSection";
 import { formatTimestamp, texts } from "../translations/cs";
@@ -161,25 +163,48 @@ export function AccountSettingsPage() {
 
 export function AppearancePage() {
   const { mode, setMode } = useColorScheme();
+  const [vibrationEnabled, setVibrationState] = useState(isVibrationEnabled);
   return (
-    <Card sx={{ mt: 2 }}>
-      <CardContent>
-        <Typography className="listSectionTitle" component="h2" sx={{ mt: "0 !important" }}>
-          {texts.profile.theme}
-        </Typography>
-        <RadioGroup
-          value={mode ?? "system"}
-          onChange={(event) => setMode(event.target.value as "light" | "dark" | "system")}
-        >
-          <FormControlLabel value="light" control={<Radio />} label={texts.profile.themeLight} />
-          <FormControlLabel value="dark" control={<Radio />} label={texts.profile.themeDark} />
-          <FormControlLabel value="system" control={<Radio />} label={texts.profile.themeSystem} />
-        </RadioGroup>
-        <Typography variant="body2" color="text.secondary">
-          {texts.profile.themeStoredOnDevice}
-        </Typography>
-      </CardContent>
-    </Card>
+    <>
+      <Card sx={{ mt: 2 }}>
+        <CardContent>
+          <Typography className="listSectionTitle" component="h2" sx={{ mt: "0 !important" }}>
+            {texts.profile.theme}
+          </Typography>
+          <RadioGroup
+            value={mode ?? "system"}
+            onChange={(event) => setMode(event.target.value as "light" | "dark" | "system")}
+          >
+            <FormControlLabel value="light" control={<Radio />} label={texts.profile.themeLight} />
+            <FormControlLabel value="dark" control={<Radio />} label={texts.profile.themeDark} />
+            <FormControlLabel value="system" control={<Radio />} label={texts.profile.themeSystem} />
+          </RadioGroup>
+          <Typography variant="body2" color="text.secondary">
+            {texts.profile.themeStoredOnDevice}
+          </Typography>
+        </CardContent>
+      </Card>
+      <Card sx={{ mt: 2 }}>
+        <CardContent>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={vibrationEnabled}
+                onChange={(event) => {
+                  setVibrationEnabled(event.target.checked);
+                  setVibrationState(event.target.checked);
+                  vibrate(20);
+                }}
+              />
+            }
+            label={texts.profile.vibrations}
+          />
+          <Typography variant="body2" color="text.secondary">
+            {canVibrate() ? texts.profile.vibrationsDescription : texts.profile.vibrationsUnsupported}
+          </Typography>
+        </CardContent>
+      </Card>
+    </>
   );
 }
 

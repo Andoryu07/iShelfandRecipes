@@ -16,6 +16,7 @@ import {
 } from "@mui/material";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { vibrate } from "../components/haptics";
 import {
   addShoppingListItem,
   deleteCheckedShoppingListItems,
@@ -117,6 +118,7 @@ function ShoppingList({ householdId }: { householdId: number }) {
 
   function toggleChecked(item: ShoppingListItem) {
     setLastToggledItemId(item.id);
+    vibrate(item.isChecked ? 10 : 20);
     queryClient.setQueryData<ShoppingListItem[]>(queryKey, (current) =>
       current?.map((other) => (other.id === item.id ? { ...other, isChecked: !item.isChecked } : other)),
     );

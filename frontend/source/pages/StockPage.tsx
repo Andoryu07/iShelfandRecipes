@@ -15,6 +15,7 @@ import {
   ListItemAvatar,
   ListItemButton,
   ListItemText,
+  Snackbar,
   Stack,
   TextField,
   Typography,
@@ -36,7 +37,11 @@ import { formatQuantity } from "../stock/quantities";
 import { StockItemDialog } from "../stock/StockItemDialog";
 import { groupStockItems, recentFoods, type StockGroup } from "../stock/stockGroups";
 import { stockItemsQueryKey } from "../stock/stockQueries";
+import { SwipeableRow } from "../stock/SwipeableRow";
+import { useQuickWriteOff, type QuickWriteOffReason } from "../stock/useQuickWriteOff";
 import { displayStorageLocationName, texts } from "../translations/cs";
+
+const swipeHintStorageKey = "iShelf.swipeHintSeen";
 
 export function StockPage() {
   const { household } = useCurrentHousehold();
@@ -73,7 +78,36 @@ function StockList({ householdId }: { householdId: number }) {
     storageLocations.map((storageLocation) => [storageLocation.id, storageLocation]),
   );
   const warningDays = useExpirationWarningDays();
-  const groups = groupStockItems(stockQuery.data ?? [], new Date(), warningDays);
+  const quickWriteOff = useQuickWriteOff(householdId);
+  const [isFullyReservedMessageOpen, setIsFullyReservedMessageOpen] = useState(false);
+  const visibleItems = (stockQuery.data ?? []).filter(
+    (stockItem) => stockItem.id !== quickWriteOff.pending?.stockItem.id,
+  );
+  const groups = groupStockItems(visibleItems, new Date(), warningDays);
+
+  const [isSwipeHintVisible, setIsSwipeHintVisible] = useState(() => {
+    try {
+      return localStorage.getItem(swipeHintStorageKey) !== "seen";
+    } catch {
+      return false;
+    }
+  });
+
+  function hideSwipeHint() {
+    setIsSwipeHintVisible(false);
+    try {
+      localStorage.setItem(swipeHintStorageKey, "seen");
+    } catch {
+      // The hint is only a convenience.
+    }
+  }
+
+  function writeOffQuickly(stockItem: StockItem, reason: QuickWriteOffReason) {
+    hideSwipeHint();
+    if (!quickWriteOff.start(stockItem, reason)) {
+      setIsFullyReservedMessageOpen(true);
+    }
+  }
   const isFiltered = Boolean(deferredSearch) || selectedStorageLocationId !== undefined;
 
   return (
@@ -124,6 +158,11 @@ function StockList({ householdId }: { householdId: number }) {
           )}
         </Stack>
       )}
+      {isSwipeHintVisible && visibleItems.length > 0 && (
+        <Alert severity="info" icon={false} onClose={hideSwipeHint} sx={{ mt: 1.5 }}>
+          {texts.stock.swipeHint}
+        </Alert>
+      )}
       {[
         { title: texts.stock.soonSection, groups: groups.soon },
         { title: texts.stock.otherSection, groups: groups.other },
@@ -144,6 +183,7 @@ function StockList({ householdId }: { householdId: number }) {
                     storageLocationsById={storageLocationsById}
                     showStorageLocation={selectedStorageLocationId === undefined}
                     onOpenItem={setSelectedStockItem}
+                    onWriteOff={writeOffQuickly}
                   />
                 ))}
               </List>
@@ -165,6 +205,35 @@ function StockList({ householdId }: { householdId: number }) {
         <AddRoundedIcon />
       </Fab>
 
+      <Snackbar
+        open={quickWriteOff.pending !== null}
+        message={
+          quickWriteOff.pending
+            ? texts.stock.quickWriteOffDone(
+                quickWriteOff.pending.reason,
+                quickWriteOff.pending.stockItem.food.name,
+                formatQuantity(quickWriteOff.pending.quantity, quickWriteOff.pending.stockItem.food.baseUnit),
+              )
+            : ""
+        }
+        action={
+          <Button color="inherit" size="small" onClick={quickWriteOff.undo}>
+            {texts.stock.undo}
+          </Button>
+        }
+        sx={{
+          bottom: { xs: "calc(var(--bottom-navigation-height) + var(--safe-area-bottom) + 8px)", md: 24 },
+        }}
+      />
+      <Snackbar
+        open={quickWriteOff.error !== null || isFullyReservedMessageOpen}
+        autoHideDuration={4000}
+        onClose={() => {
+          quickWriteOff.clearError();
+          setIsFullyReservedMessageOpen(false);
+        }}
+        message={quickWriteOff.error ?? texts.stock.quickWriteOffReserved}
+      />
       {isAdding && (
         <AddStockItemDialog
           householdId={householdId}
@@ -198,6 +267,7 @@ interface StockGroupRowProps {
   storageLocationsById: Map<number, StorageLocation>;
   showStorageLocation: boolean;
   onOpenItem: (stockItem: StockItem) => void;
+  onWriteOff: (stockItem: StockItem, reason: QuickWriteOffReason) => void;
 }
 
 function StockGroupRow({
@@ -206,6 +276,7 @@ function StockGroupRow({
   storageLocationsById,
   showStorageLocation,
   onOpenItem,
+  onWriteOff,
 }: StockGroupRowProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const { food } = group;
@@ -226,38 +297,45 @@ function StockGroupRow({
 
   return (
     <>
-      <ListItemButton
-        className="animateAppear"
-        divider={!isLast && !isExpanded}
-        onClick={() => (hasSeveralItems ? setIsExpanded(!isExpanded) : onOpenItem(group.items[0]))}
-        sx={{ py: 1 }}
+      <SwipeableRow
+        rightLabel={texts.stock.swipeEaten}
+        leftLabel={texts.stock.swipeSpoiled}
+        onSwipeRight={() => onWriteOff(group.items[0], "eaten")}
+        onSwipeLeft={() => onWriteOff(group.items[0], "spoiled")}
       >
-        <ListItemAvatar>
-          <CategoryAvatar
-            category={food.category}
-            genericName={food.genericName}
-            icon={food.icon}
-            photoUrl={food.photoUrl}
+        <ListItemButton
+          className="animateAppear"
+          divider={!isLast && !isExpanded}
+          onClick={() => (hasSeveralItems ? setIsExpanded(!isExpanded) : onOpenItem(group.items[0]))}
+          sx={{ py: 1 }}
+        >
+          <ListItemAvatar>
+            <CategoryAvatar
+              category={food.category}
+              genericName={food.genericName}
+              icon={food.icon}
+              photoUrl={food.photoUrl}
+            />
+          </ListItemAvatar>
+          <ListItemText
+            primary={hasSeveralItems ? `${food.name}  ×${group.items.length}` : food.name}
+            secondary={details || null}
+            slotProps={{ primary: { sx: { fontWeight: 600 } } }}
           />
-        </ListItemAvatar>
-        <ListItemText
-          primary={hasSeveralItems ? `${food.name}  ×${group.items.length}` : food.name}
-          secondary={details || null}
-          slotProps={{ primary: { sx: { fontWeight: 600 } } }}
-        />
-        <Stack sx={{ alignItems: "flex-end", gap: 0.5, ml: 1 }}>
-          <Typography sx={{ fontWeight: 650, whiteSpace: "nowrap" }}>
-            {formatQuantity(group.totalQuantity, food.baseUnit)}
-          </Typography>
-          <ExpirationChip expirationDate={group.nearestExpirationDate} />
-        </Stack>
-        {hasSeveralItems &&
-          (isExpanded ? (
-            <ExpandLessRoundedIcon color="action" sx={{ ml: 0.5 }} />
-          ) : (
-            <ExpandMoreRoundedIcon color="action" sx={{ ml: 0.5 }} />
-          ))}
-      </ListItemButton>
+          <Stack sx={{ alignItems: "flex-end", gap: 0.5, ml: 1 }}>
+            <Typography sx={{ fontWeight: 650, whiteSpace: "nowrap" }}>
+              {formatQuantity(group.totalQuantity, food.baseUnit)}
+            </Typography>
+            <ExpirationChip expirationDate={group.nearestExpirationDate} />
+          </Stack>
+          {hasSeveralItems &&
+            (isExpanded ? (
+              <ExpandLessRoundedIcon color="action" sx={{ ml: 0.5 }} />
+            ) : (
+              <ExpandMoreRoundedIcon color="action" sx={{ ml: 0.5 }} />
+            ))}
+        </ListItemButton>
+      </SwipeableRow>
       {hasSeveralItems && (
         <Collapse in={isExpanded} unmountOnExit>
           <List disablePadding sx={{ bgcolor: "action.hover" }}>
