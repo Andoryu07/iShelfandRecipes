@@ -3,7 +3,7 @@ from typing import Protocol
 
 from pydantic import BaseModel, Field
 
-from application.models.enumerations import FoodCategory, MeasurementUnit
+from application.models.enumerations import FoodCategory, MeasurementUnit, UnhealthyKind
 
 
 class ExtractedReceiptItem(BaseModel):
@@ -21,6 +21,13 @@ class ExtractedReceiptItem(BaseModel):
     category: FoodCategory
     isFood: bool = Field(
         description="False for things that are not food or drink: bags, deposits, drugstore goods, discounts."
+    )
+    unhealthyKind: UnhealthyKind | None = Field(
+        default=None,
+        description="sweets (chocolate, candy, biscuits, cakes, ice cream), saltySnacks (chips, salty sticks, "
+        "crackers, popcorn), sugaryDrinks (sweetened sodas, energy drinks, sweet iced tea; not zero-sugar), "
+        "alcohol (beer, wine, spirits; not alcohol-free), tobacco (cigarettes, tobacco, heated tobacco); "
+        "null for everything else.",
     )
     packageCount: int = Field(
         description="How many separately packed identical products the line contains (bottles, cartons, packs). "

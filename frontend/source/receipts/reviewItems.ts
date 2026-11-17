@@ -1,4 +1,10 @@
-import type { FoodCategory, QuantitySource, SaveReceiptItem, ScannedReceiptItem } from "../api/types";
+import type {
+  FoodCategory,
+  QuantitySource,
+  SaveReceiptItem,
+  ScannedReceiptItem,
+  UnhealthyKind,
+} from "../api/types";
 import { baseUnitOf, isNewFood, newFoodRequest, type FoodChoice } from "../stock/FoodPicker";
 import {
   bestDisplayUnit,
@@ -27,6 +33,7 @@ export interface ReviewItem {
   remembered: boolean;
   quantitySource: QuantitySource | null;
   quantityConfirmed: boolean;
+  unhealthyKind: UnhealthyKind | "none" | null;
   initial: { name: string; foodKey: string; quantityText: string; unitSymbol: string; priceText: string };
 }
 
@@ -83,6 +90,7 @@ export function createReviewItem(scanned: ScannedReceiptItem, storageLocationId:
     remembered: scanned.rememberedFromEarlierReceipt ?? false,
     quantitySource: quantity.quantityText ? (scanned.quantitySource ?? null) : null,
     quantityConfirmed: false,
+    unhealthyKind: scanned.unhealthyKind === undefined ? null : (scanned.unhealthyKind ?? "none"),
     initial: { name: scanned.name, foodKey: foodKey(food), priceText, ...quantity },
   };
 }
@@ -167,6 +175,7 @@ export function buildSaveItems(items: ReviewItem[]): BuildResult {
       discount: item.discount,
       correctedByUser: isCorrected(item),
       quantityIsEstimate: isUnconfirmedEstimate(item),
+      unhealthyKind: item.unhealthyKind,
       foodId: item.food && !isNewFood(item.food) ? item.food.id : null,
       newFood: isNewFood(item.food) ? newFoodRequest(item.food) : null,
       addToStock: item.addToStock,

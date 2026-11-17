@@ -2,12 +2,20 @@ from collections import defaultdict
 from datetime import date
 from decimal import Decimal
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from application.models import Receipt, ReceiptItem
-from application.models.enumerations import FoodCategory
-from application.schemas.statistics import CategorySpending, MonthSpending, SpendingResponse, StoreSpending
+from application.models.enumerations import FoodCategory, UnhealthyKind
+from application.schemas.statistics import (
+    CategorySpending,
+    MonthSpending,
+    SpendingResponse,
+    StoreSpending,
+    UnhealthyKindSpending,
+    UnhealthyMonthSpending,
+    UnhealthySpendingResponse,
+)
 
 
 def monthKey(day: date) -> str:
@@ -76,4 +84,51 @@ def spendingFor(session: Session, householdId: int, selectedMonth: date, monthCo
             key=lambda category: category.total,
             reverse=True,
         ),
+    )
+
+
+def unhealthySpendingFor(
+    session: Session, householdId: int, selectedMonth: date, monthCount: int
+) -> UnhealthySpendingResponse:
+    firstMonth = shiftMonth(selectedMonth, -(monthCount - 1))
+    afterLastMonth = shiftMonth(selectedMonth, 1)
+    earliest = min(firstMonth, shiftMonth(selectedMonth, -1))
+    rows = session.execute(
+        select(Receipt.purchasedOn, ReceiptItem.unhealthyKind, ReceiptItem.price)
+        .join(ReceiptItem, ReceiptItem.receiptId == Receipt.id)
+        .where(
+            Receipt.householdId == householdId,
+            Receipt.purchasedOn >= earliest,
+            Receipt.purchasedOn < afterLastMonth,
+            ReceiptItem.unhealthyKind.is_not(None),
+            ReceiptItem.price > 0,
+        )
+    ).all()
+    totalsByMonth: dict[str, Decimal] = defaultdict(Decimal)
+    kindTotals: dict[UnhealthyKind, Decimal] = defaultdict(Decimal)
+    selectedKey = monthKey(selectedMonth)
+    for purchasedOn, kind, price in rows:
+        key = monthKey(purchasedOn)
+        totalsByMonth[key] += price
+        if key == selectedKey:
+            kindTotals[kind] += price
+    monthTotal = session.scalar(
+        select(func.coalesce(func.sum(Receipt.totalAmount), 0)).where(
+            Receipt.householdId == householdId,
+            Receipt.purchasedOn >= selectedMonth,
+            Receipt.purchasedOn < afterLastMonth,
+        )
+    )
+    months = [shiftMonth(firstMonth, offset) for offset in range(monthCount)]
+    return UnhealthySpendingResponse(
+        month=selectedKey,
+        total=totalsByMonth[selectedKey],
+        monthTotal=monthTotal,
+        previousMonthTotal=totalsByMonth[monthKey(shiftMonth(selectedMonth, -1))],
+        kinds=sorted(
+            (UnhealthyKindSpending(kind=kind, total=total) for kind, total in kindTotals.items()),
+            key=lambda item: item.total,
+            reverse=True,
+        ),
+        months=[UnhealthyMonthSpending(month=monthKey(month), total=totalsByMonth[monthKey(month)]) for month in months],
     )

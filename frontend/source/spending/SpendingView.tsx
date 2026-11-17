@@ -4,7 +4,9 @@ import {
   Alert,
   Box,
   Card,
+  CardActionArea,
   CardContent,
+  Chip,
   IconButton,
   Stack,
   ToggleButton,
@@ -14,7 +16,10 @@ import {
 } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { getSpending } from "../api/statisticsApi";
+import { getSpending, getUnhealthySpending } from "../api/statisticsApi";
+import type { UnhealthyKind } from "../api/types";
+import LockRoundedIcon from "@mui/icons-material/LockRounded";
+import { useNavigate } from "react-router";
 import { usePlan } from "../plans/usePlan";
 import { CategoryAvatar } from "../components/CategoryAvatar";
 import { describeError } from "../errorMessages";
@@ -147,6 +152,97 @@ function ShareBars({
   );
 }
 
+const unhealthyEmoji: Record<UnhealthyKind, string> = {
+  sweets: "🍫",
+  saltySnacks: "🥨",
+  sugaryDrinks: "🥤",
+  alcohol: "🍺",
+  tobacco: "🚬",
+};
+
+function UnhealthySpendingCard({
+  householdId,
+  month,
+  onSelectMonth,
+}: {
+  householdId: number;
+  month: string;
+  onSelectMonth: (month: string) => void;
+}) {
+  const navigate = useNavigate();
+  const isPremium = usePlan().data?.plan === "premium";
+  const unhealthyQuery = useQuery({
+    queryKey: ["households", householdId, "receipts", "unhealthySpending", month],
+    queryFn: () => getUnhealthySpending(householdId, month),
+    enabled: isPremium,
+  });
+  if (!isPremium) {
+    return (
+      <Card sx={{ mt: 2 }}>
+        <CardActionArea onClick={() => navigate("/profile/premium")}>
+          <CardContent>
+            <Stack direction="row" sx={{ alignItems: "center", gap: 1 }}>
+              <Typography variant="h6" component="h3" sx={{ flex: 1 }}>
+                {texts.unhealthy.title}
+              </Typography>
+              <Chip icon={<LockRoundedIcon />} label={texts.premium.title} size="small" color="warning" />
+            </Stack>
+            <Typography variant="body2" color="text.secondary">
+              {texts.unhealthy.premiumTeaser}
+            </Typography>
+          </CardContent>
+        </CardActionArea>
+      </Card>
+    );
+  }
+  const unhealthy = unhealthyQuery.data;
+  if (!unhealthy) {
+    return null;
+  }
+  const change = changePercent(unhealthy.total, unhealthy.previousMonthTotal);
+  return (
+    <Card sx={{ mt: 2 }}>
+      <CardContent>
+        <Typography variant="h6" component="h3">
+          {texts.unhealthy.title}
+        </Typography>
+        <Typography variant="h5" sx={{ fontWeight: 700, mt: 0.5 }}>
+          {formatMoney(unhealthy.total)}
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          {[
+            unhealthy.monthTotal > 0
+              ? texts.unhealthy.share(Math.round((unhealthy.total / unhealthy.monthTotal) * 100))
+              : null,
+            change !== null ? texts.spending.changeAgainstPrevious(change) : null,
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+        </Typography>
+        {unhealthy.kinds.length > 0 ? (
+          <ShareBars
+            total={unhealthy.total}
+            rows={unhealthy.kinds.map((kind) => ({
+              key: kind.kind,
+              label: `${unhealthyEmoji[kind.kind]} ${texts.unhealthy.kinds[kind.kind]}`,
+              value: kind.total,
+            }))}
+          />
+        ) : (
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            {texts.unhealthy.nothing}
+          </Typography>
+        )}
+        <MonthBars
+          months={unhealthy.months.map((item) => ({ ...item, receiptCount: 0 }))}
+          selectedMonth={month}
+          onSelect={onSelectMonth}
+        />
+      </CardContent>
+    </Card>
+  );
+}
+
 export function SpendingView({ householdId }: { householdId: number }) {
   const currentMonth = monthText(new Date());
   const [month, setMonth] = useState(currentMonth);
@@ -273,6 +369,7 @@ export function SpendingView({ householdId }: { householdId: number }) {
                   />
                 </CardContent>
               </Card>
+              <UnhealthySpendingCard householdId={householdId} month={month} onSelectMonth={setMonth} />
             </>
           )}
         </>

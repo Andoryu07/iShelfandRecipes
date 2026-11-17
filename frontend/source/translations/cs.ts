@@ -633,6 +633,22 @@ export const texts = {
             : `za ${days} ${days < 5 ? "dny" : "dní"}`,
     andMore: (count: number) => `a ${count} další`,
   },
+  unhealthy: {
+    title: "Nezdravé útraty",
+    premiumTeaser:
+      "Kolik utrácíš za sladkosti, slané pochutiny, slazené nápoje, alkohol a tabák a jak se to mění měsíc od měsíce.",
+    share: (percent: number) => `${percent} % všech útrat`,
+    nothing: "Tento měsíc žádné nezdravé nákupy.",
+    label: "Nezdravé",
+    none: "Ne",
+    kinds: {
+      sweets: "Sladkosti",
+      saltySnacks: "Slané pochutiny",
+      sugaryDrinks: "Slazené nápoje",
+      alcohol: "Alkohol",
+      tobacco: "Tabák",
+    },
+  },
   nutrition: {
     title: "Výživové hodnoty",
     summary: (kcal: number, isLiquid: boolean) => `${kcal} kcal na 100 ${isLiquid ? "ml" : "g"}`,
@@ -807,6 +823,7 @@ export const texts = {
       ["Domácnosti", "1", "až 3"],
       ["Úložiště v domácnosti", "3", "až 9"],
       ["Historie útrat", "6 měsíců", "celá"],
+      ["Nezdravé útraty", "ne", "ano"],
       ["Reklamy", "ano", "bez reklam"],
     ] as [string, string, string][],
     price: "59 Kč měsíčně nebo 590 Kč ročně",

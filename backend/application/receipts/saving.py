@@ -5,6 +5,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from application.receipts.quantities import rememberConfirmedQuantity
+from application.unhealthy import classifyUnhealthy
 from application.foods import FoodNotFoundError, FoodResolver
 from application.models import Receipt, ReceiptItem, StockItem, StorageLocation, User
 from application.models.enumerations import FoodCategory
@@ -57,6 +58,11 @@ def saveReceipt(session: Session, householdId: int, user: User, request: SaveRec
             discount=item.discount,
             correctedByUser=item.correctedByUser,
             quantityIsEstimate=item.quantityIsEstimate,
+            unhealthyKind=(
+                None
+                if item.unhealthyKind == "none"
+                else item.unhealthyKind or classifyUnhealthy(item.name, item.originalText, item.category)
+            ),
         )
         session.add(receiptItem)
         session.flush()

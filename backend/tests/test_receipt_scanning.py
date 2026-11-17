@@ -116,6 +116,7 @@ def test_scanReturnsItemsAndPassesTheImageToTheReader(client: TestClient, fakeRe
             "suggestedFood": None,
             "rememberedFromEarlierReceipt": False,
             "quantitySource": "receipt",
+            "unhealthyKind": None,
         }
     ]
 

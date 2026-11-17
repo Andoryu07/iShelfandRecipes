@@ -4,8 +4,8 @@ from decimal import Decimal
 from sqlalchemy import DateTime, ForeignKey, Numeric, Text, UniqueConstraint, false, func
 from sqlalchemy.orm import Mapped, mapped_column
 
-from application.models.base import Base, measurementUnitType
-from application.models.enumerations import MeasurementUnit
+from application.models.base import Base, databaseEnum, measurementUnitType
+from application.models.enumerations import MeasurementUnit, UnhealthyKind
 
 
 class Receipt(Base):
@@ -50,6 +50,9 @@ class ReceiptItem(Base):
     )
     quantityIsEstimate: Mapped[bool] = mapped_column(
         "quantity_is_estimate", default=False, server_default=false()
+    )
+    unhealthyKind: Mapped[UnhealthyKind | None] = mapped_column(
+        "unhealthy_kind", databaseEnum(UnhealthyKind, "unhealthy_kind")
     )
 
 

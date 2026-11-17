@@ -62,6 +62,7 @@ describe("review items", () => {
           discount: 0,
           correctedByUser: false,
           quantityIsEstimate: false,
+          unhealthyKind: null,
           foodId: null,
           newFood: { name: "Balkánský sýr", genericName: "Sýr", category: "dairy", baseUnit: "gram" },
           addToStock: true,

@@ -1,10 +1,10 @@
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Annotated, Self
+from typing import Annotated, Literal, Self
 
 from pydantic import BaseModel, Field, StringConstraints, model_validator
 
-from application.models.enumerations import FoodCategory, MeasurementUnit
+from application.models.enumerations import FoodCategory, MeasurementUnit, UnhealthyKind
 from application.schemas.foods import FoodResponse, NewFoodRequest
 from application.schemas.common import RequiredName
 from application.schemas.common import PositiveQuantity, QuantityValue
@@ -23,6 +23,7 @@ class ScannedReceiptItem(BaseModel):
     suggestedFood: FoodResponse | None
     rememberedFromEarlierReceipt: bool = False
     quantitySource: str | None = None
+    unhealthyKind: UnhealthyKind | None = None
 
 
 class SavedReceiptReference(BaseModel):
@@ -60,6 +61,7 @@ class SaveReceiptItemRequest(BaseModel):
     discount: NonNegativeMoney = Decimal("0")
     correctedByUser: bool = False
     quantityIsEstimate: bool = False
+    unhealthyKind: UnhealthyKind | Literal["none"] | None = None
     foodId: int | None = None
     newFood: NewFoodRequest | None = None
     addToStock: bool = False

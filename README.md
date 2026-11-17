@@ -256,6 +256,7 @@ A shared copy of the Czech products of Open Food Facts (ODbL), imported with `py
 | Endpoint | Purpose | Status |
 | --- | --- | --- |
 | `GET /households/{householdId}/statistics/spending?month=2026-11&months=6` | Totals for the selected month and the months before it, by store and by food category; free users see only the last 6 months (older month `403`, the chart is cut) | done |
+| `GET /households/{householdId}/statistics/unhealthy-spending?month=2026-11&months=6` | Premium only (`403` otherwise): spending on sweets, salty snacks, sugary drinks, alcohol and tobacco in the month, its share of all spending, totals by kind and per month. Receipt items get `unhealthyKind` from the model when scanning or from keyword rules (`application/unhealthy.py`); the user can change it in the review (`"none"` clears it) | done |
 
 Totals are what was paid (`total_amount` of saved receipts, so whole-purchase discounts are included); category totals add up the positive item prices and discounts are reported separately. Stock added by hand has no price and is not counted.
 

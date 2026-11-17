@@ -24,6 +24,8 @@ import { QuantityInput } from "../stock/QuantityInput";
 import { displayStorageLocationName, texts } from "../translations/cs";
 import { isUnconfirmedEstimate, type ReviewItem } from "./reviewItems";
 
+const unhealthyKinds = ["sweets", "saltySnacks", "sugaryDrinks", "alcohol", "tobacco"] as const;
+
 interface ReviewItemCardProps {
   householdId: number;
   item: ReviewItem;
@@ -164,6 +166,22 @@ export function ReviewItemCard({
           }
           label={texts.receipts.addToStock}
         />
+        <TextField
+          select
+          label={texts.unhealthy.label}
+          value={item.unhealthyKind ?? "none"}
+          onChange={(event) =>
+            onChange({ ...item, unhealthyKind: event.target.value as ReviewItem["unhealthyKind"] })
+          }
+          sx={{ mt: 0.5 }}
+        >
+          <MenuItem value="none">{texts.unhealthy.none}</MenuItem>
+          {unhealthyKinds.map((kind) => (
+            <MenuItem key={kind} value={kind}>
+              {texts.unhealthy.kinds[kind]}
+            </MenuItem>
+          ))}
+        </TextField>
         {item.addToStock && (
           <>
             <FoodPicker householdId={householdId} value={item.food} onChange={changeFood} />

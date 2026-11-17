@@ -25,6 +25,8 @@ Rules:
 - Expand an abbreviation in name only when you are sure what product it is. If you do not know an abbreviation
   (for example a brand like "BBDR"), do not guess a different word: keep it as printed and only fix letter case
   and accents of common words, for example "BBDR NA MEKKO" becomes "BBDR na měkko".
+- unhealthyKind marks sweets, salty snacks, sugary drinks, alcohol and tobacco (also non-food lines like
+  cigarettes); leave it null for everything else, including zero-sugar drinks and alcohol-free beer.
 - receiptNumber is the number of the receipt or document (for example "Účtenka č. 1234/567" gives "1234/567").
   It is not the register number, the cashier, the store number, the FIK or BKP code or a card number.
 - Do not invent lines, quantities or dates. Use null when something is not printed or not readable.

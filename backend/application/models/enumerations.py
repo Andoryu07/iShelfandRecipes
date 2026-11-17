@@ -61,3 +61,11 @@ class DishType(enum.Enum):
 class RewardKind(enum.Enum):
     receiptScan = "receiptScan"
     recipeScan = "recipeScan"
+
+
+class UnhealthyKind(enum.Enum):
+    sweets = "sweets"
+    saltySnacks = "saltySnacks"
+    sugaryDrinks = "sugaryDrinks"
+    alcohol = "alcohol"
+    tobacco = "tobacco"

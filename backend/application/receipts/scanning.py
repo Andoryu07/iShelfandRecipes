@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from application.receipts.duplicates import findPossibleDuplicate
+from application.unhealthy import classifyUnhealthy
 from application.foods import buildFoodResponse
 from application.models import Food, Receipt, ReceiptItem
 from application.models.enumerations import FoodCategory, MeasurementUnit
@@ -81,6 +82,7 @@ def expandItem(item: ExtractedReceiptItem) -> list[dict]:
             "genericName": item.genericName.strip() or None,
             "category": item.category,
             "isFood": item.isFood,
+            "unhealthyKind": item.unhealthyKind or classifyUnhealthy(item.name, item.originalText, item.category),
             "quantity": Decimal(str(quantity)).quantize(Decimal("0.001")) if quantity is not None else None,
             "unit": unit,
             "quantitySource": QuantitySource.receipt if quantity is not None else None,

@@ -223,6 +223,7 @@ export interface ScannedReceiptItem {
   suggestedFood: Food | null;
   rememberedFromEarlierReceipt?: boolean;
   quantitySource?: QuantitySource | null;
+  unhealthyKind?: UnhealthyKind | null;
 }
 
 export interface ScannedReceipt {
@@ -256,6 +257,7 @@ export interface SaveReceiptItem {
   discount: number;
   correctedByUser: boolean;
   quantityIsEstimate?: boolean;
+  unhealthyKind?: UnhealthyKind | "none" | null;
   foodId: number | null;
   newFood: {
     name: string;
@@ -460,4 +462,15 @@ export interface BarcodeLookup {
   barcode: string;
   food: Food | null;
   catalogProduct: CatalogProduct | null;
+}
+
+export type UnhealthyKind = "sweets" | "saltySnacks" | "sugaryDrinks" | "alcohol" | "tobacco";
+
+export interface UnhealthySpending {
+  month: string;
+  total: number;
+  monthTotal: number;
+  previousMonthTotal: number;
+  kinds: { kind: UnhealthyKind; total: number }[];
+  months: { month: string; total: number }[];
 }
