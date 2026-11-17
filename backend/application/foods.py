@@ -1,7 +1,7 @@
 import hashlib
 import hmac
 
-from sqlalchemy import exists, select
+from sqlalchemy import exists, select, update
 from sqlalchemy.orm import Session
 
 from application.configuration import getConfiguration
@@ -22,6 +22,17 @@ def foodPhotoUrl(food: Food) -> str | None:
     return f"/foods/{food.id}/photo?version={version}&signature={foodPhotoSignature(food.id, version)}"
 
 
+def assignBarcode(session: Session, food: Food, barcode: str | None) -> None:
+    if barcode is not None:
+        session.execute(
+            update(Food)
+            .where(Food.householdId == food.householdId, Food.barcode == barcode, Food.id != food.id)
+            .values(barcode=None)
+        )
+        session.flush()
+    food.barcode = barcode
+
+
 def buildFoodResponse(food: Food) -> FoodResponse:
     return FoodResponse(
         id=food.id,
@@ -31,6 +42,7 @@ def buildFoodResponse(food: Food) -> FoodResponse:
         baseUnit=food.baseUnit,
         icon=food.icon,
         photoUrl=foodPhotoUrl(food),
+        barcode=food.barcode,
     )
 
 

@@ -9,12 +9,15 @@ from application.schemas.common import FoodName, Icon, QuantityValue
 OptionalName = Annotated[str, StringConstraints(strip_whitespace=True, max_length=100)]
 
 
+Barcode = Annotated[str, StringConstraints(pattern=r"^\d{6,14}$")]
+
 class CreateFoodRequest(BaseModel):
     name: FoodName
     genericName: OptionalName | None = None
     category: FoodCategory = FoodCategory.other
     baseUnit: MeasurementUnit
     icon: Icon | None = None
+    barcode: Barcode | None = None
 
 
 class UpdateFoodRequest(BaseModel):
@@ -23,6 +26,7 @@ class UpdateFoodRequest(BaseModel):
     category: FoodCategory | None = None
     baseUnit: MeasurementUnit | None = None
     icon: Icon | None = None
+    barcode: Barcode | None = None
 
 
 class FoodResponse(BaseModel):
@@ -33,6 +37,7 @@ class FoodResponse(BaseModel):
     baseUnit: MeasurementUnit
     icon: str | None
     photoUrl: str | None = None
+    barcode: str | None = None
 
 
 class LastAddedQuantityResponse(BaseModel):

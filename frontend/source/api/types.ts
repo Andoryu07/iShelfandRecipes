@@ -99,6 +99,7 @@ export interface Food {
   baseUnit: MeasurementUnit;
   icon?: string | null;
   photoUrl?: string | null;
+  barcode?: string | null;
 }
 
 export interface StockItem {
@@ -435,4 +436,10 @@ export interface CatalogProduct {
   quantity: number | null;
   unit: MeasurementUnit | null;
   category: FoodCategory;
+}
+
+export interface BarcodeLookup {
+  barcode: string;
+  food: Food | null;
+  catalogProduct: CatalogProduct | null;
 }

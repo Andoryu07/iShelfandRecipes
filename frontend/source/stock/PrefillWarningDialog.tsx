@@ -31,17 +31,30 @@ function hidePrefillWarning(): void {
 
 interface PrefillWarningDialogProps {
   quantity: string | null;
+  isFromCatalog?: boolean;
   onConfirm: () => void;
   onEdit: () => void;
 }
 
-export function PrefillWarningDialog({ quantity, onConfirm, onEdit }: PrefillWarningDialogProps) {
+export function PrefillWarningDialog({
+  quantity,
+  isFromCatalog = false,
+  onConfirm,
+  onEdit,
+}: PrefillWarningDialogProps) {
   const [doNotShowAgain, setDoNotShowAgain] = useState(false);
   return (
     <Dialog open={quantity !== null} onClose={onEdit} fullWidth>
-      <DialogTitle>{texts.stock.prefillWarningTitle}</DialogTitle>
+      <DialogTitle>
+        {isFromCatalog ? texts.stock.catalogPrefillTitle : texts.stock.prefillWarningTitle}
+      </DialogTitle>
       <DialogContent>
-        <Typography>{quantity && texts.stock.prefillWarningText(quantity)}</Typography>
+        <Typography>
+          {quantity &&
+            (isFromCatalog
+              ? texts.stock.catalogPrefillText(quantity)
+              : texts.stock.prefillWarningText(quantity))}
+        </Typography>
         <FormControlLabel
           sx={{ mt: 1 }}
           control={

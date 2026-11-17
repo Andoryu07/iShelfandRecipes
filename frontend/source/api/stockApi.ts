@@ -11,7 +11,13 @@ export function getLastAddedQuantity(foodId: number): Promise<{ quantity: number
 
 export function createFood(
   householdId: number,
-  food: { name: string; genericName: string | null; category: FoodCategory; baseUnit: MeasurementUnit },
+  food: {
+    name: string;
+    genericName: string | null;
+    category: FoodCategory;
+    baseUnit: MeasurementUnit;
+    barcode?: string | null;
+  },
 ): Promise<Food> {
   return apiRequest<Food>(`/households/${householdId}/foods`, { method: "POST", body: food });
 }
@@ -92,7 +98,13 @@ export function cancelReservation(reservationId: number): Promise<Reservation> {
 
 export function updateFood(
   foodId: number,
-  changes: { name?: string; genericName?: string | null; category?: FoodCategory; icon?: string | null },
+  changes: {
+    name?: string;
+    genericName?: string | null;
+    category?: FoodCategory;
+    icon?: string | null;
+    barcode?: string | null;
+  },
 ): Promise<Food> {
   return apiRequest<Food>(`/foods/${foodId}`, { method: "PATCH", body: changes });
 }

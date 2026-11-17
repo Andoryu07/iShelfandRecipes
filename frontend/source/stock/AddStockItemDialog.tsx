@@ -1,16 +1,20 @@
+import QrCodeScannerRoundedIcon from "@mui/icons-material/QrCodeScannerRounded";
 import {
   Alert,
+  Box,
   Button,
   Chip,
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
   Stack,
   Typography,
 } from "@mui/material";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { createFood, createStockItem, getLastAddedQuantity } from "../api/stockApi";
+import { lookUpBarcode } from "../api/catalogApi";
+import { createFood, createStockItem, getLastAddedQuantity, updateFood } from "../api/stockApi";
 import type { Food, StorageLocation } from "../api/types";
 import { BottomSheet } from "../components/BottomSheet";
 import { StorageLocationChips } from "../components/StorageLocationChips";
@@ -22,9 +26,11 @@ import {
   FoodPicker,
   isNewFood,
   NewFoodFields,
+  newFoodFromCatalog,
   newFoodRequest,
   type FoodChoice,
 } from "./FoodPicker";
+import { BarcodeScannerDialog } from "./BarcodeScannerDialog";
 import {
   displayUnits,
   formatQuantity,
@@ -53,6 +59,12 @@ export function AddStockItemDialog({
   const queryClient = useQueryClient();
   const [food, setFood] = useState<FoodChoice | null>(null);
   const [pickerKey, setPickerKey] = useState(0);
+  const [isScanning, setIsScanning] = useState(false);
+  const [scannedBarcode, setScannedBarcode] = useState<string | null>(null);
+  const [barcodeNotice, setBarcodeNotice] = useState<{
+    severity: "info" | "success" | "warning" | "error";
+    text: string;
+  } | null>(null);
   const [typedQuantityText, setTypedQuantityText] = useState<string | null>(null);
   const [typedUnitSymbol, setTypedUnitSymbol] = useState<string | null>(null);
   const [storageLocationId, setStorageLocationId] = useState(
@@ -85,7 +97,10 @@ export function AddStockItemDialog({
 
   const saveMutation = useMutation({
     mutationFn: async (baseQuantity: number) => {
-      const savedFood = isNewFood(food) ? await createFood(householdId, newFoodRequest(food)) : food!;
+      let savedFood = isNewFood(food) ? await createFood(householdId, newFoodRequest(food)) : food!;
+      if (scannedBarcode && !isNewFood(food) && savedFood.barcode !== scannedBarcode) {
+        savedFood = await updateFood(savedFood.id, { barcode: scannedBarcode });
+      }
       setFood(savedFood);
       return createStockItem(householdId, {
         foodId: savedFood.id,
@@ -118,6 +133,28 @@ export function AddStockItemDialog({
     return isNewFood(choice) ? `new:${choice.newFoodName}` : `food:${choice.id}`;
   }
 
+  async function applyScannedBarcode(barcode: string) {
+    setIsScanning(false);
+    setScannedBarcode(barcode);
+    setBarcodeNotice({ severity: "info", text: texts.barcodes.looking });
+    try {
+      const result = await lookUpBarcode(householdId, barcode);
+      if (result.food) {
+        changeFood(result.food);
+        setBarcodeNotice({ severity: "success", text: texts.barcodes.knownFood(result.food.name) });
+      } else if (result.catalogProduct) {
+        changeFood({ ...newFoodFromCatalog(result.catalogProduct), barcode });
+        setBarcodeNotice({ severity: "warning", text: texts.barcodes.fromCatalog });
+      } else {
+        changeFood(null);
+        setBarcodeNotice({ severity: "info", text: texts.barcodes.notFound(barcode) });
+      }
+      setPickerKey((key) => key + 1);
+    } catch {
+      setBarcodeNotice({ severity: "error", text: texts.barcodes.lookupFailed });
+    }
+  }
+
   function changeFood(choice: FoodChoice | null) {
     if (foodKey(choice) !== foodKey(food)) {
       setTypedQuantityText(null);
@@ -125,7 +162,11 @@ export function AddStockItemDialog({
     } else if (baseUnitOf(choice) !== baseUnit) {
       setTypedUnitSymbol(null);
     }
-    setFood(choice);
+    setFood(
+      isNewFood(choice) && scannedBarcode && !choice.barcode
+        ? { ...choice, barcode: scannedBarcode }
+        : choice,
+    );
   }
 
   function changeQuantityText(text: string) {
@@ -166,7 +207,32 @@ export function AddStockItemDialog({
       <form onSubmit={handleSubmit}>
         <DialogTitle>{texts.stock.addStockItem}</DialogTitle>
         <DialogContent>
-          <FoodPicker key={pickerKey} householdId={householdId} value={food} onChange={changeFood} required />
+          <Stack direction="row" sx={{ gap: 1, alignItems: "center" }}>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <FoodPicker
+                key={pickerKey}
+                householdId={householdId}
+                value={food}
+                onChange={changeFood}
+                required
+              />
+            </Box>
+            <IconButton
+              aria-label={texts.barcodes.scan}
+              onClick={() => setIsScanning(true)}
+              sx={{ mt: 1, border: 1, borderColor: "divider" }}
+            >
+              <QrCodeScannerRoundedIcon />
+            </IconButton>
+          </Stack>
+          {barcodeNotice && (
+            <Alert severity={barcodeNotice.severity} onClose={() => setBarcodeNotice(null)} sx={{ mt: 1 }}>
+              {barcodeNotice.text}
+            </Alert>
+          )}
+          {isScanning && (
+            <BarcodeScannerDialog onDetected={applyScannedBarcode} onClose={() => setIsScanning(false)} />
+          )}
           {recentFoods.length > 0 && !food && (
             <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1, alignItems: "center" }}>
               <Typography variant="body2" color="text.secondary">
@@ -222,6 +288,7 @@ export function AddStockItemDialog({
         </DialogActions>
       </form>
       <PrefillWarningDialog
+        isFromCatalog={catalogQuantity !== null && existingFoodId === null}
         quantity={
           pendingBaseQuantity !== null && baseUnit ? formatQuantity(pendingBaseQuantity, baseUnit) : null
         }

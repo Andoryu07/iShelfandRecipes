@@ -60,3 +60,32 @@ def test_catalogCanBeSearchedAndReadByBarcode(client: TestClient, databaseSessio
     assert (byBarcode["brand"], byBarcode["quantityText"]) == ("Olma", "150 g")
     assert client.get("/catalog/products/123", headers=headers).status_code == 404
     assert client.get("/catalog/products", params={"search": "mleko"}).status_code == 401
+
+
+def test_barcodeFindsTheHouseholdFoodAndTheCatalogProduct(client: TestClient, databaseSession: Session) -> None:
+    importProducts(databaseSession, readProducts(openDump(dump())))
+    headers = registerAndAuthorize(client, "anna@example.com", "Anna")
+    householdId = client.post("/households", json={"name": "Doma"}, headers=headers).json()["id"]
+    url = f"/households/{householdId}/barcodes/8590000000002"
+
+    first = client.get(url, headers=headers).json()
+    assert (first["food"], first["catalogProduct"]["name"]) == (None, "Jogurt bílý")
+
+    created = client.post(
+        f"/households/{householdId}/foods",
+        json={"name": "Jogurt bílý Olma", "baseUnit": "gram", "barcode": "8590000000002"},
+        headers=headers,
+    ).json()
+    assert created["barcode"] == "8590000000002"
+    assert client.get(url, headers=headers).json()["food"]["id"] == created["id"]
+
+    other = client.post(f"/households/{householdId}/foods", json={"name": "Jogurt", "baseUnit": "gram"}, headers=headers).json()
+    moved = client.patch(f"/foods/{other['id']}", json={"barcode": "8590000000002"}, headers=headers).json()
+    assert moved["barcode"] == "8590000000002"
+    assert client.get(url, headers=headers).json()["food"]["id"] == other["id"]
+
+    unknown = client.get(f"/households/{householdId}/barcodes/12345678", headers=headers).json()
+    assert (unknown["food"], unknown["catalogProduct"]) == (None, None)
+    assert client.get(f"/households/{householdId}/barcodes/abc", headers=headers).status_code == 422
+    stranger = registerAndAuthorize(client, "petr@example.com", "Petr")
+    assert client.get(url, headers=stranger).status_code == 404

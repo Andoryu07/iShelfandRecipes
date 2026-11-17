@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from application.database import getDatabaseSession
 from application.dependencies import getAccessibleFood, getCurrentUser, getHouseholdMembership, notFoundError
 from application.plans import limitsOf
-from application.foods import buildFoodResponse, escapeLikePattern, foodIsInUse, foodPhotoSignature
+from application.foods import assignBarcode, buildFoodResponse, escapeLikePattern, foodIsInUse, foodPhotoSignature
 from application.models import Food, HouseholdMember, StockItem, StockMovement, User
 from application.models.enumerations import StockMovementReason
 from application.schemas.foods import CreateFoodRequest, FoodResponse, LastAddedQuantityResponse, UpdateFoodRequest
@@ -52,6 +52,9 @@ def createFood(
         icon=request.icon,
     )
     session.add(food)
+    if request.barcode:
+        session.flush()
+        assignBarcode(session, food, request.barcode)
     try:
         session.commit()
     except IntegrityError:
@@ -79,6 +82,8 @@ def updateFood(
         food.genericName = request.genericName or None
     if "icon" in request.model_fields_set:
         food.icon = request.icon
+    if "barcode" in request.model_fields_set:
+        assignBarcode(session, food, request.barcode)
     if request.category is not None:
         food.category = request.category.value
     try:

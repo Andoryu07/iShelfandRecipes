@@ -29,7 +29,16 @@ class StorageLocation(Base):
 
 class Food(Base):
     __tablename__ = "foods"
-    __table_args__ = (Index("uq_foods_household_id_lower_name", "household_id", text("lower(name)"), unique=True),)
+    __table_args__ = (
+        Index("uq_foods_household_id_lower_name", "household_id", text("lower(name)"), unique=True),
+        Index(
+            "uq_foods_household_id_barcode",
+            "household_id",
+            "barcode",
+            unique=True,
+            postgresql_where=text("barcode IS NOT NULL"),
+        ),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     householdId: Mapped[int] = mapped_column(
@@ -41,6 +50,7 @@ class Food(Base):
     baseUnit: Mapped[MeasurementUnit] = mapped_column(
         "base_unit", measurementUnitType
     )
+    barcode: Mapped[str | None] = mapped_column(Text)
     icon: Mapped[str | None]
     photo: Mapped[bytes | None] = mapped_column(LargeBinary, deferred=True)
     photoContentType: Mapped[str | None] = mapped_column("photo_content_type", Text)

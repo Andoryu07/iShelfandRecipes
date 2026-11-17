@@ -2,6 +2,7 @@ from pydantic import BaseModel
 
 from application.models.enumerations import FoodCategory, MeasurementUnit
 from application.schemas.common import QuantityValue
+from application.schemas.foods import FoodResponse
 
 
 class CatalogProductResponse(BaseModel):
@@ -12,3 +13,9 @@ class CatalogProductResponse(BaseModel):
     quantity: QuantityValue | None
     unit: MeasurementUnit | None
     category: FoodCategory
+
+
+class BarcodeLookupResponse(BaseModel):
+    barcode: str
+    food: FoodResponse | None
+    catalogProduct: CatalogProductResponse | None

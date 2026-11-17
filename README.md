@@ -248,7 +248,8 @@ A shared copy of the Czech products of Open Food Facts (ODbL), imported with `py
 | Endpoint | Purpose | Status |
 | --- | --- | --- |
 | `GET /catalog/products?search=mleko madeta&limit=8` | Products whose name and brand contain every word (accents and case ignored), most scanned first; used by the food picker when adding food | done |
-| `GET /catalog/products/{barcode}` | One product by its barcode (for scanning barcodes later) | done |
+| `GET /catalog/products/{barcode}` | One product by its barcode | done |
+| `GET /households/{householdId}/barcodes/{barcode}` | Look up a scanned barcode: the household food with that barcode (if any) and the catalog product (if any) | done |
 
 ### Statistics
 

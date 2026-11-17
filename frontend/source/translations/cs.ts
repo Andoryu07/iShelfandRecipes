@@ -12,6 +12,7 @@ export const texts = {
   common: {
     save: "Uložit",
     or: "nebo",
+    close: "Zavřít",
     back: "Zpět",
     cancel: "Zrušit",
     delete: "Smazat",
@@ -171,6 +172,9 @@ export const texts = {
     prefillWarningTitle: "Množství podle minula",
     prefillWarningText: (quantity: string) =>
       `Množství ${quantity} je předvyplněné podle toho, kolik se přidávalo minule. Sedí i tentokrát?`,
+    catalogPrefillTitle: "Množství z databáze potravin",
+    catalogPrefillText: (quantity: string) =>
+      `Množství ${quantity} je předvyplněné podle balení v databázi potravin. Sedí s tím, co je na obalu?`,
     doNotShowAgain: "Příště nezobrazovat",
     editQuantity: "Upravit",
     prefillConfirm: "Ano, přidat",
@@ -621,6 +625,21 @@ export const texts = {
             ? "pozítří"
             : `za ${days} ${days < 5 ? "dny" : "dní"}`,
     andMore: (count: number) => `a ${count} další`,
+  },
+  barcodes: {
+    scan: "Naskenovat čárový kód",
+    title: "Čárový kód",
+    hint: "Namiř fotoaparát na čárový kód na obalu.",
+    noCamera: "Fotoaparát není dostupný nebo k němu aplikace nemá přístup. Kód můžeš opsat.",
+    typeCode: "Kód z obalu",
+    useCode: "Použít",
+    looking: "Hledám potravinu…",
+    knownFood: (name: string) => `Kód patří potravině ${name} z tvé domácnosti.`,
+    fromCatalog:
+      "Nalezeno v databázi potravin. Zkontroluj název, druh a množství podle obalu, data v databázi nemusí být přesná.",
+    notFound: (barcode: string) =>
+      `Kód ${barcode} v databázi není. Napiš název potraviny, příště ji podle kódu poznáme.`,
+    lookupFailed: "Kód se nepodařilo vyhledat. Zkus to znovu.",
   },
   households: {
     title: "Tvoje domácnosti",

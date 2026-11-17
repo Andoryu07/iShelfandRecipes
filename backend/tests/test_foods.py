@@ -30,6 +30,7 @@ def test_createAndListFoodsSortedByName(client: TestClient) -> None:
         "baseUnit": "milliliter",
         "icon": None,
         "photoUrl": None,
+        "barcode": None,
     }
     names = [food["name"] for food in client.get(f"/households/{householdId}/foods", headers=headers).json()]
     assert names == ["Banány", "Chléb", "Mléko"]
@@ -93,6 +94,7 @@ def test_updateFoodAndBlockUnitChangeWhenInStock(client: TestClient, databaseSes
         "baseUnit": "piece",
         "icon": None,
         "photoUrl": None,
+        "barcode": None,
     }
     assert client.patch(f"/foods/{food['id']}", json={"category": "other"}, headers=headers).json()["genericName"] == "Rýže"
     assert client.patch(f"/foods/{food['id']}", json={"genericName": None}, headers=headers).json()["genericName"] is None

@@ -20,6 +20,7 @@ export interface NewFood {
   category: FoodCategory;
   genericName: string;
   catalogProduct?: CatalogProduct;
+  barcode?: string;
 }
 
 export type FoodChoice = Food | NewFood;
@@ -241,10 +242,12 @@ export function NewFoodFields({ value, onChange }: { value: NewFood; onChange: (
 }
 
 export function newFoodRequest(choice: NewFood) {
+  const barcode = choice.barcode ?? choice.catalogProduct?.barcode;
   return {
     name: choice.newFoodName,
     genericName: choice.genericName.trim() || null,
     category: choice.category,
     baseUnit: choice.baseUnit,
+    ...(barcode ? { barcode } : {}),
   };
 }
