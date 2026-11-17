@@ -6,7 +6,7 @@ import { listStockItems } from "../api/stockApi";
 import type { FoodCategory, Household, MeasurementUnit } from "../api/types";
 import { describeError } from "../errorMessages";
 import { displayStorageLocationName, texts } from "../translations/cs";
-import { buildCsv, downloadCsv } from "./csv";
+import { buildCsv, downloadBlob, type CsvValue } from "./csv";
 
 const unitSymbols: Record<MeasurementUnit, string> = { gram: "g", milliliter: "ml", piece: "ks" };
 
@@ -14,7 +14,10 @@ function categoryName(category: string | null): string {
   return category && category in texts.foodCategories ? texts.foodCategories[category as FoodCategory] : "";
 }
 
-async function exportStock(household: Household) {
+type ExportKind = "stock" | "receipts";
+type ExportFormat = "xlsx" | "csv";
+
+async function stockRows(household: Household): Promise<CsvValue[][]> {
   const [stockItems, storageLocations] = await Promise.all([
     listStockItems(household.id, {}),
     listStorageLocations(household.id),
@@ -22,7 +25,7 @@ async function exportStock(household: Household) {
   const locationNames = new Map(
     storageLocations.map((location) => [location.id, displayStorageLocationName(location)]),
   );
-  const rows = stockItems.map((item) => [
+  return stockItems.map((item) => [
     item.food.name,
     item.food.genericName,
     categoryName(item.food.category),
@@ -32,12 +35,11 @@ async function exportStock(household: Household) {
     locationNames.get(item.storageLocationId),
     item.expirationDate,
   ]);
-  downloadCsv(`${texts.households.stockFileName}.csv`, buildCsv(texts.households.stockColumns, rows));
 }
 
-async function exportReceipts(household: Household) {
+async function receiptRows(household: Household): Promise<CsvValue[][]> {
   const items = await exportReceiptItems(household.id);
-  const rows = items.map((item) => [
+  return items.map((item) => [
     item.purchasedOn,
     item.storeName,
     item.originalText,
@@ -48,13 +50,28 @@ async function exportReceipts(household: Household) {
     item.price,
     item.discount,
   ]);
-  downloadCsv(`${texts.households.receiptsFileName}.csv`, buildCsv(texts.households.receiptColumns, rows));
+}
+
+async function exportData(household: Household, kind: ExportKind, format: ExportFormat) {
+  const rows = kind === "stock" ? await stockRows(household) : await receiptRows(household);
+  const header = kind === "stock" ? texts.households.stockColumns : texts.households.receiptColumns;
+  const fileName = `${kind === "stock" ? texts.households.stockFileName : texts.households.receiptsFileName}.${format}`;
+  if (format === "csv") {
+    downloadBlob(fileName, new Blob([buildCsv(header, rows)], { type: "text/csv;charset=utf-8" }));
+    return;
+  }
+  const { default: writeExcelFile } = await import("write-excel-file/universal");
+  const sheetData = [
+    header.map((title) => ({ value: title, fontWeight: "bold" as const })),
+    ...rows.map((row) => row.map((value) => value ?? null)),
+  ];
+  downloadBlob(fileName, await writeExcelFile(sheetData).toBlob());
 }
 
 export function ExportSection({ household }: { household: Household }) {
   const mutation = useMutation({
-    mutationFn: (kind: "stock" | "receipts") =>
-      kind === "stock" ? exportStock(household) : exportReceipts(household),
+    mutationFn: ({ kind, format }: { kind: ExportKind; format: ExportFormat }) =>
+      exportData(household, kind, format),
   });
   return (
     <section>
@@ -71,24 +88,29 @@ export function ExportSection({ household }: { household: Household }) {
               {describeError(mutation.error)}
             </Alert>
           )}
-          <Stack direction="row" sx={{ gap: 1, mt: 1.5, flexWrap: "wrap" }}>
-            <Button
-              variant="outlined"
-              startIcon={<DownloadRoundedIcon />}
-              disabled={mutation.isPending}
-              onClick={() => mutation.mutate("stock")}
+          {(["stock", "receipts"] as const).map((kind) => (
+            <Stack
+              key={kind}
+              direction="row"
+              sx={{ gap: 1, mt: 1.5, alignItems: "center", flexWrap: "wrap" }}
             >
-              {texts.households.exportStock}
-            </Button>
-            <Button
-              variant="outlined"
-              startIcon={<DownloadRoundedIcon />}
-              disabled={mutation.isPending}
-              onClick={() => mutation.mutate("receipts")}
-            >
-              {texts.households.exportReceipts}
-            </Button>
-          </Stack>
+              <Typography sx={{ minWidth: 72 }}>
+                {kind === "stock" ? texts.households.exportStock : texts.households.exportReceipts}
+              </Typography>
+              {(["xlsx", "csv"] as const).map((format) => (
+                <Button
+                  key={format}
+                  variant={format === "xlsx" ? "contained" : "outlined"}
+                  size="small"
+                  startIcon={<DownloadRoundedIcon />}
+                  disabled={mutation.isPending}
+                  onClick={() => mutation.mutate({ kind, format })}
+                >
+                  {format === "xlsx" ? texts.households.exportExcel : texts.households.exportCsv}
+                </Button>
+              ))}
+            </Stack>
+          ))}
         </CardContent>
       </Card>
     </section>

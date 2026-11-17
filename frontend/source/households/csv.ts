@@ -12,8 +12,8 @@ export function buildCsv(header: string[], rows: CsvValue[][]): string {
   return "﻿" + [header, ...rows].map((row) => row.map(formatValue).join(";")).join("\r\n") + "\r\n";
 }
 
-export function downloadCsv(fileName: string, content: string) {
-  const url = URL.createObjectURL(new Blob([content], { type: "text/csv;charset=utf-8" }));
+export function downloadBlob(fileName: string, blob: Blob) {
+  const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
   link.download = fileName;

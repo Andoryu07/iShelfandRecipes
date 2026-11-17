@@ -628,7 +628,9 @@ export const texts = {
     storageLimitReachedPremium: "Domácnost má nejvyšší možný počet úložišť (9).",
     exportTitle: "Export dat",
     exportDescription:
-      "Stáhni si zásoby nebo položky z účtenek jako tabulku CSV. Otevře ji Excel i Tabulky Google.",
+      "Stáhni si zásoby nebo položky z účtenek jako tabulku. Soubor Excel otevřou Tabulky Google i telefon, CSV se hodí pro český Excel.",
+    exportExcel: "Excel",
+    exportCsv: "CSV",
     exportStock: "Zásoby",
     exportReceipts: "Účtenky",
     exportFailed: "Export se nepodařil. Zkus to znovu.",
