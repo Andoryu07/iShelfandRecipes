@@ -15,6 +15,8 @@ import { texts } from "../translations/cs";
 import { vibrate } from "../components/haptics";
 import { createBarcodeReader, isProductBarcode } from "./barcodeDetection";
 
+const requiredSameReads = 3;
+
 interface BarcodeScannerDialogProps {
   onDetected: (barcode: string) => void;
   onClose: () => void;
@@ -51,22 +53,27 @@ export function BarcodeScannerDialog({ onDetected, onClose }: BarcodeScannerDial
           return;
         }
         setStatus("scanning");
+        let lastCode: string | null = null;
+        let sameReads = 0;
         const scan = async () => {
           if (isStopped) {
             return;
           }
           try {
             const found = (await reader.detect(video)).find((barcode) => isProductBarcode(barcode.rawValue));
-            if (found) {
+            const code = found ? found.rawValue.trim() : null;
+            sameReads = code !== null && code === lastCode ? sameReads + 1 : code !== null ? 1 : 0;
+            lastCode = code;
+            if (code !== null && sameReads >= requiredSameReads) {
               vibrate(60);
               isStopped = true;
-              detectedRef.current(found.rawValue.trim());
+              detectedRef.current(code);
               return;
             }
           } catch {
             // A frame that cannot be read is skipped.
           }
-          timer = window.setTimeout(scan, 200);
+          timer = window.setTimeout(scan, 150);
         };
         void scan();
       } catch {
@@ -145,6 +152,12 @@ export function BarcodeScannerDialog({ onDetected, onClose }: BarcodeScannerDial
             value={typedBarcode}
             onChange={(event) => setTypedBarcode(event.target.value.replace(/\D/g, ""))}
             slotProps={{ htmlInput: { inputMode: "numeric", maxLength: 14 } }}
+            error={typedBarcode.length >= 8 && !isProductBarcode(typedBarcode)}
+            helperText={
+              typedBarcode.length >= 8 && !isProductBarcode(typedBarcode)
+                ? texts.barcodes.invalidCode
+                : undefined
+            }
             sx={{ mt: 0 }}
           />
           <Button type="submit" variant="contained" disabled={!isProductBarcode(typedBarcode)}>

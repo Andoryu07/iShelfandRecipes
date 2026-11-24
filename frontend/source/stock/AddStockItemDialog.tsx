@@ -15,7 +15,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { lookUpBarcode } from "../api/catalogApi";
 import { createFood, createStockItem, getLastAddedQuantity, updateFood } from "../api/stockApi";
-import type { Food, StorageLocation } from "../api/types";
+import type { CatalogProduct, Food, StorageLocation } from "../api/types";
 import { BottomSheet } from "../components/BottomSheet";
 import { StorageLocationChips } from "../components/StorageLocationChips";
 import { describeError } from "../errorMessages";
@@ -140,7 +140,7 @@ export function AddStockItemDialog({
     try {
       const result = await lookUpBarcode(householdId, barcode);
       if (result.food) {
-        changeFood(result.food);
+        changeFood(await withCatalogNutrition(result.food, result.catalogProduct));
         setBarcodeNotice({ severity: "success", text: texts.barcodes.knownFood(result.food.name) });
       } else if (result.catalogProduct) {
         changeFood({ ...newFoodFromCatalog(result.catalogProduct), barcode });
@@ -152,6 +152,23 @@ export function AddStockItemDialog({
       setPickerKey((key) => key + 1);
     } catch {
       setBarcodeNotice({ severity: "error", text: texts.barcodes.lookupFailed });
+    }
+  }
+
+  async function withCatalogNutrition(householdFood: Food, product: CatalogProduct | null): Promise<Food> {
+    if (householdFood.nutrition || !product?.nutrition) {
+      return householdFood;
+    }
+    try {
+      const updated = await updateFood(householdFood.id, {
+        nutrition: product.nutrition,
+        ...(householdFood.nutriscoreGrade ? {} : { nutriscoreGrade: product.nutriscoreGrade ?? null }),
+      });
+      void queryClient.invalidateQueries({ queryKey: ["households", householdId, "foods"] });
+      void queryClient.invalidateQueries({ queryKey: stockItemsQueryKey(householdId) });
+      return updated;
+    } catch {
+      return householdFood;
     }
   }
 

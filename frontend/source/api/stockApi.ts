@@ -116,6 +116,7 @@ export function updateFood(
     icon?: string | null;
     barcode?: string | null;
     nutrition?: Nutrition | null;
+    nutriscoreGrade?: NutriscoreGrade | null;
     pieceWeightGrams?: number | null;
   },
 ): Promise<Food> {

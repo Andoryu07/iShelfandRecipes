@@ -126,3 +126,25 @@ def test_predefinedFoodsHaveTypicalNutrition(client: TestClient) -> None:
     assert foods["Eidam"]["nutrition"]["energyKcal"] == 350
     assert (foods["Vejce"]["nutrition"]["proteins"], foods["Vejce"]["pieceWeightGrams"]) == (12.5, 50)
     assert all(food["nutrition"] is not None for food in foods.values())
+
+
+def test_importFillsMissingNutritionOfFoodsWithTheSameBarcode(client: TestClient, databaseSession: Session) -> None:
+    headers = registerAndAuthorize(client, "anna@example.com", "Anna")
+    householdId = client.post("/households", json={"name": "Doma"}, headers=headers).json()["id"]
+    foodsUrl = f"/households/{householdId}/foods"
+    milk = client.post(foodsUrl, json={"name": "Mléko Madeta", "baseUnit": "milliliter", "barcode": "8594003849385"}, headers=headers).json()
+    own = client.post(
+        foodsUrl,
+        json={"name": "Moje mléko", "baseUnit": "milliliter", "barcode": "8590000000004", "nutrition": {"energyKcal": 60}},
+        headers=headers,
+    ).json()
+    yogurt = client.post(foodsUrl, json={"name": "Jogurt", "baseUnit": "gram", "barcode": "8590000000002"}, headers=headers).json()
+
+    importProducts(databaseSession, readProducts(openDump(dump())))
+    databaseSession.expire_all()
+
+    foods = {food["id"]: food for food in client.get(foodsUrl, headers=headers).json()}
+    assert foods[milk["id"]]["nutrition"]["energyKcal"] == 47
+    assert foods[milk["id"]]["nutriscoreGrade"] == "b"
+    assert foods[own["id"]]["nutrition"]["energyKcal"] == 60
+    assert foods[yogurt["id"]]["nutrition"] is None

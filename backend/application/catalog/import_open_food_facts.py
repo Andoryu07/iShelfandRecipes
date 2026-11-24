@@ -3,12 +3,12 @@ import logging
 import urllib.request
 from collections.abc import Iterable
 
-from sqlalchemy import delete, insert
+from sqlalchemy import and_, delete, func, insert, or_, select, update
 from sqlalchemy.orm import Session
 
 from application.catalog.openFoodFacts import ImportedProduct, openDump, productKey, readProducts
 from application.database import getSessionFactory
-from application.models import CatalogProduct
+from application.models import CatalogProduct, Food
 from application.models.nutrition import nutritionFieldNames
 
 dumpUrl = "https://static.openfoodfacts.org/data/en.openfoodfacts.org.products.csv.gz"
@@ -45,8 +45,41 @@ def importProducts(session: Session, products: Iterable[ImportedProduct]) -> int
     if batch:
         session.execute(insert(CatalogProduct), batch)
         count += len(batch)
+    filled = fillMissingFoodNutrition(session)
     session.commit()
+    logger.info("Filled nutrition of %d household foods by their barcode", filled)
     return count
+
+
+def fillMissingFoodNutrition(session: Session) -> int:
+    def catalogValue(columnName: str):
+        return (
+            select(getattr(CatalogProduct, columnName))
+            .where(CatalogProduct.barcode == Food.barcode)
+            .scalar_subquery()
+        )
+
+    withoutNutrition = and_(*(getattr(Food, name).is_(None) for name in nutritionFieldNames))
+    catalogHasNutrition = (
+        select(CatalogProduct.barcode)
+        .where(
+            CatalogProduct.barcode == Food.barcode,
+            or_(*(getattr(CatalogProduct, name).is_not(None) for name in nutritionFieldNames)),
+        )
+        .exists()
+    )
+    result = session.execute(
+        update(Food)
+        .where(Food.barcode.is_not(None), withoutNutrition, catalogHasNutrition)
+        .values(
+            {
+                **{name: catalogValue(name) for name in nutritionFieldNames},
+                "nutriscoreGrade": func.coalesce(Food.nutriscoreGrade, catalogValue("nutriscoreGrade")),
+            }
+        )
+        .execution_options(synchronize_session=False)
+    )
+    return result.rowcount
 
 
 def main() -> None:

@@ -1,6 +1,8 @@
+import ContentCopyRoundedIcon from "@mui/icons-material/ContentCopyRounded";
 import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
 import InfoRoundedIcon from "@mui/icons-material/InfoRounded";
 import LockRoundedIcon from "@mui/icons-material/LockRounded";
+import MailOutlineRoundedIcon from "@mui/icons-material/MailOutlineRounded";
 import NotificationsRoundedIcon from "@mui/icons-material/NotificationsRounded";
 import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
 import WorkspacePremiumRoundedIcon from "@mui/icons-material/WorkspacePremiumRounded";
@@ -281,6 +283,18 @@ export function PrivacySettingsPage() {
 }
 
 export function AboutPage() {
+  const [isEmailCopied, setIsEmailCopied] = useState(false);
+  const emailLink = `mailto:${texts.profile.contactEmail}?subject=${encodeURIComponent(texts.applicationName)}`;
+
+  async function copyEmail() {
+    try {
+      await navigator.clipboard.writeText(texts.profile.contactEmail);
+      setIsEmailCopied(true);
+    } catch {
+      setIsEmailCopied(false);
+    }
+  }
+
   return (
     <Card sx={{ mt: 2 }}>
       <CardContent>
@@ -289,8 +303,24 @@ export function AboutPage() {
         <Typography sx={{ mt: 2 }}>{texts.profile.aboutText}</Typography>
         <Typography sx={{ mt: 2 }}>
           {texts.profile.contact}{" "}
-          <Link href={`mailto:${texts.profile.contactEmail}`}>{texts.profile.contactEmail}</Link>
+          <Link href={emailLink} target="_blank" rel="noopener">
+            {texts.profile.contactEmail}
+          </Link>
         </Typography>
+        <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: "wrap" }}>
+          <Button size="small" variant="outlined" startIcon={<MailOutlineRoundedIcon />} href={emailLink}>
+            {texts.profile.writeEmail}
+          </Button>
+          <Button size="small" startIcon={<ContentCopyRoundedIcon />} onClick={() => void copyEmail()}>
+            {texts.profile.copyEmail}
+          </Button>
+        </Stack>
+        <Snackbar
+          open={isEmailCopied}
+          autoHideDuration={3000}
+          onClose={() => setIsEmailCopied(false)}
+          message={texts.profile.emailCopied}
+        />
         <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
           {texts.profile.openFoodFactsCredit}{" "}
           <Link href="https://world.openfoodfacts.org" target="_blank" rel="noopener">

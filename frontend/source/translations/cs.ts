@@ -694,6 +694,7 @@ export const texts = {
     noCamera: "Fotoaparát není dostupný nebo k němu aplikace nemá přístup. Kód můžeš opsat.",
     typeCode: "Kód z obalu",
     useCode: "Použít",
+    invalidCode: "Kód nesedí, zkontroluj čísla.",
     looking: "Hledám potravinu…",
     knownFood: (name: string) => `Kód patří potravině ${name} z tvé domácnosti.`,
     fromCatalog:
@@ -883,6 +884,9 @@ export const texts = {
     aboutText:
       "Sdílená evidence potravin pro domácnost: zásoby, účtenky, rezervace a recepty na jednom místě.",
     contact: "Kontakt:",
+    writeEmail: "Napsat e-mail",
+    copyEmail: "Zkopírovat adresu",
+    emailCopied: "Adresa je zkopírovaná.",
     contactEmail: "liskaondra2@gmail.com",
     openFoodFactsCredit: "Databáze potravin obsahuje data z projektu",
     openFoodFactsLicence: "licence Open Database License, ODbL",
