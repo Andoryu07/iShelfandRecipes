@@ -178,6 +178,7 @@ function ShoppingList({ householdId }: { householdId: number }) {
         value={listKind}
         onChange={(_, value: ListKind | null) => value && changeListKind(value)}
         sx={{ mt: 1 }}
+        data-tour="shoppingTabs"
       >
         <ToggleButton value="shared">{texts.shoppingList.shared}</ToggleButton>
         <ToggleButton value="personal">{texts.shoppingList.personal}</ToggleButton>
@@ -186,7 +187,7 @@ function ShoppingList({ householdId }: { householdId: number }) {
         {listKind === "shared" ? texts.shoppingList.sharedHint : texts.shoppingList.personalHint}
       </Typography>
 
-      <Stack direction="row" sx={{ gap: 1, alignItems: "flex-start" }}>
+      <Stack direction="row" sx={{ gap: 1, alignItems: "flex-start" }} data-tour="shoppingAdd">
         <Box sx={{ flex: 1 }}>
           <FoodPicker
             key={pickerKey}
@@ -217,8 +218,8 @@ function ShoppingList({ householdId }: { householdId: number }) {
         </Typography>
       )}
 
-      {groups.map((group) => (
-        <section key={group.category}>
+      {groups.map((group, groupIndex) => (
+        <section key={group.category} data-tour={groupIndex === 0 ? "shoppingItems" : undefined}>
           <Typography className="listSectionTitle" component="h2">
             {`${categoryEmoji[group.category]} ${texts.foodCategories[group.category]}`}
           </Typography>
@@ -229,7 +230,7 @@ function ShoppingList({ householdId }: { householdId: number }) {
       ))}
 
       {checkedItems.length > 0 && (
-        <section>
+        <section data-tour="shoppingChecked">
           <Typography className="listSectionTitle" component="h2">
             {texts.shoppingList.inCart(checkedItems.length)}
           </Typography>

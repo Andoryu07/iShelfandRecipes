@@ -1,4 +1,4 @@
-import { Alert, Button, Stack, Typography } from "@mui/material";
+import { Alert, Box, Button, Stack, Typography } from "@mui/material";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router";
@@ -42,17 +42,25 @@ function HouseholdDetails({ household, user }: { household: Household; user: Use
       <Typography variant="h5" component="h2">
         {household.name}
       </Typography>
-      {household.canShare ? (
-        <InviteCodeCard household={household} />
-      ) : (
-        <Alert severity="info" sx={{ mt: 2 }}>
-          {texts.guest.sharingNeedsAccount}
-        </Alert>
-      )}
+      <Box data-tour="householdInvite">
+        {household.canShare ? (
+          <InviteCodeCard household={household} />
+        ) : (
+          <Alert severity="info" sx={{ mt: 2 }}>
+            {texts.guest.sharingNeedsAccount}
+          </Alert>
+        )}
+      </Box>
       {household.role === "owner" && <JoinRequestsSection householdId={household.id} />}
-      <MembersSection household={household} currentUserId={user.id} />
-      <StorageLocationsSection household={household} />
-      <ExportSection household={household} />
+      <Box data-tour="householdMembers">
+        <MembersSection household={household} currentUserId={user.id} />
+      </Box>
+      <Box data-tour="householdLocations">
+        <StorageLocationsSection household={household} />
+      </Box>
+      <Box data-tour="householdExport">
+        <ExportSection household={household} />
+      </Box>
       <Stack className="section" spacing={1} sx={{ alignItems: "flex-start" }}>
         <Button
           color="error"

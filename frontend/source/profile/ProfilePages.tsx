@@ -1,5 +1,6 @@
 import ContentCopyRoundedIcon from "@mui/icons-material/ContentCopyRounded";
 import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
+import HelpOutlineRoundedIcon from "@mui/icons-material/HelpOutlineRounded";
 import InfoRoundedIcon from "@mui/icons-material/InfoRounded";
 import LockRoundedIcon from "@mui/icons-material/LockRounded";
 import MailOutlineRoundedIcon from "@mui/icons-material/MailOutlineRounded";
@@ -98,6 +99,12 @@ export function ProfilePage() {
             label: texts.profile.privacy,
             description: texts.profile.privacyDescription,
             onClick: () => navigate("/profile/privacy"),
+          },
+          {
+            icon: <HelpOutlineRoundedIcon />,
+            label: texts.profile.help,
+            description: texts.profile.helpDescription,
+            onClick: () => navigate("/help"),
           },
           {
             icon: <InfoRoundedIcon />,

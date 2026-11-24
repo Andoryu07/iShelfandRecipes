@@ -33,6 +33,8 @@ import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
 import { Suspense, useEffect } from "react";
 import { useAuthentication } from "../authentication/AuthenticationContext";
 import { texts } from "../translations/cs";
+import { HelpButton, TourHint, TourOffer, useRequestedTour } from "../tour/TourEntryPoints";
+import { TourProvider } from "../tour/TourProvider";
 
 const navigationItems = [
   { path: "/overview", label: texts.navigation.overview, icon: <SpaceDashboardRoundedIcon /> },
@@ -78,6 +80,15 @@ export function pageInformation(pathname: string): PageInformation {
 }
 
 export function ApplicationLayout() {
+  return (
+    <TourProvider>
+      <ApplicationLayoutContent />
+    </TourProvider>
+  );
+}
+
+function ApplicationLayoutContent() {
+  useRequestedTour();
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuthentication();
@@ -119,7 +130,7 @@ export function ApplicationLayout() {
           <Typography variant="h6" color="primary" sx={{ px: 2.5, py: 2.5 }}>
             {texts.applicationName}
           </Typography>
-          <List sx={{ px: 1 }}>
+          <List sx={{ px: 1 }} data-tour="navigation">
             {navigationItems.map((item) => (
               <ListItemButton
                 key={item.path}
@@ -161,8 +172,13 @@ export function ApplicationLayout() {
               </Typography>
               <HouseholdSwitcher />
             </Box>
+            <HelpButton />
             <ShoppingCartButton />
-            <IconButton aria-label={texts.profile.title} onClick={() => navigate("/profile")}>
+            <IconButton
+              aria-label={texts.profile.title}
+              onClick={() => navigate("/profile")}
+              data-tour="profileButton"
+            >
               <Avatar
                 sx={{
                   width: 34,
@@ -179,6 +195,8 @@ export function ApplicationLayout() {
         </AppBar>
         <main className="page">
           <LockedHouseholdBanner />
+          <TourHint />
+          <TourOffer />
           <Suspense fallback={<PageLoading />}>
             <Outlet key={household?.id} />
           </Suspense>
@@ -189,6 +207,7 @@ export function ApplicationLayout() {
           className="bottomNavigation"
           elevation={0}
           component="nav"
+          data-tour="navigation"
           sx={{ borderTop: 1, borderColor: "divider" }}
         >
           <BottomNavigation showLabels value={activePath} onChange={(_, path: string) => navigate(path)}>
@@ -231,6 +250,7 @@ function ShoppingCartButton() {
     <IconButton
       aria-label={texts.shoppingList.open}
       onClick={() => navigate("/shopping-list")}
+      data-tour="shoppingCart"
       sx={{ mr: 0.5 }}
     >
       <Badge badgeContent={openCount} color="primary" max={99}>

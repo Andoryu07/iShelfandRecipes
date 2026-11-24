@@ -253,6 +253,11 @@ export function LandingPage() {
               </AccordionDetails>
             </Accordion>
           ))}
+          <Box sx={{ textAlign: "center", mt: 2 }}>
+            <Button component={RouterLink} to="/help">
+              {texts.landing.moreHelp}
+            </Button>
+          </Box>
         </Box>
       </Section>
 

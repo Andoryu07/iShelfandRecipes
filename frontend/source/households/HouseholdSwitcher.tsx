@@ -35,6 +35,7 @@ export function HouseholdSwitcher() {
       <ButtonBase
         onClick={() => setIsOpen(true)}
         aria-label={texts.households.switch}
+        data-tour="householdSwitcher"
         sx={{ borderRadius: 1, justifyContent: "flex-start", color: "text.secondary", maxWidth: "100%" }}
       >
         <Typography variant="body2" noWrap>

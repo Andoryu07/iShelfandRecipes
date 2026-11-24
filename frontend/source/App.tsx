@@ -37,6 +37,7 @@ const NotificationsSettingsPage = lazyPage(
 );
 const PrivacySettingsPage = lazyPage(() => import("./profile/ProfilePages"), "PrivacySettingsPage");
 const PremiumPage = lazyPage(() => import("./profile/ProfilePages"), "PremiumPage");
+const HelpPage = lazyPage(() => import("./pages/HelpPage"), "HelpPage");
 const LandingPage = lazyPage(() => import("./pages/LandingPage"), "LandingPage");
 const AddHouseholdPage = lazyPage(() => import("./pages/AddHouseholdPage"), "AddHouseholdPage");
 const ProfilePage = lazyPage(() => import("./profile/ProfilePages"), "ProfilePage");
@@ -87,6 +88,7 @@ const router = createBrowserRouter([
   },
   { path: "/", element: <HomeRoute landingPage={<LandingPage />} /> },
   { path: "/privacy", element: <PrivacyPolicyPage /> },
+  { path: "/help", element: <HelpPage /> },
   { path: "/reset-password", element: <ResetPasswordPage /> },
   { path: "*", element: <NotFoundPage /> },
 ]);

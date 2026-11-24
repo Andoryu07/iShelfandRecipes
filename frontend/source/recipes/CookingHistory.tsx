@@ -16,7 +16,7 @@ export function CookingHistory({ recipeId }: { recipeId: number }) {
   });
   const cookings = cookingsQuery.data ?? [];
   return (
-    <section>
+    <section data-tour="recipeHistory">
       <Button
         variant="outlined"
         startIcon={<HistoryRoundedIcon />}

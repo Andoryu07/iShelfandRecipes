@@ -181,6 +181,7 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
         <IconButton
           aria-label={texts.recipes.moreActions}
           onClick={(event) => setMenuAnchor(event.currentTarget)}
+          data-tour="recipeMenu"
         >
           <MoreVertRoundedIcon />
         </IconButton>
@@ -234,6 +235,7 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
         <Card
           variant="outlined"
           className="section"
+          data-tour="recipeMissing"
           sx={{ borderColor: missing.length ? "warning.main" : "success.main", borderWidth: 2 }}
         >
           <CardContent>
@@ -288,7 +290,7 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
         </Card>
       )}
 
-      <Stack direction="row" sx={{ alignItems: "center", gap: 1, mt: 2 }}>
+      <Stack direction="row" sx={{ alignItems: "center", gap: 1, mt: 2 }} data-tour="recipeServings">
         <Typography>{texts.recipes.servings}</Typography>
         <IconButton onClick={() => setServings(Math.max(1, currentServings - 1))} aria-label="−">
           −
@@ -304,6 +306,7 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
           control={<Switch checked={isCooking} onChange={(event) => setIsCooking(event.target.checked)} />}
           label={texts.recipes.cookingMode}
           sx={{ mt: 1 }}
+          data-tour="recipeCookingMode"
         />
       )}
 
@@ -366,6 +369,7 @@ function RecipeDetail({ householdId, recipeId }: { householdId: number; recipeId
       <CookingHistory recipeId={recipeId} />
 
       <Box
+        data-tour="recipeActions"
         sx={{
           position: "sticky",
           bottom: { xs: "calc(var(--bottom-navigation-height) + var(--safe-area-bottom) + 8px)", md: 16 },

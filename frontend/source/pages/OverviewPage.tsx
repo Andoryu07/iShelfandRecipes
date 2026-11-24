@@ -94,6 +94,7 @@ function Overview({ householdId }: { householdId: number }) {
           size="large"
           sx={{ flex: 1, py: 1.5, flexDirection: "column", gap: 0.5, lineHeight: 1.2 }}
           onClick={() => navigate("/receipts")}
+          data-tour="overviewScan"
         >
           <PhotoCameraRoundedIcon />
           {texts.overview.scanReceipt}
@@ -103,6 +104,7 @@ function Overview({ householdId }: { householdId: number }) {
           size="large"
           sx={{ flex: 1, py: 1.5, flexDirection: "column", gap: 0.5, lineHeight: 1.2 }}
           onClick={() => navigate("/stock?add=1")}
+          data-tour="overviewAdd"
         >
           <AddRoundedIcon />
           {texts.overview.addFood}
@@ -110,7 +112,7 @@ function Overview({ householdId }: { householdId: number }) {
       </Stack>
 
       <SectionHeader title={texts.overview.expiringTitle} onShowAll={() => navigate("/stock")} />
-      <Card>
+      <Card data-tour="overviewExpiring">
         {expiring.length === 0 ? (
           <CardContent>
             <Typography color="text.secondary">{texts.overview.expiringNothing}</Typography>
@@ -164,7 +166,10 @@ function Overview({ householdId }: { householdId: number }) {
       {cookable.length === 0 ? (
         <Typography color="text.secondary">{texts.overview.cookNowNothing}</Typography>
       ) : (
-        <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 1.5 }}>
+        <Box
+          data-tour="overviewCookNow"
+          sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 1.5 }}
+        >
           {cookable.map((recipe) => (
             <Card key={recipe.id}>
               <CardActionArea onClick={() => navigate(`/recipes/${recipe.id}`)} sx={{ height: "100%" }}>
@@ -202,7 +207,7 @@ function SpendingCard({ householdId }: { householdId: number }) {
         title={texts.spending.overviewTitle(monthLocative(month))}
         onShowAll={() => navigate("/receipts?view=spending")}
       />
-      <Card>
+      <Card data-tour="overviewSpending">
         <CardActionArea onClick={() => navigate("/receipts?view=spending")}>
           <CardContent>
             {spending && spending.receiptCount > 0 ? (

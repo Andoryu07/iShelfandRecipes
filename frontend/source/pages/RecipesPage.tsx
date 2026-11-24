@@ -96,6 +96,7 @@ function RecipeList({ householdId }: { householdId: number }) {
     <>
       <Stack direction="row" sx={{ gap: 1, alignItems: "center" }}>
         <TextField
+          data-tour="recipesSearch"
           placeholder={texts.recipes.searchPlaceholder}
           value={search}
           onChange={(event) => setSearch(event.target.value)}
@@ -116,6 +117,7 @@ function RecipeList({ householdId }: { householdId: number }) {
           variant="outlined"
           startIcon={<HistoryRoundedIcon />}
           onClick={() => setIsHistoryOpen(true)}
+          data-tour="recipesHistory"
           sx={{ flexShrink: 0, mt: 1, height: 40 }}
         >
           {texts.history.openHistory}
@@ -124,7 +126,7 @@ function RecipeList({ householdId }: { householdId: number }) {
       {isHistoryOpen && (
         <HouseholdCookingHistorySheet householdId={householdId} onClose={() => setIsHistoryOpen(false)} />
       )}
-      <Stack direction="row" sx={{ gap: 1, flexWrap: "wrap", mb: 1 }}>
+      <Stack direction="row" sx={{ gap: 1, flexWrap: "wrap", mb: 1 }} data-tour="recipesFilters">
         {quickFilters.slice(0, 1).map((filter) => (
           <Chip
             key={filter.value}
@@ -148,7 +150,7 @@ function RecipeList({ householdId }: { householdId: number }) {
             onClick={() => toggleQuickFilter(filter.value)}
           />
         ))}
-        <Badge badgeContent={hiddenFilterCount} color="primary">
+        <Badge badgeContent={hiddenFilterCount} color="primary" data-tour="recipesMoreFilters">
           <Chip
             icon={<TuneRoundedIcon />}
             label={texts.recipes.moreFilters}
@@ -228,7 +230,7 @@ function RecipeList({ householdId }: { householdId: number }) {
                 <AdSlot />
               </Box>
             )}
-            <Card sx={{ position: "relative" }}>
+            <Card sx={{ position: "relative" }} data-tour={index === 0 ? "recipesCard" : undefined}>
               <CardActionArea
                 onClick={() => navigate(`/recipes/${recipe.id}`)}
                 sx={{ display: "flex", p: 1.5, gap: 1.5 }}
@@ -292,6 +294,7 @@ function RecipeList({ householdId }: { householdId: number }) {
         color="primary"
         aria-label={texts.recipes.newRecipe}
         onClick={(event) => setNewRecipeMenuAnchor(event.currentTarget)}
+        data-tour="recipesAdd"
         sx={{
           position: "fixed",
           right: 16,

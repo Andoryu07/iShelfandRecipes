@@ -184,6 +184,7 @@ function Receipts({ householdId }: { householdId: number }) {
         value && setSearchParameters(value === "spending" ? { view: "spending" } : {})
       }
       sx={{ mb: 1 }}
+      data-tour="receiptsViewSwitch"
     >
       <ToggleButton value="receipts">{texts.spending.receiptsTab}</ToggleButton>
       <ToggleButton value="spending">{texts.spending.spendingTab}</ToggleButton>
@@ -218,6 +219,7 @@ function Receipts({ householdId }: { householdId: number }) {
         onChange={handleFileSelected}
       />
       <Card
+        data-tour="receiptsScan"
         sx={{ mt: 1, borderStyle: "dashed", borderWidth: 2, bgcolor: "action.hover", textAlign: "center" }}
       >
         <CardActionArea onClick={() => startScan("camera")} disabled={scanMutation.isPending} sx={{ py: 3 }}>
@@ -305,7 +307,7 @@ function Receipts({ householdId }: { householdId: number }) {
           {texts.receipts.empty}
         </Typography>
       )}
-      <List>
+      <List data-tour={receiptsQuery.data?.length ? "receiptsList" : undefined}>
         {receiptsQuery.data?.map((receipt) => (
           <ListItemButton key={receipt.id} divider onClick={() => setSelectedReceiptId(receipt.id)}>
             <ListItemAvatar>

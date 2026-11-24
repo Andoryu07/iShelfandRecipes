@@ -113,6 +113,7 @@ function StockList({ householdId }: { householdId: number }) {
   return (
     <>
       <TextField
+        data-tour="stockSearch"
         placeholder={texts.stock.searchPlaceholder}
         value={search}
         onChange={(event) => setSearch(event.target.value)}
@@ -128,7 +129,7 @@ function StockList({ householdId }: { householdId: number }) {
           htmlInput: { type: "search", maxLength: 100 },
         }}
       />
-      <Stack direction="row" spacing={1} sx={{ overflowX: "auto", pb: 1 }}>
+      <Stack direction="row" spacing={1} sx={{ overflowX: "auto", pb: 1 }} data-tour="stockLocations">
         <Chip
           label={texts.stock.allStorageLocations}
           color={selectedStorageLocationId === undefined ? "primary" : "default"}
@@ -168,8 +169,8 @@ function StockList({ householdId }: { householdId: number }) {
         { title: texts.stock.otherSection, groups: groups.other },
       ]
         .filter((section) => section.groups.length > 0)
-        .map((section) => (
-          <Box key={section.title}>
+        .map((section, sectionIndex) => (
+          <Box key={section.title} data-tour={sectionIndex === 0 ? "stockList" : undefined}>
             <Typography className="listSectionTitle" component="h2">
               {section.title}
             </Typography>
@@ -196,6 +197,7 @@ function StockList({ householdId }: { householdId: number }) {
         color="primary"
         aria-label={texts.stock.addStockItem}
         onClick={() => setIsAdding(true)}
+        data-tour="stockAdd"
         sx={{
           position: "fixed",
           right: 16,

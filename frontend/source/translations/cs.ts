@@ -767,6 +767,258 @@ export const texts = {
       "Sleva",
     ],
   },
+  tour: {
+    next: "Další",
+    back: "Zpět",
+    skip: "Přeskočit",
+    done: "Hotovo",
+    progress: (step: number, count: number) => `${step} z ${count}`,
+    helpButton: "Nápověda k této obrazovce",
+    offerTitle: "Chceš krátkou prohlídku aplikace?",
+    offerText:
+      "Ukážu ti, kde co najdeš a k čemu jsou jednotlivá tlačítka. Zabere to asi minutu a kdykoli ji můžeš ukončit.",
+    offerHint: "Prohlídku každé obrazovky spustíš i později otazníkem v horní liště.",
+    offerShow: "Ukázat",
+    offerLater: "Teď ne",
+    hintText: "Poprvé tady? Ukážu ti, co na této obrazovce najdeš.",
+    hintShow: "Ukázat",
+    names: {
+      overview: "Přehled",
+      stock: "Zásoby",
+      receipts: "Účtenky",
+      recipes: "Recepty",
+      recipeDetail: "Detail receptu",
+      household: "Domácnost",
+      shoppingList: "Nákupní seznam",
+    },
+    steps: {
+      overview: {
+        welcome: {
+          title: "Vítej v aplikaci",
+          text: "Tohle je Přehled, tvoje výchozí obrazovka. Ukážu ti, co tu najdeš a jak se dostaneš jinam.",
+        },
+        scan: {
+          title: "Vyfotit účtenku",
+          text: "Nejrychlejší způsob, jak naskladnit nákup. Položky z účtenky se přečtou samy a ty je jen zkontroluješ.",
+        },
+        add: {
+          title: "Přidat potravinu",
+          text: "Jednu potravinu přidáš ručně nebo naskenováním čárového kódu na obalu.",
+        },
+        expiring: {
+          title: "Brzy projde",
+          text: "Co je potřeba sníst nejdřív. Kolik dní dopředu se má potravina ukázat, nastavíš v Profilu v části Upozornění.",
+        },
+        spending: {
+          title: "Útraty",
+          text: "Kolik jste tento měsíc utratili podle uložených účtenek. Klepnutím otevřeš podrobný přehled.",
+        },
+        cookNow: {
+          title: "Můžeš uvařit hned",
+          text: "Recepty, na které máš doma všechny suroviny.",
+        },
+        householdSwitcher: {
+          title: "Domácnost",
+          text: "Pod názvem obrazovky vidíš, ve které domácnosti jsi. Klepnutím ji přepneš nebo přidáš další.",
+        },
+        shoppingCart: {
+          title: "Nákupní seznam",
+          text: "Košík otevře nákupní seznam. Číslo ukazuje, kolik věcí zbývá koupit.",
+        },
+        help: {
+          title: "Nápověda",
+          text: "Otazník spustí prohlídku obrazovky, na které zrovna jsi. Návody najdeš i v Profilu.",
+        },
+        profile: {
+          title: "Profil",
+          text: "Účet, Premium, vzhled a vibrace, upozornění, soukromí a nápověda.",
+        },
+        navigation: {
+          title: "Záložky",
+          text: "Tady přepínáš mezi Přehledem, Zásobami, Recepty, Účtenkami a Domácností. Na každé záložce ti otazník ukáže, co tam najdeš.",
+        },
+      },
+      stock: {
+        search: {
+          title: "Hledání",
+          text: "Napiš část názvu a seznam se hned zúží. Na diakritice nezáleží.",
+        },
+        locations: {
+          title: "Místa uložení",
+          text: "Zobraz jen lednici, mrazák nebo spíž. Místa upravíš v záložce Domácnost.",
+        },
+        list: {
+          title: "Položky zásob",
+          text: "Nahoře je, co brzy projde. Stejné potraviny jsou v jednom řádku a šipka je rozbalí. Klepnutím otevřeš podrobnosti: snězeno, vyhozeno, rezervace na vaření, úprava, historie a výživa.",
+        },
+        swipe: {
+          title: "Rychlé odepsání",
+          text: "Potáhni řádek doprava, když potravinu sníš, nebo doleva, když ji vyhazuješ. Pět vteřin to jde vrátit tlačítkem Zpět.",
+        },
+        add: {
+          title: "Přidat potravinu",
+          text: "Otevře přidání potraviny. Najdeš v něm i skenování čárového kódu a databázi potravin.",
+        },
+      },
+      receipts: {
+        switch: {
+          title: "Účtenky a útraty",
+          text: "Přepínáš mezi seznamem účtenek a přehledem útrat po měsících, obchodech a druzích potravin.",
+        },
+        scan: {
+          title: "Načíst účtenku",
+          text: "Vyfoť účtenku, nebo nahraj fotku či PDF. Účtenku můžeš poslat i z aplikace obchodu přes Sdílet a iShelf.",
+        },
+        review: {
+          title: "Kontrola před uložením",
+          text: "Po přečtení položky zkontroluješ. Oranžová množství jsou jen odhad, dole vidíš, jestli sedí součet. Uložené potraviny se přidají do zásob.",
+        },
+        list: {
+          title: "Uložené účtenky",
+          text: "Klepnutím otevřeš detail účtenky s položkami a cenami.",
+        },
+      },
+      recipes: {
+        search: { title: "Hledání receptů", text: "Hledej podle názvu receptu." },
+        history: {
+          title: "Historie vaření",
+          text: "Co se v domácnosti vařilo, kdo vařil a kolik porcí.",
+        },
+        filters: {
+          title: "Rychlé filtry",
+          text: "Oblíbené, co uvaříš hned, co využije brzy prošlé potraviny, rychlá a vegetariánská jídla nebo tvoje vlastní recepty.",
+        },
+        moreFilters: {
+          title: "Další filtry",
+          text: "Kolik surovin smí chybět, druh jídla, recepty s vybranými surovinami a řazení.",
+        },
+        card: {
+          title: "Recept",
+          text: "Štítek ukazuje, jestli máš vše, nebo kolik surovin chybí. Hvězdička přidá recept mezi oblíbené, ty jsou vždy nahoře.",
+        },
+        add: {
+          title: "Nový recept",
+          text: "Napiš vlastní recept, nebo vyfoť stránku z kuchařky a aplikace ho přečte.",
+        },
+      },
+      recipeDetail: {
+        missing: {
+          title: "Co ti chybí",
+          text: "Nejdůležitější část receptu. Chybějící suroviny přidáš jedním klepnutím na nákupní seznam.",
+        },
+        servings: {
+          title: "Porce",
+          text: "Změň počet porcí a množství surovin se přepočítají.",
+        },
+        cookingMode: {
+          title: "Vařím",
+          text: "Zapni, když vaříš, a obrazovka telefonu nezhasne.",
+        },
+        history: { title: "Historie vaření", text: "Kdy a kdo tento recept vařil." },
+        actions: {
+          title: "Rezervovat a Uvařeno",
+          text: "Rezervovat zamluví suroviny, aby je mezitím nikdo nesnědl. Uvařeno odečte suroviny ze zásob.",
+        },
+        menu: { title: "Další akce", text: "Úprava a smazání receptu." },
+      },
+      household: {
+        invite: {
+          title: "Pozvat členy",
+          text: "Pošli odkaz, nebo sdílej kód. Žádost o připojení kódem schvaluje vlastník domácnosti.",
+        },
+        members: { title: "Členové", text: "Kdo v domácnosti je a kdo ji vlastní." },
+        locations: {
+          title: "Místa uložení",
+          text: "Lednice, mrazák, spíž a další. Hodiny u místa ukážou historii, co se tam přidalo a ubralo.",
+        },
+        export: {
+          title: "Export dat",
+          text: "Stáhni si zásoby nebo položky z účtenek jako tabulku pro Excel nebo Tabulky Google.",
+        },
+      },
+      shoppingList: {
+        tabs: {
+          title: "Společný a můj seznam",
+          text: "Společný seznam vidí celá domácnost, Můj seznam jen ty.",
+        },
+        add: {
+          title: "Přidat na seznam",
+          text: "Vyber potravinu, nebo napiš cokoli jiného, třeba „pečivo na víkend“.",
+        },
+        items: {
+          title: "Položky",
+          text: "Zaškrtnutím dáš věc do košíku. Klepnutím změníš množství, poznámku nebo ji přesuneš na druhý seznam.",
+        },
+        checked: {
+          title: "V košíku",
+          text: "Po nákupu přidej koupené potraviny do zásob jedním tlačítkem.",
+        },
+      },
+    },
+  },
+  help: {
+    title: "Nápověda a průvodce",
+    back: "Zpět",
+    toursTitle: "Prohlídky obrazovek",
+    toursIntro: "Krátké prohlídky ukážou, k čemu jsou tlačítka na jednotlivých obrazovkách.",
+    start: "Spustit",
+    seen: "prošlá",
+    recipeDetailHint: "Otevři libovolný recept a klepni na otazník nahoře.",
+    signInToStart: "Prohlídky spustíš v aplikaci po přihlášení.",
+    openApplication: "Přihlásit se",
+    howToTitle: "Jak na to",
+    howTo: [
+      {
+        question: "Jak pozvat ostatní do domácnosti?",
+        answer:
+          "V záložce Domácnost klepni na Pozvat odkazem a pošli odkaz, třeba přes WhatsApp. Kdo ho otevře a přihlásí se, je hned v domácnosti. Odkaz platí 7 dní pro jednoho člověka. Druhá možnost je kód domácnosti: kdo ho zadá, pošle žádost a vlastník ji schválí.",
+      },
+      {
+        question: "Jak načíst účtenku?",
+        answer:
+          "V záložce Účtenky klepni na Vyfotit účtenku, nebo nahraj fotku či PDF. Po přečtení zkontroluj položky, množství a místo uložení a klepni na Uložit. Potraviny se přidají do zásob.",
+      },
+      {
+        question: "Jak poslat účtenku z aplikace obchodu?",
+        answer:
+          "V aplikaci obchodu otevři účtenku, klepni na Sdílet a vyber iShelf. Funguje to v nainstalované aplikaci na Androidu a ve Windows, na iPhonu zatím ne. Tam účtenku ulož jako obrázek nebo PDF a nahraj ji v záložce Účtenky.",
+      },
+      {
+        question: "Co znamená oranžové „ODHAD“ u účtenky?",
+        answer:
+          "Množství nebylo na účtence vytištěné, takže je jen odhadnuté. Zkontroluj ho podle obalu a oprav, nebo potvrď tlačítkem Sedí.",
+      },
+      {
+        question: "Jak zapsat snědené nebo vyhozené jídlo?",
+        answer:
+          "V Zásobách potáhni řádek doprava (snězeno) nebo doleva (vyhozeno). Když jde jen o část, klepni na položku a zadej, kolik se snědlo nebo vyhodilo.",
+      },
+      {
+        question: "K čemu je rezervace?",
+        answer:
+          "Když chceš něco uvařit později, zamluv si suroviny. Ostatní členové pak uvidí, že jsou rezervované, a snědí jen zbytek.",
+      },
+      {
+        question: "Jak nainstalovat aplikaci do telefonu?",
+        answer:
+          "Na Androidu otevři ishelf.cz v Chromu a v menu ⋮ zvol Přidat na plochu nebo Nainstalovat aplikaci. Na iPhonu otevři ishelf.cz v Safari, klepni na Sdílet a zvol Přidat na plochu.",
+      },
+      {
+        question: "Jak zapnout upozornění?",
+        answer:
+          "V Profilu v části Upozornění zapni upozornění na tomto zařízení a vyber hodinu a kolik dní dopředu chceš upozornit. Když prohlížeč upozornění blokuje, aplikace ti ukáže, kde je povolit.",
+      },
+      {
+        question: "Proč je domácnost uzamčená?",
+        answer:
+          "Domácnost má víc členů nebo je navíc, než dovoluje tarif vlastníka, typicky po skončení Premium. Prohlížet a exportovat jde dál. Odemkne se, když vlastník obnoví Premium nebo odebere členy.",
+      },
+    ],
+    resetTitle: "Tipy a prohlídky",
+    resetText: "Vrátí nabídku prohlídek a jednorázové tipy, které jsi už zavřel.",
+    reset: "Obnovit všechny tipy",
+    resetDone: "Tipy jsou zpět.",
+  },
   landing: {
     pageTitle: "iShelf a recepty – společné zásoby, účtenky a recepty pro domácnost",
     headline: "Víš, co máš doma. A\u00a0co z\u00a0toho uvaříš.",
@@ -834,6 +1086,7 @@ export const texts = {
     ],
     screenshotAlt: (caption: string) => `Snímek obrazovky: ${caption}`,
     questionsTitle: "Časté otázky",
+    moreHelp: "Další návody k používání aplikace",
     questions: [
       {
         question: "Je aplikace zdarma?",
@@ -989,6 +1242,8 @@ export const texts = {
     version: (version: string) => `Verze ${version}`,
     aboutText:
       "Sdílená evidence potravin pro domácnost: zásoby, účtenky, rezervace a recepty na jednom místě.",
+    help: "Nápověda a průvodce",
+    helpDescription: "Prohlídky obrazovek a návody",
     contact: "Kontakt:",
     writeEmail: "Napsat e-mail",
     copyEmail: "Zkopírovat adresu",
