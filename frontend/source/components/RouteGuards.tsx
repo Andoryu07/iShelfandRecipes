@@ -23,6 +23,21 @@ export function RequireSignedOut() {
   );
 }
 
+function isInstalledApplication(): boolean {
+  return window.matchMedia?.("(display-mode: standalone)").matches ?? false;
+}
+
+export function HomeRoute({ landingPage }: { landingPage: React.ReactNode }) {
+  const { status } = useAuthentication();
+  if (status === "loading") {
+    return <LoadingScreen />;
+  }
+  if (status === "signedIn") {
+    return <Navigate to="/overview" replace />;
+  }
+  return isInstalledApplication() ? <Navigate to="/login" replace /> : landingPage;
+}
+
 export function RequireSignedIn() {
   const { status, user } = useAuthentication();
   const location = useLocation();

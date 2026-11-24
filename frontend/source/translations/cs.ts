@@ -23,6 +23,7 @@ export const texts = {
     unexpectedError: "Něco se pokazilo. Zkus to prosím znovu.",
   },
   authentication: {
+    aboutApplication: "Co aplikace umí",
     logInTitle: "Přihlášení",
     registerTitle: "Registrace",
     email: "E-mail",
@@ -765,6 +766,111 @@ export const texts = {
       "Cena",
       "Sleva",
     ],
+  },
+  landing: {
+    pageTitle: "iShelf a recepty – společné zásoby, účtenky a recepty pro domácnost",
+    headline: "Víš, co máš doma. A\u00a0co z\u00a0toho uvaříš.",
+    subtitle:
+      "Společné zásoby pro celou domácnost. Účtenku vyfotíš a potraviny se přidají samy, aplikace pohlídá trvanlivost a ukáže recepty z toho, co máš.",
+    tryWithoutAccount: "Vyzkoušet bez účtu",
+    register: "Vytvořit účet",
+    logIn: "Přihlásit se",
+    heroNote: "Funguje v prohlížeči i jako aplikace v telefonu. Bez instalace z obchodu.",
+    featuresTitle: "Co aplikace umí",
+    features: [
+      {
+        icon: "🧺",
+        title: "Společné zásoby",
+        text: "Všichni v domácnosti vidí, co je doma, kde to leží a kdy to projde. Snědené a vyhozené odečteš jedním tahem prstu.",
+      },
+      {
+        icon: "🧾",
+        title: "Účtenka místo přepisování",
+        text: "Vyfoť účtenku nebo ji pošli z aplikace obchodu. Položky se přečtou samy, ty je jen zkontroluješ.",
+      },
+      {
+        icon: "⏰",
+        title: "Hlídání trvanlivosti",
+        text: "Ve zvolenou hodinu ti přijde upozornění, co je potřeba brzy sníst. Méně jídla skončí v koši.",
+      },
+      {
+        icon: "🍲",
+        title: "Recepty podle zásob",
+        text: "U každého receptu hned vidíš, co máš a co chybí. Po uvaření se suroviny ze zásob odečtou samy.",
+      },
+      {
+        icon: "🛒",
+        title: "Nákupní seznam",
+        text: "Společný pro celou domácnost i jen tvůj. Chybějící suroviny z receptu přidáš jedním klepnutím.",
+      },
+      {
+        icon: "🙋",
+        title: "Rezervace na vaření",
+        text: "Zamluv si suroviny na večeři, aby je mezitím nikdo nesnědl.",
+      },
+      {
+        icon: "📊",
+        title: "Přehled útrat",
+        text: "Kolik za jídlo utrácíte každý měsíc, v jakých obchodech a za jaké druhy potravin.",
+      },
+      {
+        icon: "🔎",
+        title: "Čárové kódy a výživa",
+        text: "Naskenuj kód na obalu a aplikace potravinu najde v databázi i s kaloriemi a nutričními hodnotami.",
+      },
+    ],
+    stepsTitle: "Jak to funguje",
+    steps: [
+      { title: "Založ domácnost", text: "A pozvi ostatní odkazem nebo kódem. Každý má svůj účet." },
+      { title: "Naskladni", text: "Účtenkou, čárovým kódem nebo ručně. Napoprvé to zabere pár minut." },
+      { title: "Jez, vař a nakupuj", text: "Zásoby se samy odečítají a ty víš, co dojít koupit." },
+    ],
+    screenshotsTitle: "Jak aplikace vypadá",
+    screenshots: [
+      { file: "overview", caption: "Přehled dne: co brzy projde a co můžeš uvařit" },
+      { file: "stock", caption: "Zásoby rozdělené podle toho, co je potřeba sníst" },
+      { file: "receipt", caption: "Kontrola načtené účtenky před uložením" },
+      { file: "recipe", caption: "Recept s tím, co máš doma a co chybí" },
+    ],
+    screenshotAlt: (caption: string) => `Snímek obrazovky: ${caption}`,
+    questionsTitle: "Časté otázky",
+    questions: [
+      {
+        question: "Je aplikace zdarma?",
+        answer:
+          "Ano, aplikaci můžeš používat zdarma. Vyzkoušet ji jde i bez účtu, účet si vytvoříš později a o data nepřijdeš.",
+      },
+      {
+        question: "Jak ji dostanu do telefonu?",
+        answer:
+          "Otevři ishelf.cz v telefonu. Na Androidu v Chromu klepni v menu ⋮ na Přidat na plochu nebo Nainstalovat aplikaci. Na iPhonu v Safari klepni na Sdílet a pak na Přidat na plochu. Aplikace se pak otevírá z plochy jako každá jiná.",
+      },
+      {
+        question: "Musí mít účet všichni v domácnosti?",
+        answer:
+          "Každý člen má svůj účet, aby bylo vidět, kdo co snědl nebo si rezervoval. Do domácnosti se připojí přes odkaz nebo kód od vlastníka.",
+      },
+      {
+        question: "Ukládáte fotky mých účtenek?",
+        answer:
+          "Ne. Fotka se pošle ke čtení službě Google Gemini a uloží se jen přečtené položky. Než pošleš první účtenku, aplikace se tě zeptá na souhlas.",
+      },
+      {
+        question: "Kde jsou moje data?",
+        answer:
+          "Na serveru v datovém centru v České republice. Nikomu je neprodáváme. Podrobnosti najdeš v zásadách ochrany osobních údajů.",
+      },
+      {
+        question: "Můžu účet smazat?",
+        answer:
+          "Ano, kdykoli sám v Profilu v části Účet. Zásoby a účtenky si předtím můžeš stáhnout jako tabulku.",
+      },
+    ],
+    closingTitle: "Zkus to s tím, co máš doma",
+    closingText: "Bez e-mailu a hesla, stačí jedno klepnutí.",
+    footerContact: "Kontakt",
+    footerPrivacy: "Ochrana osobních údajů",
+    footerOpenFoodFacts: "Data o potravinách: Open Food Facts (ODbL)",
   },
   guest: {
     tryWithoutAccount: "Vyzkoušet bez účtu",

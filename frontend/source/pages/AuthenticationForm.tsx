@@ -49,9 +49,9 @@ export function AuthenticationForm({ mode }: { mode: "logIn" | "register" }) {
 
   return (
     <main className="centeredPage">
-      <Typography variant="h4" component="h1" color="primary" gutterBottom>
+      <Link component={RouterLink} to="/" underline="none" variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
         {texts.applicationName}
-      </Typography>
+      </Link>
       <Typography variant="h6" component="h2">
         {isRegistration ? texts.authentication.registerTitle : texts.authentication.logInTitle}
       </Typography>
@@ -127,6 +127,9 @@ export function AuthenticationForm({ mode }: { mode: "logIn" | "register" }) {
       <Typography variant="body2" color="text.secondary" sx={{ mt: 1, textAlign: "center" }}>
         {texts.guest.tryHint}
       </Typography>
+      <Link component={RouterLink} to="/" variant="body2" sx={{ mt: 3, textAlign: "center" }}>
+        {texts.authentication.aboutApplication}
+      </Link>
     </main>
   );
 }

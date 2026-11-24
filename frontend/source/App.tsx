@@ -1,7 +1,8 @@
 import { lazy, Suspense, type ComponentType } from "react";
-import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
+import { createBrowserRouter, RouterProvider } from "react-router";
 import { ApplicationLayout } from "./components/ApplicationLayout";
 import {
+  HomeRoute,
   RequireHousehold,
   RequireNoHousehold,
   RequireSignedIn,
@@ -36,6 +37,7 @@ const NotificationsSettingsPage = lazyPage(
 );
 const PrivacySettingsPage = lazyPage(() => import("./profile/ProfilePages"), "PrivacySettingsPage");
 const PremiumPage = lazyPage(() => import("./profile/ProfilePages"), "PremiumPage");
+const LandingPage = lazyPage(() => import("./pages/LandingPage"), "LandingPage");
 const AddHouseholdPage = lazyPage(() => import("./pages/AddHouseholdPage"), "AddHouseholdPage");
 const ProfilePage = lazyPage(() => import("./profile/ProfilePages"), "ProfilePage");
 
@@ -62,7 +64,6 @@ const router = createBrowserRouter([
           {
             element: <ApplicationLayout />,
             children: [
-              { path: "/", element: <Navigate to="/overview" replace /> },
               { path: "/overview", element: <OverviewPage /> },
               { path: "/stock", element: <StockPage /> },
               { path: "/receipts", element: <ReceiptsPage /> },
@@ -84,6 +85,7 @@ const router = createBrowserRouter([
       },
     ],
   },
+  { path: "/", element: <HomeRoute landingPage={<LandingPage />} /> },
   { path: "/privacy", element: <PrivacyPolicyPage /> },
   { path: "/reset-password", element: <ResetPasswordPage /> },
   { path: "*", element: <NotFoundPage /> },

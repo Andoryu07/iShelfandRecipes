@@ -18,9 +18,9 @@ export default defineConfig({
       injectRegister: false,
       devOptions: { enabled: true, type: "module" },
       manifest: {
-        name: "iShelf and Recipes",
+        name: "iShelf a recepty",
         short_name: "iShelf",
-        description: "Shared household food inventory with receipt scanning and recipes",
+        description: "Společné zásoby, účtenky a recepty pro celou domácnost",
         lang: "cs",
         start_url: "/",
         display: "standalone",
