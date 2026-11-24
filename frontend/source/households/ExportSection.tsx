@@ -1,5 +1,5 @@
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
-import { Alert, Button, Card, CardContent, Stack, Typography } from "@mui/material";
+import { Alert, Box, Button, Card, CardContent, CircularProgress, Stack, Typography } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
 import { exportReceiptItems, listStorageLocations } from "../api/householdsApi";
 import { listStockItems } from "../api/stockApi";
@@ -89,27 +89,40 @@ export function ExportSection({ household }: { household: Household }) {
             </Alert>
           )}
           {(["stock", "receipts"] as const).map((kind) => (
-            <Stack
-              key={kind}
-              direction="row"
-              sx={{ gap: 1, mt: 1.5, alignItems: "center", flexWrap: "wrap" }}
-            >
-              <Typography sx={{ minWidth: 72 }}>
+            <Box key={kind} sx={{ mt: 2 }}>
+              <Typography sx={{ fontWeight: 600, mb: 1 }}>
                 {kind === "stock" ? texts.households.exportStock : texts.households.exportReceipts}
               </Typography>
-              {(["xlsx", "csv"] as const).map((format) => (
-                <Button
-                  key={format}
-                  variant={format === "xlsx" ? "contained" : "outlined"}
-                  size="small"
-                  startIcon={<DownloadRoundedIcon />}
-                  disabled={mutation.isPending}
-                  onClick={() => mutation.mutate({ kind, format })}
-                >
-                  {format === "xlsx" ? texts.households.exportExcel : texts.households.exportCsv}
-                </Button>
-              ))}
-            </Stack>
+              <Stack direction="row" sx={{ gap: 1.5 }}>
+                {(["xlsx", "csv"] as const).map((format) => {
+                  const isThisPending =
+                    mutation.isPending &&
+                    mutation.variables?.kind === kind &&
+                    mutation.variables.format === format;
+                  return (
+                    <Button
+                      key={format}
+                      variant="outlined"
+                      fullWidth
+                      startIcon={
+                        isThisPending ? (
+                          <CircularProgress size={18} color="inherit" />
+                        ) : (
+                          <DownloadRoundedIcon />
+                        )
+                      }
+                      onClick={() => {
+                        if (!mutation.isPending) {
+                          mutation.mutate({ kind, format });
+                        }
+                      }}
+                    >
+                      {format === "xlsx" ? texts.households.exportExcel : texts.households.exportCsv}
+                    </Button>
+                  );
+                })}
+              </Stack>
+            </Box>
           ))}
         </CardContent>
       </Card>
